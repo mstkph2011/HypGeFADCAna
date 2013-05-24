@@ -1,0 +1,5 @@
+File:	Energy
+Nuclei:	
+Energy [keV]		FWHM [keV]		FWTM [keV]		FWTM/FWHM		PeakCounts
+1172.23		2.41413		4.42459		1.83279		3.09724e-22
+1332.51		4.02294		7.34479		1.82573		481.148

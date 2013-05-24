@@ -1,0 +1,234 @@
+// $Id: THypGeAnalysis.cxx 754 2011-05-18 11:04:52Z adamczew $
+//-----------------------------------------------------------------------
+//			 The GSI Online Offline Object Oriented (Go4) Project
+//				 Experiment Data Processing at EE department, GSI
+//-----------------------------------------------------------------------
+// Copyright (C) 2000- GSI Helmholtzzentrum für Schwerionenforschung GmbH
+//										 Planckstr. 1, 64291 Darmstadt, Germany
+// Contact:						http://go4.gsi.de
+//-----------------------------------------------------------------------
+// This software can be used under the license agreements as stated
+// in Go4License.txt file which is part of the distribution.
+//-----------------------------------------------------------------------
+
+#include "THypGeAnalysis.h"
+#include "defines.h"						// defines (~globals) are in this file, add this line to every file
+#include <stdlib.h>
+#include "Riostream.h"
+
+#include "TH1.h"
+#include "TH2.h"
+#include "TFile.h"
+#include "TSystem.h"
+
+extern "C" {
+	 #include "s_filhe_swap.h"
+	 #include "s_bufhe_swap.h"
+	 #include "f_ut_utime.h"
+}
+
+#include "TGo4Fitter.h"
+#include "TGo4FitterEnvelope.h"
+#include "TGo4AnalysisStep.h"
+#include "TGo4StepFactory.h"
+#include "THypGeParameter.h"
+#include "THypGeUnpackEvent.h"
+#include "THypGeAnlEvent.h"
+#include "TGo4Version.h"
+
+#include "Go4EventServer.h"
+
+#include "THypGeSpectrumAnalyser.h"
+
+
+
+
+//***********************************************************
+THypGeAnalysis::THypGeAnalysis() :
+	 TGo4Analysis(),
+	 fMbsEvent(0),
+	 fRawEvent(0),
+	 fCalEvent(0)
+{
+	cout << "Wrong constructor THypGeAnalysis()!" << endl;
+}
+
+//***********************************************************
+// this constructor is called by go4analysis executable
+THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
+	 TGo4Analysis(argc, argv),
+	 fMbsEvent(0),
+	 fRawEvent(0),
+	 fCalEvent(0),
+	 fSize(0),
+	 fEvents(0),
+	 fLastEvent(0)
+{
+	 if (!TGo4Version::CheckVersion(__GO4BUILDVERSION__)) {
+			cout << "****	Go4 version mismatch" << endl;
+			exit(-1);
+	 }
+
+	 cout << "**** THypGeAnalysis: Create " << argv[0] << endl;
+
+	 TString kind, input, out1, out2;
+
+// Create step 1 Unpack.
+	 TGo4StepFactory* factory1 = new TGo4StepFactory("UnpackFactory");
+	 factory1->DefEventProcessor("UnpackProc", "THypGeUnpackProc");// object name, class name
+	 factory1->DefOutputEvent("UnpackEvent", "THypGeUnpackEvent"); // object name, class name
+	 TGo4AnalysisStep* step1 = new TGo4AnalysisStep("Unpack",factory1,0,0,0);
+	 step1->SetErrorStopEnabled(kTRUE);
+	 AddAnalysisStep(step1);
+// These settings will be overwritten by setup.C
+	 step1->SetSourceEnabled(kTRUE);
+	 step1->SetStoreEnabled(kFALSE);
+	 step1->SetProcessEnabled(kTRUE);
+
+// Create step 2 Analysis.
+	 TGo4StepFactory* factory2 = new TGo4StepFactory("AnalysisFactory");
+	 factory2->DefInputEvent("UnpackEvent", "THypGeUnpackEvent"); // object name, class name
+	 factory2->DefEventProcessor("AnlProc", "THypGeAnlProc"); // object name, class name
+	 factory2->DefOutputEvent("AnlEvent", "THypGeAnlEvent"); // object name, class name
+	 TGo4AnalysisStep* step2		= new TGo4AnalysisStep("Analysis",factory2,0,0,0);
+	 step2->SetErrorStopEnabled(kTRUE);
+	 AddAnalysisStep(step2);
+// These settings will be overwritten by setup.C
+	 step2->SetSourceEnabled(kFALSE);
+	 step2->SetStoreEnabled(kFALSE);
+	 step2->SetProcessEnabled(kTRUE);
+	 	
+	fPar = (THypGeParameter *)MakeParameter("HypGeParameter","THypGeParameter");
+	
+	char chis[100], chead[100];
+	for(Int_t i=0;i<FADC_CHAN;i++)
+	
+		{
+			snprintf(chis,15,"Trace%02d",i+1);	
+			snprintf(chead,63,"Trace channel %2d",i+1);
+			fhTrace[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH);
+			AddHistogram(fhTrace[i],"V1724");
+		}
+		
+	//create histogram for energy spectrum
+	fhEnergySpectrum = new TH1D("Energy","Energy",20000,0,2000);
+	AddHistogram(fhEnergySpectrum,"V1724/Energyspectrum");
+
+	//create histograms for risetime (10%->90% and 30%->90%)
+	fhRisetime1090 = new TH1D("Rt1090","Rt1090",10000,0,1000);
+	AddHistogram(fhRisetime1090,"V1724/Rt1090");
+	fhRisetime3090 = new TH1D("Rt3090","Rt3090",10000,0,1000);
+	AddHistogram(fhRisetime3090,"V1724/Rt3090");
+	
+	// create histograms for energy risetime correlation
+	fhEnergyRise1090Corr = new TH2D("ERt1090Corr","Enegy-Risetime1090-Correlation;E;Rt",2000,0,2000,100,0,1000);
+	AddHistogram(fhEnergyRise1090Corr,"V1724/ERt1090Corr");
+	fhEnergyRise3090Corr = new TH2D("ERt3090Corr","Enegy-Risetime3090-Correlation;E;Rt",2000,0,2000,100,0,1000);
+	AddHistogram(fhEnergyRise3090Corr,"V1724/ERt3090Corr");
+	cout << "All global histograms created"<< endl;
+}
+//***********************************************************
+THypGeAnalysis::~THypGeAnalysis()
+{
+	cout << "**** THypGeAnalysis: Delete" << endl;
+}
+//***********************************************************
+
+//-----------------------------------------------------------
+Int_t THypGeAnalysis::UserPreLoop()
+{
+	cout << "**** THypGeAnalysis: PreLoop" << endl;
+	Print(); // printout the step settings
+	cout << "**************************************" << endl;
+	 // we update the pointers to the current event structures here:
+	 fMbsEvent = dynamic_cast<TGo4MbsEvent*>		(GetInputEvent("Unpack"));	 // of step "Unpack"
+	 fRawEvent = dynamic_cast<THypGeUnpackEvent*> (GetOutputEvent("Unpack"));
+	 fCalEvent = dynamic_cast<THypGeAnlEvent*>		(GetOutputEvent("Analysis"));
+	 fEvents=0;
+	 fLastEvent=0;
+
+	 // create histogram for UserEventFunc
+	 // At this point, the histogram has been restored
+	 // from auto-save file if any.
+	 fSize = (TH1D*) MakeTH1('D',"Eventsize", "Event size [b]",160,1,160);
+	 return 0;
+}
+//-----------------------------------------------------------
+Int_t THypGeAnalysis::UserPostLoop()	// fitting can be done here
+{
+	cout << "**** THypGeAnalysis: PostLoop" << endl;
+	cout << "Last event: " << fLastEvent << " Total events: " << fEvents << endl;
+	if(fMbsEvent)
+		{
+			// we can check some properties of last event here:
+			//fMbsEvent->PrintEvent(); // header and data content
+
+			// fileheader structure:
+			s_filhe* fileheader=fMbsEvent->GetMbsSourceHeader();
+			if(fileheader) {
+					 cout <<"\nInput file was: "<<fileheader->filhe_file << endl;
+					 cout <<"Tapelabel:\t" << fileheader->filhe_label<<endl;
+					 cout <<"UserName:\t" << fileheader->filhe_user<<endl;
+					 cout <<"RunID:\t" << fileheader->filhe_run<<endl;
+					 cout <<"\tExplanation: "<<fileheader->filhe_exp <<endl;
+					 cout <<"\tComments: "<<endl;
+					 Int_t numlines=fileheader->filhe_lines;
+					 for(Int_t i=0; i<numlines;++i)
+							 cout<<"\t\t"<<fileheader->s_strings[i].string << endl;
+				 }
+
+			// mbs buffer header structure:
+			s_bufhe* bufheader=fMbsEvent->GetMbsBufferHeader();
+			if(bufheader) {
+				 char sbuf[1000];
+				 f_ut_utime(bufheader->l_time[0], bufheader->l_time[1], sbuf);
+				 cout <<"Last Buffer:"<<endl;
+				 cout <<"\tNumber: " << bufheader->l_buf << endl;
+				 cout <<"\tTime: " << sbuf << endl;
+			 }
+
+
+		}
+
+	 fMbsEvent = 0; // reset to avoid invalid pointer if analysis is changed in between
+	 fRawEvent = 0;
+	 fCalEvent = 0;
+	 fEvents=0;
+	 
+	 // ana of energyspectrum
+	 
+	 THypGeSpectrumAnalyser* SpecAna = new THypGeSpectrumAnalyser(fhEnergySpectrum,"co60",50);			// 2 is placeholder
+	 SpecAna->EnableGo4Mode();
+	 SpecAna->SetAnalysisObject(this);
+	 SpecAna->AnalyseSpectrum();
+	 fhEnergySpectrum->Draw();
+	 return 0;
+}
+
+//-----------------------------------------------------------
+Int_t THypGeAnalysis::UserEventFunc()
+{
+//// This function is called once for each event.
+	 Int_t value = 0;
+	 Int_t count = 0;
+	 if(fMbsEvent) value = fMbsEvent->GetDlen()/2+2; // total longwords
+	 fSize->Fill(value); // fill histogram
+	 fEvents++;
+	 if(fEvents == 1 || IsNewInputFile()) {
+			if(fMbsEvent) {
+				 count=fMbsEvent->GetCount();
+				 cout << "\nFirst event #: " << count	<< endl;
+				 s_bufhe* bufheader = fMbsEvent->GetMbsBufferHeader();
+				 if(bufheader) {
+						char sbuf[1000];
+						f_ut_utime(bufheader->l_time[0], bufheader->l_time[1], sbuf);
+						cout <<"First Buffer:"<<endl;
+						cout <<"\tNumber: "<<bufheader->l_buf << endl;
+						cout <<"\tTime: " << sbuf << endl;
+				 }
+			}
+			SetNewInputFile(kFALSE); // we have to reset the newfile flag
+	 }
+	 fLastEvent = count;
+	 return 0;
+}

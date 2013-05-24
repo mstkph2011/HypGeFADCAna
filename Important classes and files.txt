@@ -1,0 +1,21 @@
+	important classes/files:								function
+
+	THypGeAnalysis.cxx											Main analysis class, used to manage the analysis flow (2 steps)
+	THypGeAnalysis.h
+
+	THypGeUnpackProc.cxx										first step of analysis, unpacks trace from file/stream server and puts them in ROOT histograms
+	THypGeUnpackProc.h
+
+	THypGeAnlProc.cxx												second step of analysis, gets unpacked traces and analyses them
+	THypGeAnlProc.h
+
+	THypGeMWD.cxx														real analysis class, logic is put here and executed in second step
+	THypGeMWD.h
+	
+	THypGeParameter.cxx											parameter should be declared here, M and L declared
+	THypGeParameter.h
+	
+	
+	defines.h																defines (globals) are in this file, should be included in every other *.cxx or *.h
+	
+	Go4AnalysisPrefs.root										analysis preferences like default source or step options are saved here
