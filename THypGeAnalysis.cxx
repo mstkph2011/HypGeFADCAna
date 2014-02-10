@@ -68,9 +68,71 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 			cout << "****	Go4 version mismatch" << endl;
 			exit(-1);
 	 }
-
+	 cout << "Argc = " << argc << endl;
 	 cout << "**** THypGeAnalysis: Create " << argv[0] << endl;
-
+		// get parameter for analysis from user input
+	 MWDm = 200;			// M of MWD
+	 MAl = 100;				// L of MA
+	 NoS = 100;				// Number of smoothings of mean and WA filter
+	 Width = 3;				// Width of mean filter
+	 sigmaGaus = 7;			// sigma of gaussian shaper
+	 sigmaBil = 50;			// sigma of gaussian shaper
+	 tau = 5383;			// tau of deconvolution
+	 EnableMA = 0;			// Switch for second moving average filter
+	 EnableSmoothing = 3;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
+	 EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
+	 
+	 if (argc>1)
+	 {
+		MWDm = atoi(argv[1]);
+		cout << "MWDm\t"<<atoi(argv[1]) << "   " <<MWDm << endl;
+	}
+	if (argc>2)
+	{
+		MAl = atoi(argv[2]);
+		cout << "MAl\t" << argv[2] << endl;
+	}
+	if (argc>3)
+	{
+		NoS = atoi(argv[3]);
+		cout << "Number of Smoothing\t" << argv[3] << endl;
+	}
+	if (argc>4)
+	{
+		Width = atoi(argv[4]);
+		cout << "Width\t" << argv[4] << endl;
+	}
+	if (argc>5)
+	{
+		sigmaGaus = atoi(argv[5]);
+		cout << "sigmaGaus\t" << argv[5] << endl;
+	}
+	if (argc>6)
+	{
+		sigmaBil = atoi(argv[6]);
+		cout << "sigmaBil\t" << argv[6] << endl;
+	}
+	if (argc>7)
+	{
+		tau = atoi(argv[7]);
+		cout << "tau\t" << argv[7] << endl;
+	}
+	if (argc>8)
+	{
+		EnableMA = atoi(argv[8]);
+		cout << "Enable MA\t" << argv[8] << endl;
+	}
+	if (argc>9)
+	{
+		EnableSmoothing = atoi(argv[9]);
+		cout << "Enable Smoothing\t" << argv[9] << endl;
+	}
+	if (argc>10)
+	{
+		EnableBaselineCorrection = atoi(argv[10]);
+		cout << "EnableBaselineCorrection\t" << argv[10] << endl;
+	}
+		//TGo4MbsFileParameter* input = new TGo4MbsFileParameter(userinput);
 	 TString kind, input, out1, out2;
 
 // Create step 1 Unpack.
@@ -97,12 +159,27 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 step2->SetSourceEnabled(kFALSE);
 	 step2->SetStoreEnabled(kFALSE);
 	 step2->SetProcessEnabled(kTRUE);
-	 	
-	fPar = (THypGeParameter *)MakeParameter("HypGeParameter","THypGeParameter");
+	 
+#ifdef EXA_CODE
+
+	 //////////////// Parameter //////////////////////////
+	 // At this point, auto-save file has not yet been read!
+	 // Therefore parameter values set here will be overwritten
+	 // if an auto-save file is there.
+																	
+	 // This condition is used in both steps.
+	 // Therfore we create it here
+																	fWinCon1 = MakeWinCond("wincon1", 50, 2000);
+#endif
+	
+	//fPar = (THypGeParameter *)MakeParameter("HypGeParameter","THypGeParameter");
+	fPar = new THypGeParameter("HypGeParameter");
+	 cout << "ParAdded " << AddParameter(fPar)  << endl;
+	 fPar->SetParameters( MWDm, MAl,NoS, Width ,sigmaGaus,sigmaBil, tau, EnableMA, EnableSmoothing, EnableBaselineCorrection);
+
 	
 	char chis[100], chead[100];
 	for(Int_t i=0;i<FADC_CHAN;i++)
-	
 		{
 			snprintf(chis,15,"Trace%02d",i+1);	
 			snprintf(chead,63,"Trace channel %2d",i+1);
@@ -111,21 +188,24 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 		}
 		
 	//create histogram for energy spectrum
-	fhEnergySpectrum = new TH1D("Energy","Energy",20000,0,2000);
+	fhEnergySpectrum = new TH1D("Energy","Energy",4000,0,4000);
 	AddHistogram(fhEnergySpectrum,"V1724/Energyspectrum");
 
 	//create histograms for risetime (10%->90% and 30%->90%)
-	fhRisetime1090 = new TH1D("Rt1090","Rt1090",10000,0,1000);
-	AddHistogram(fhRisetime1090,"V1724/Rt1090");
-	fhRisetime3090 = new TH1D("Rt3090","Rt3090",10000,0,1000);
-	AddHistogram(fhRisetime3090,"V1724/Rt3090");
+			//fhRisetime1090 = new TH1D("Rt1090","Rt1090",10000,0,1000);
+			//AddHistogram(fhRisetime1090,"V1724/Rt1090");
+			//fhRisetime3090 = new TH1D("Rt3090","Rt3090",10000,0,1000);
+			//AddHistogram(fhRisetime3090,"V1724/Rt3090");
 	
 	// create histograms for energy risetime correlation
-	fhEnergyRise1090Corr = new TH2D("ERt1090Corr","Enegy-Risetime1090-Correlation;E;Rt",2000,0,2000,100,0,1000);
-	AddHistogram(fhEnergyRise1090Corr,"V1724/ERt1090Corr");
-	fhEnergyRise3090Corr = new TH2D("ERt3090Corr","Enegy-Risetime3090-Correlation;E;Rt",2000,0,2000,100,0,1000);
-	AddHistogram(fhEnergyRise3090Corr,"V1724/ERt3090Corr");
+			//fhEnergyRise1090Corr = new TH2D("Er1090Corr","Enegy-Risetime1090-Correlation;E;Rt",2000,0,2000,100,0,1000);
+			//AddHistogram(fhEnergyRise1090Corr,"V1724/ER1090Corr");
+			//fhEnergyRise3090Corr = new TH2D("ER3090Corr","Enegy-Risetime3090-Correlation;E;Rt",2000,0,2000,100,0,1000);
+			//AddHistogram(fhEnergyRise3090Corr,"V1724/Er3090Corr");
 	cout << "All global histograms created"<< endl;
+	
+	
+	//SetDynListInterval(1000);
 }
 //***********************************************************
 THypGeAnalysis::~THypGeAnalysis()
@@ -151,6 +231,9 @@ Int_t THypGeAnalysis::UserPreLoop()
 	 // At this point, the histogram has been restored
 	 // from auto-save file if any.
 	 fSize = (TH1D*) MakeTH1('D',"Eventsize", "Event size [b]",160,1,160);
+	 fPar->SetParameters( MWDm, MAl,NoS, Width, sigmaGaus, sigmaBil, tau, EnableMA, EnableSmoothing, EnableBaselineCorrection);
+	 fPar->PrintParameters();
+	 //cout << "1111111   " <<fPar->GetMWDm() << endl;
 	 return 0;
 }
 //-----------------------------------------------------------
@@ -190,19 +273,25 @@ Int_t THypGeAnalysis::UserPostLoop()	// fitting can be done here
 
 		}
 
-	 fMbsEvent = 0; // reset to avoid invalid pointer if analysis is changed in between
-	 fRawEvent = 0;
-	 fCalEvent = 0;
-	 fEvents=0;
-	 
-	 // ana of energyspectrum
-	 
-	 THypGeSpectrumAnalyser* SpecAna = new THypGeSpectrumAnalyser(fhEnergySpectrum,"co60",50);			// 2 is placeholder
-	 SpecAna->EnableGo4Mode();
-	 SpecAna->SetAnalysisObject(this);
-	 SpecAna->AnalyseSpectrum();
-	 fhEnergySpectrum->Draw();
-	 return 0;
+	fMbsEvent = 0; // reset to avoid invalid pointer if analysis is changed in between
+	fRawEvent = 0;
+	fCalEvent = 0;
+	fEvents=0;
+
+	// ana of energyspectrum
+
+	THypGeSpectrumAnalyser* SpecAna = new THypGeSpectrumAnalyser(fhEnergySpectrum,"co60",10);			// 2 is placeholder
+		SpecAna->SetLinearCalibration(1);
+		//SpecAna->SetTxtFileOutputName(TxtFilename);
+		SpecAna->SetTxtFileOutputName("test.txt");
+		//SpecAna->SetRootFileOutputName(RootFilename);
+		SpecAna->SetRootFileOutputName("test.root");
+		SpecAna->SetGaussianFitting();
+		SpecAna->EnableGo4Mode();
+		SpecAna->SetAnalysisObject(this);
+		SpecAna->AnalyseSpectrum();
+		fhEnergySpectrum->Draw();
+	return 0;
 }
 
 //-----------------------------------------------------------
@@ -214,6 +303,7 @@ Int_t THypGeAnalysis::UserEventFunc()
 	 if(fMbsEvent) value = fMbsEvent->GetDlen()/2+2; // total longwords
 	 fSize->Fill(value); // fill histogram
 	 fEvents++;
+	 //cout << fEvents << endl;
 	 if(fEvents == 1 || IsNewInputFile()) {
 			if(fMbsEvent) {
 				 count=fMbsEvent->GetCount();

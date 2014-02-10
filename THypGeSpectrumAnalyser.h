@@ -26,8 +26,8 @@
 #ifndef THYPGESPECTRUMANALYSER_H
 #define THYPGESPECTRUMANALYSER_H
 
-#ifndef __GO4_ROOT__
-#define __GO4_ROOT__
+#ifndef __GO4_ROOT__				// real check if go4 is installed must be added
+#define __GO4_ROOT__				// uncomment this without go4
 #endif
 
 #include "TH1D.h"
@@ -38,14 +38,14 @@
 #include "TCanvas.h"
 #include "TFile.h"
 
+#ifdef __GO4_ROOT__
 #include "TGo4Analysis.h"
+#endif
 
 #include <iostream>
 #include <vector>
 #include <map>
 #include <fstream>
-
-
 
 using namespace std;
 
@@ -71,15 +71,31 @@ class THypGeSpectrumAnalyser
 		
 		Int_t											CompareNuclei(TString NucleiName);						// database comparison
 		
+		void											SetTxtFileOutputName(TString TxtFilename_ext);
+		void											SetRootFileOutputName(TString RootFilename_ext);
+		void											SetOutputPath(TString OutputPath_ext);
+		
 		Int_t 										ExportToTextFile(TString TxtFilename_ext = "test.txt");
 		Int_t											ExportToRootFile(TString RootFilename_ext = "test.root");
 		
 		void											SetSearchRange(Double_t RangeMin,Double_t RangeMax);
+		
+		void											SetGaussianFitting();
+		Bool_t										IsGaussianFitting();
+		
+		void											SetFreeSkewedFitting();
+		Bool_t										IsFreeSkewedFitting();
+		
+		void											SetSecondGausianFitting();
+		Bool_t										IsSecondGausianFitting();
+
+		void											SetLinearCalibration(Bool_t linCal = 1);
+
+		#ifdef __GO4_ROOT__
 		void											EnableGo4Mode(Bool_t isGo4 = 1);
 		void											SetAnalysisObject(TGo4Analysis *Go4Ana);
+		#endif
 		
-		
-
 	private:
 
 		Double_t 									FindUpperSigmaFitLimit(Double_t threshold, Float_t StartingPoint);
@@ -87,10 +103,13 @@ class THypGeSpectrumAnalyser
 		Double_t 									Calibrate(Double_t Channel);
 		
 		/* add your private declarations */
-		TH1D*											fhEnergySpectrum;
+		TH1D											*fhEnergySpectrum;
 		
 		TCanvas										*fCalSpecCanvas;
-		TH1D*											fhCalibratedSpectrum;
+		TH1D											*fhCalibratedSpectrum;
+		
+		TCanvas										*fSubstractCanvas;
+		TH1D											*fhSubstractSpectrum;
 		TSpectrum*								fSpectrum;
 		Float_t										*PeaksPosX;
 		Float_t										*PeaksPosY;
@@ -101,7 +120,11 @@ class THypGeSpectrumAnalyser
 		TF1 											*FitFunc[50];
 		TF1 											*FitFuncWithoutBg[50];
 		TF1												*CalibratedFunction[50];
-
+		TF1 											*FuncGaus[50];
+		TF1 											*FuncSmoothedStep[50];
+		TF1 											*FuncLinear[50];
+		TF1 											*FuncTail[50];
+		
 		Int_t 										FuncWidth;
 		vector<double> 					PeakFitX;
 		vector<double> 					PeakFitXError;
@@ -110,6 +133,7 @@ class THypGeSpectrumAnalyser
 		TGraphErrors							*fgCalibration;
 		TCanvas										*fCalCanvas;
 		TF1 											*CalFunc;
+		Bool_t										useLinCal;
 		
 		Double_t 									Amplitude[50];
 		Double_t									FWHMHeight[50];
@@ -133,14 +157,22 @@ class THypGeSpectrumAnalyser
 		vector<double>						Energies;				//vector of peak energies
 		vector<double>						EnergyErrors;	//vector of peak energy errors
 		
+		TString 									OutputPath;
+		
 		ofstream 									TxtFile;
+		TString										TxtFilename;
 		
 		TFile 										*RootFile;
+		TString										RootFilename;
 		
 		Bool_t										BreakProgram;
 		
+		Int_t											fFittingMethod;
+
+		#ifdef __GO4_ROOT__
 		Bool_t										isGo4Mode;
 		TGo4Analysis							*fGo4Ana;
+		#endif
 		
 		#ifdef __GO4_ROOT__
 		ClassDef(THypGeSpectrumAnalyser,1)					// This line must be used for Go4 and PANDAroot !!!!!!!!!!!   gives "IsA()" Error if compiled with g++

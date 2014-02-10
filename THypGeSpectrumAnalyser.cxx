@@ -31,8 +31,7 @@
 #include "TText.h"
 #include "TNtuple.h"
 #include "TVirtualFitter.h"
-
-#include "TGo4Analysis.h"
+#include "TMatrixD.h"
 
 
 THypGeSpectrumAnalyser::THypGeSpectrumAnalyser(TH1D* hEnergyspec_ext, Int_t nPeaks_ext, Int_t FuncWidthExt )
@@ -43,6 +42,8 @@ THypGeSpectrumAnalyser::THypGeSpectrumAnalyser(TH1D* hEnergyspec_ext, Int_t nPea
 	fSpectrum = new TSpectrum(nPeaks);
 	if (CompareNuclei( "eu152")==-1)
 		BreakProgram =-1;
+	fFittingMethod=1;
+	useLinCal=0;
 		
 }
 
@@ -52,6 +53,7 @@ THypGeSpectrumAnalyser::THypGeSpectrumAnalyser(TH1D* hEnergySpec_ext,vector<doub
 	nPeaks = Energies.size();
 	FuncWidth = FuncWidthExt;
 	fSpectrum = new TSpectrum(nPeaks);
+	fFittingMethod=1;
 }
 
 THypGeSpectrumAnalyser::THypGeSpectrumAnalyser(TH1D* hEnergySpec_ext,TString Nuclei, Int_t FuncWidthExt )						// constructor with energies from internal database
@@ -61,6 +63,7 @@ THypGeSpectrumAnalyser::THypGeSpectrumAnalyser(TH1D* hEnergySpec_ext,TString Nuc
 	nPeaks =CompareNuclei(Nuclei);
 	
 	fSpectrum = new TSpectrum(nPeaks);
+	fFittingMethod=1;
 }
 
 // deconstrucor
@@ -96,8 +99,8 @@ Int_t THypGeSpectrumAnalyser::AnalyseSpectrum()
 Int_t THypGeSpectrumAnalyser::FindPeaks()
 {
 	nPeaksFound = fSpectrum->Search(fhEnergySpectrum,5,"",0.001); //must (maybe) be adapted to spectrum; peaks found are sorted by their height (y value)
-	PeaksPosX = fSpectrum->GetPositionX();
-	PeaksPosY = fSpectrum->GetPositionY();
+	PeaksPosX = (Float_t*) fSpectrum->GetPositionX();
+	PeaksPosY = (Float_t*) fSpectrum->GetPositionY();
 	std::cout << "Found " << nPeaksFound << " Peaks:" <<endl;
 	for(Int_t i =0;i< nPeaksFound;i++)
 	{
@@ -109,74 +112,260 @@ Int_t THypGeSpectrumAnalyser::FindPeaks()
 
 Int_t THypGeSpectrumAnalyser::FitPeaks()
 {
-	char buf[20];
+	char buf[40];
 	//TVirtualFitter::SetDefaultFitter("Minuit2");
   //TVirtualFitter::SetDefaultFitter("Fumili2");
   TVirtualFitter::SetPrecision(1e-5);
 	THypGePeakFitFunction *func = new THypGePeakFitFunction();
 	//FitFunc = new *TF1[nPeaksFound];
 	//TF1 *FitFunc[nPeaksFound];
+	Int_t npar =0;
 	for(Int_t i = 0; i < nPeaksFound;i++)
 	{
-		sprintf(buf,"FitFunc_%d",i+1);
-		FitFunc[i] = new TF1(buf,func,&THypGePeakFitFunction::PeakFunc,(Double_t) PeaksPosX[i]-FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth,7,"THypGePeakFitFunction","PeakFunc");	// width has to be adapted
+		
+		if (fFittingMethod == 0)		// simple gaussian + step + lin bg
+		// par[0]: amplitude gaus, par[1]: x0; par[2]: sigma, par[3]: amplitude step, par[4]: gradient of lin bg
+		{
+			npar = 6;
+			sprintf(buf,"FitFunc_%d",i+1);
+			FitFunc[i] = new TF1(buf,func,&THypGePeakFitFunction::PeakFuncGaussian,(Double_t) PeaksPosX[i]-FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth,npar,"THypGePeakFitFunction","PeakFuncGaussian");	// width has to be adapted
+		}
+		if (fFittingMethod == 1)
+		{
+			npar = 8;
+			sprintf(buf,"FitFunc_%d",i+1);
+			FitFunc[i] = new TF1(buf,func,&THypGePeakFitFunction::PeakFunc,(Double_t) PeaksPosX[i]-FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth,npar,"THypGePeakFitFunction","PeakFunc");	// width has to be adapted
+		}
+		
+		if (fFittingMethod == 2)		// more parameters!!!
+		{
+			npar = 10;
+			sprintf(buf,"FitFunc_%d",i+1);
+			FitFunc[i] = new TF1(buf,func,&THypGePeakFitFunction::PeakFuncFreeSkewedPosition,(Double_t) PeaksPosX[i]-FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth,npar,"THypGePeakFitFunction","PeakFuncFreeSkewedPosition");	// width has to be adapted
+		}
+		
+		if (fFittingMethod == 3)		// second gausian as tail!!!
+		{
+			npar = 9;
+			sprintf(buf,"FitFunc_%d",i+1);
+			FitFunc[i] = new TF1(buf,func,&THypGePeakFitFunction::PeakFuncDoubleGausian,(Double_t) PeaksPosX[i]-FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth,npar,"THypGePeakFitFunction","PeakFuncDoubleGausian");	// width has to be adapted
+		}
+		
 		FitFunc[i]->SetNpx(100000);
-		// par[0]: amplitude gaus, par[1]: x0; par[2]: sigma, par[3]: amplitude skewed gaus, par[4]: beta,par[5]: amplitude smooted step, par[6]: constant
+		
+		//setting parameter names, start values and limits
 		sprintf(buf,"AmplGaus_%d",i+1);
 		FitFunc[i]->SetParName(0,buf);
-		FitFunc[i]->SetParameter(0,PeaksPosY[i]);
-		FitFunc[i]->SetParLimits(0,PeaksPosY[i]*0.1,PeaksPosY[i]*10);
+		FitFunc[i]->SetParameter(0,PeaksPosY[i]*1.001-fhEnergySpectrum->GetBinContent(fhEnergySpectrum->FindBin(PeaksPosX[i]-FuncWidth)));
+		
+		cout << "ASdasdasdasdasdasd" << fhEnergySpectrum->GetBinContent(fhEnergySpectrum->FindBin(PeaksPosX[i]-FuncWidth)) << endl;	
+		
+		//if (PeaksPosY[i]>1000)			// take small peaks (bigger portion of background) into account (lower lower limit needed)
+			FitFunc[i]->SetParLimits(0,PeaksPosY[i]*0.95-fhEnergySpectrum->GetBinContent(fhEnergySpectrum->FindBin(PeaksPosX[i]-FuncWidth)),PeaksPosY[i]*1.01-fhEnergySpectrum->GetBinContent(fhEnergySpectrum->FindBin(PeaksPosX[i]-FuncWidth)));
+		//else
+		//	FitFunc[i]->SetParLimits(0,PeaksPosY[i]*0.8,PeaksPosY[i]*1.01);
 		
 		sprintf(buf,"x0_%d",i+1);
 		FitFunc[i]->SetParName(1,buf);
 		FitFunc[i]->SetParameter(1,PeaksPosX[i]);
-		FitFunc[i]->SetParLimits(1,PeaksPosX[i]*0.9,PeaksPosX[i]*1.1);
+		FitFunc[i]->SetParLimits(1,PeaksPosX[i]*0.98,PeaksPosX[i]*1.02);
 		
 		sprintf(buf,"sigma_%d",i+1);
 		FitFunc[i]->SetParName(2,buf);
 		FitFunc[i]->SetParameter(2,1);
 		Double_t UpperSigmaFitLimit = FindUpperSigmaFitLimit(PeaksPosY[i]*0.3, PeaksPosX[i]);
 		FitFunc[i]->SetParLimits(2,0,UpperSigmaFitLimit);
-		//std::cout << FindUpperSigmaFitLimit(PeaksPosY[i]*0.5, PeaksPosX[i])<< endl;
-		
-		sprintf(buf,"AmplSkGaus_%d",i+1);
-		FitFunc[i]->SetParName(3,buf);
-		FitFunc[i]->SetParameter(3,0e-5);
-		//FitFunc[i]->FixParameter(3,0);
-		FitFunc[i]->SetParLimits(3,0,1e20);
-		
-		sprintf(buf,"beta_%d",i+1);
-		FitFunc[i]->SetParName(4,buf);
-		FitFunc[i]->SetParameter(4,1);
-		//FitFunc[i]->FixParameter(4,1);
-		FitFunc[i]->SetParLimits(4,0,2);
+		std::cout << FindUpperSigmaFitLimit(PeaksPosY[i]*0.5, PeaksPosX[i])<< endl;
 		
 		sprintf(buf,"AmplSmoStep_%d",i+1);
-		FitFunc[i]->SetParName(5,buf);
-		FitFunc[i]->SetParameter(5,10);
-		//FitFunc[i]->FixParameter(5,0);
-		//FitFunc[i]->SetParLimits(5,0,PeaksPosY[i]*0.1*1e6);
+		FitFunc[i]->SetParName(3,buf);
+		//FitFunc[i]->SetParameter(3,10);
+		FitFunc[i]->SetParameter(3,0);
+		FitFunc[i]->FixParameter(3,0);
+		//FitFunc[i]->SetParLimits(3,0.000001,10000);
 		
-		sprintf(buf,"cont_%d",i+1);
-		FitFunc[i]->SetParName(6,buf);
-		//FitFunc[i]->SetParameter(6,100);
-		//FitFunc[i]->SetParLimits(6,0,PeaksPosY[i]*0.1*1e6);
+		sprintf(buf,"linBg_%d",i+1);
+		FitFunc[i]->SetParName(4,buf);
+		FitFunc[i]->SetParameter(4,-0.3);
+		FitFunc[i]->SetParLimits(4,-10,0);
+		FitFunc[i]->SetParameter(4,0);
+		FitFunc[i]->FixParameter(4,0);
+		
+		sprintf(buf,"constBg_%d",i+1);
+		FitFunc[i]->SetParName(5,buf);
+		FitFunc[i]->SetParameter(5,100);
+		FitFunc[i]->SetParameter(5,0);
+		FitFunc[i]->FixParameter(5,0);
+		
+		//FitFunc[i]->SetParLimits(5,-1,0);
+		if (fFittingMethod == 1 || fFittingMethod == 2)
+		{
+			// additional parameters for this fitting function
+			// par[5]: amplitude skewed gaus, par[6]: beta
+			
+			sprintf(buf,"AmplSkGaus_%d",i+1);
+			FitFunc[i]->SetParName(6,buf);
+			FitFunc[i]->SetParameter(6,1000);
+			//FitFunc[i]->FixParameter(6,0);
+			FitFunc[i]->SetParLimits(6,0.0000001,10000);
+			
+			sprintf(buf,"beta_%d",i+1);
+			FitFunc[i]->SetParName(7,buf);
+			FitFunc[i]->SetParameter(7,1);
+			//FitFunc[i]->FixParameter(7,1);
+			FitFunc[i]->SetParLimits(7,0.000001,1);
+			
+		}
+		if (fFittingMethod == 2)
+		{
+			// additional parameters for this fitting function
+			// par[7]: x0_s, par[8]: sigma_s 
+			
+			sprintf(buf,"x0SkewedGaus_%d",i+1);
+			FitFunc[i]->SetParName(8,buf);
+			FitFunc[i]->SetParameter(8,PeaksPosX[i]*0.99);
+			//FitFunc[i]->FixParameter(8,0);
+			FitFunc[i]->SetParLimits(8,0.98*PeaksPosX[i],PeaksPosX[i]*1.01);
+			
+			sprintf(buf,"sigmaSkewedGausn_%d",i+1);
+			FitFunc[i]->SetParName(9,buf);
+			FitFunc[i]->SetParameter(9,1);
+			FitFunc[i]->SetParLimits(9,0,UpperSigmaFitLimit);
+			//FitFunc[i]->FixParameter(9,1);
+			
+		}
+		
+		if (fFittingMethod == 3)
+		{
+			// additional parameters for this fitting function
+			// par[5]: amplitude second gaus, par[6]: x0_ second gaus, par[7]: sigma second gaus
+			
+			sprintf(buf,"AmplSecondGaus_%d",i+1);
+			FitFunc[i]->SetParName(6,buf);
+			FitFunc[i]->SetParameter(6,PeaksPosY[i]*0.01);
+			//FitFunc[i]->FixParameter(6,0);
+			
+			FitFunc[i]->SetParLimits(6,PeaksPosY[i]*0.02-fhEnergySpectrum->GetBinContent(fhEnergySpectrum->FindBin(PeaksPosX[i]-FuncWidth)),PeaksPosY[i]*0.2-fhEnergySpectrum->GetBinContent(fhEnergySpectrum->FindBin(PeaksPosX[i]-FuncWidth)));
+			
+			sprintf(buf,"x0SecondGaus_%d",i+1);
+			FitFunc[i]->SetParName(7,buf);
+			FitFunc[i]->SetParameter(7,PeaksPosX[i]-2);
+			//FitFunc[i]->FixParameter(7,0);
+			FitFunc[i]->SetParLimits(7,PeaksPosX[i]-4,PeaksPosX[i]-1.5);
+			
+			sprintf(buf,"sigmaSecondGaus_%d",i+1);
+			FitFunc[i]->SetParName(8,buf);
+			FitFunc[i]->SetParameter(8,1);
+			FitFunc[i]->SetParLimits(8,0.1,UpperSigmaFitLimit);
+			//FitFunc[i]->FixParameter(8,1);
+		}
 		std::cout << "Start Fitting Peak " << i << endl;
 		if(i==0)
 			fhEnergySpectrum->Fit(FitFunc[i],"R");
 		else
 			fhEnergySpectrum->Fit(FitFunc[i],"R+");
+		
+		cout << npar << endl;
+		//TVirtualFitter *fitter = TVirtualFitter::GetFitter();
+		//TMatrixD CovMatrix(npar,npar,fitter->GetCovarianceMatrix());
+		//TMatrixD Matrix2(npar,npar,fitter->GetCovarianceMatrix());
+		
+		
+		//CovMatrix.Print();
+		//cout << "Determinant: " << CovMatrix.Determinant() << endl;
+		
+		cout << "Chi²" << FitFunc[i]->GetChisquare() << endl;
+		cout << "NDF" << FitFunc[i]-> GetNDF() << endl;
+		 cout << "Chi²_red" << FitFunc[i]->GetChisquare()/FitFunc[i]-> GetNDF() << endl;
 		PeakFitX.push_back(FitFunc[i]->GetParameter(1));
 		PeakFitXError.push_back(FitFunc[i]->GetParError(1));
 		
 		FitFuncWithoutBg[i] = new TF1(*FitFunc[i]);
-		FitFuncWithoutBg[i]->SetParameter(5,0);
-		FitFuncWithoutBg[i]->SetParameter(6,0);
+		FitFuncWithoutBg[i]->SetParameter(3,0);
+		FitFuncWithoutBg[i]->SetParameter(4,0);
+		cout << "test" << endl;
 		//FitFuncWithoutBg[i]->Draw("same");
 		PeakCounts.push_back(FitFuncWithoutBg[i]->Integral(FitFuncWithoutBg[i]->GetXmin(),FitFuncWithoutBg[i]->GetXmax()));
 		//std::cout << "Integral:\t" <<FitFuncWithoutBg[i]->Integral(FitFuncWithoutBg[i]->GetXmin(),FitFuncWithoutBg[i]->GetXmax())<< endl;
+		
+		
+		
+		
+	}
+	// draw single components of fit -  new loop is needed to make all of them visible (drawing must be done after all the fiting above, otherwise only components of last peak are drawn (possibly due to "+" option of multiple fits???))
+	for(Int_t i = 0; i < nPeaksFound;i++)
+	{
+		// basic components
+		
+		sprintf(buf,"FuncGaus_%d",i+1);
+		FuncGaus[i] = new TF1(buf,func,&THypGePeakFitFunction::GausOnly,(Double_t) PeaksPosX[i]-FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth,npar,"THypGePeakFitFunction","GausOnly");
+		FuncGaus[i]->SetParameters(FitFunc[i]->GetParameters());
+		FuncGaus[i]->SetNpx(100000);
+		FuncGaus[i]->SetLineColor( kGreen );
+		FuncGaus[i]->Draw( "SAME" );
+		
+		sprintf(buf,"FuncSmoothedStep_%d",i+1);
+		FuncSmoothedStep[i] = new TF1(buf,func,&THypGePeakFitFunction::SmoothedStepOnly,(Double_t) PeaksPosX[i]-FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth,npar,"THypGePeakFitFunction","SmoothedStepOnly");
+		FuncSmoothedStep[i]->SetParameters(FitFunc[i]->GetParameters());
+		FuncSmoothedStep[i]->SetNpx(100000);
+		FuncSmoothedStep[i]->SetLineColor( kMagenta );
+		FuncSmoothedStep[i]->Draw( "SAME" );
+		
+		sprintf(buf,"FuncLinear_%d",i+1);
+		FuncLinear[i] = new TF1(buf,func,&THypGePeakFitFunction::LinearOnly,(Double_t) PeaksPosX[i]-FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth,npar,"THypGePeakFitFunction","LinearOnly");
+		FuncLinear[i]->SetParameters(FitFunc[i]->GetParameters());
+		FuncLinear[i]->SetNpx(100000);
+		FuncLinear[i]->SetLineColor( kYellow );
+		FuncLinear[i]->Draw( "SAME" );
+		
+		
+		//components depending on the fitting model
+		
+		if (fFittingMethod == 1)
+		{
+			sprintf(buf,"SkewedGausian_%d",i+1);
+			FuncTail[i] = new TF1(buf,func,&THypGePeakFitFunction::SkewedOnly,(Double_t) PeaksPosX[i]-FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth,npar,"THypGePeakFitFunction","SkewedOnly");
+			FuncTail[i]->SetParameters(FitFunc[i]->GetParameters());
+			FuncTail[i]->SetNpx(100000);
+			FuncTail[i]->SetLineColor( kBlack );
+			FuncTail[i]->Draw( "SAME" );
+		}
+		
+		if (fFittingMethod == 2)
+		{
+			sprintf(buf,"SkewedGausian_%d",i+1);
+			FuncTail[i] = new TF1(buf,func,&THypGePeakFitFunction::FreeSkewedOnly,(Double_t) PeaksPosX[i]-FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth,npar,"THypGePeakFitFunction","FreeSkewedOnly");
+			FuncTail[i]->SetParameters(FitFunc[i]->GetParameters());
+			FuncTail[i]->SetNpx(100000);
+			FuncTail[i]->SetLineColor( kBlack );
+			FuncTail[i]->Draw( "SAME" );
+		}
+		
+		if (fFittingMethod == 3)
+		{
+			sprintf(buf,"SecondGausian_%d",i+1);
+			FuncTail[i] = new TF1(buf,func,&THypGePeakFitFunction::SecondGausOnly,(Double_t) PeaksPosX[i]-FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth,npar,"THypGePeakFitFunction","SecondGausOnly");
+			FuncTail[i]->SetParameters(FitFunc[i]->GetParameters());
+			FuncTail[i]->SetNpx(100000);
+			FuncTail[i]->SetLineColor( kBlack );
+			FuncTail[i]->Draw( "SAME" );
+		}
 	}
 	
+	
+	fhSubstractSpectrum = new TH1D("fhSubstractSpectrum","Substracted spectrum; Channel; Counts", fhEnergySpectrum->GetNbinsX(),fhEnergySpectrum->GetXaxis()->GetXmin(),fhEnergySpectrum->GetXaxis()->GetXmax());
+	fSubstractCanvas= new TCanvas("fSubstractCanvas","Substracted spectrum",800,600);
+	fSubstractCanvas->cd();
+	for (Int_t i=0;i < nPeaksFound; i++)
+	{
+		for (Double_t iValue = (Double_t) PeaksPosX[i]-FuncWidth; iValue <= (Double_t) PeaksPosX[i]+FuncWidth; iValue += fhEnergySpectrum->GetBinWidth(100))
+		{
+			fhSubstractSpectrum->Fill(fhEnergySpectrum->GetBinCenter(fhEnergySpectrum->FindBin(iValue)), fhEnergySpectrum->GetBinContent(fhEnergySpectrum->FindBin(iValue))-FitFunc[i]->Eval(fhEnergySpectrum->GetBinCenter(fhEnergySpectrum->FindBin(iValue))));
+			fhSubstractSpectrum->SetBinError(fhEnergySpectrum->FindBin(iValue), sqrt(fhEnergySpectrum->GetBinContent(fhEnergySpectrum->FindBin(iValue))));
+			//cout <<fhEnergySpectrum->GetBinContent(fhEnergySpectrum->FindBin(iValue))-FitFunc[i]->Eval(fhEnergySpectrum->GetBinCenter(fhEnergySpectrum->FindBin(iValue))) <<" " <<FitFunc[i]->Eval(fhEnergySpectrum->GetBinCenter(fhEnergySpectrum->FindBin(iValue))) <<endl;
+		}
+	}
+	fhSubstractSpectrum->Draw("E1");
 	return 0;
 }
 Int_t THypGeSpectrumAnalyser::DoEnergyCalibration()
@@ -185,12 +374,15 @@ Int_t THypGeSpectrumAnalyser::DoEnergyCalibration()
 	fCalCanvas = new TCanvas("fCalCanvas","Energy Calibration",800,600);				//all "canvas stuff" may need changes for go4
 	if (isGo4Mode)
 	{
-		cout << fGo4Ana->AddCanvas (fCalCanvas,"test") << endl;
+		cout << "Added CalCanvas " << fGo4Ana->AddCanvas (fCalCanvas,"test") << endl;
 	}
 	fCalCanvas->cd();
 
 	fgCalibration = new TGraphErrors(nPeaksFound,&(PeakFitX[0]),&(Energies[0]),&(PeakFitXError[0]),&(EnergyErrors[0]));
-	CalFunc = new TF1("CalFunc","pol2",0,8000);
+	if (useLinCal)
+		CalFunc = new TF1("CalFunc","pol1",0,8000);
+	else
+		CalFunc = new TF1("CalFunc","pol2",0,8000);
 	fgCalibration->Draw("AP");
 	fgCalibration->Fit(CalFunc);
 	
@@ -211,11 +403,11 @@ Int_t THypGeSpectrumAnalyser::CalculateFWHM()
 		FWHM_en.insert(std::pair<double,double>(Energies[i],FWHMhighEnergy[i]-FWHMlowEnergy[i]));
 		//std::cout << "FWHMlow" << FWHMlow << "\t\tFWHMhigh" << FWHMhigh << endl;
 		//std::cout << "FWHMlowEn" << FWHMlowEnergy << "\t\tFWHMhighEn" << FWHMhighEnergy << endl;
-		//std::cout <<"FWHM Peak " << i+1<<":\t" <<FWHMhighEnergy[i]-FWHMlowEnergy[i]<< endl;
+		std::cout << FWHMhighEnergy[i]-FWHMlowEnergy[i]<< endl;
 	}
-	std::map<double,double>::const_iterator it=FWHM_en.begin();
-	for (it=FWHM_en.begin(); it!=FWHM_en.end(); ++it)
-		std::cout << it->first << " => " << it->second << '\n';
+	//std::map<double,double>::const_iterator it=FWHM_en.begin();
+	//for (it=FWHM_en.begin(); it!=FWHM_en.end(); ++it)
+		//std::cout << it->first << " => " << it->second << '\n';
 	return 0;
 }
 
@@ -233,11 +425,11 @@ Int_t THypGeSpectrumAnalyser::CalculateFWTM()
 		FWTM_en.insert(std::pair<double,double>(Energies[i],FWTMhighEnergy[i]-FWTMlowEnergy[i]));
 		//std::cout << "FWTMlow" << FWTMlow << "\t\tFWTMhigh" << FWTMhigh << endl;
 		//std::cout << "FWTMlowEn" << FWTMlowEnergy << "\t\tFWTMhighEn" << FWTMhighEnergy << endl;
-		//std::cout <<"FWTM Peak " << i+1<<":\t"<< FWTMhighEnergy-FWTMlowEnergy<< endl;
+		std::cout << FWTMhighEnergy[i]-FWTMlowEnergy[i]<< endl;
 	}
-	std::map<double,double>::const_iterator it=FWTM_en.begin();
-	for (it=FWTM_en.begin(); it!=FWTM_en.end(); ++it)
-		std::cout << it->first << " => " << it->second << '\n';
+	//std::map<double,double>::const_iterator it=FWTM_en.begin();
+	//for (it=FWTM_en.begin(); it!=FWTM_en.end(); ++it)
+		//std::cout << it->first << " => " << it->second << '\n';
 	
 	return 0;
 }
@@ -259,17 +451,28 @@ Int_t THypGeSpectrumAnalyser::CompareNuclei(TString NucleiName)
 	
 		if(!NucleiName.CompareTo("co60bg") )
 	{
-		//npeaks = 2;
+		//npeaks = 3;
 		std::cout << "Found Co60 and K40"<< endl;			
 		Energies.push_back(1172.23);				//keV
 		EnergyErrors.push_back(0.030);			//keV
 		Energies.push_back(1332.51);				//keV
 		EnergyErrors.push_back(0.015);			//keV
-		Energies.push_back(1460.83);				//keV
+		Energies.push_back(1460.83);				//keV			K-40
 		EnergyErrors.push_back(0.1);				// placeholder, real value unknown
 		return Energies.size();					// 3 peaks
 	}
-	
+	if(!NucleiName.CompareTo("co60cs137") )
+	{
+		//npeaks = 3;
+		std::cout << "Found Co60 and Cs137"<< endl;
+		Energies.push_back(661.7);					//keV			Cs-137
+		EnergyErrors.push_back(0.1);				// placeholder, real value unknown
+		Energies.push_back(1172.23);				//keV
+		EnergyErrors.push_back(0.030);			//keV
+		Energies.push_back(1332.51);				//keV
+		EnergyErrors.push_back(0.015);			//keV
+		return Energies.size();					// 3 peaks
+	}
 	if( !NucleiName.CompareTo( "eu152") )
 	{
 		std::cout << "Found Eu152"<< endl;
@@ -348,34 +551,6 @@ Double_t THypGeSpectrumAnalyser::FindUpperSigmaFitLimit(Double_t threshold, Floa
    return -1;
 }
 
-//Double_t THypGeSpectrumAnalyser::PeakFunc (Double_t *x,Double_t *par)
-//{
-			//// Peak shape is taken from gf2 http://www.phy.anl.gov/gammasphere/doc/gf2.hlp
-			//// composed by the sum of:
-			////	(1) a Gaussian,
-			////	(2) a skewed Gaussian,
-			////	(3) a smoothed step function to increase the background on the low-energy
-			////			side of the peak. Components (2) and/or (3) can easily be set to zero if not
-			////			required, and
-			////	(4)	a constant				// not in gf2
-			////
-			////	(2)	y = constant
-			////			* EXP( (x-c)/beta )
-			////			* ERFC( (x-c)/(SQRT(2)*sigma) + sigma/(SQRT(2)*beta) )
-			////	(3)	y = constant * ERFC( (x-c)/(SQRT(2)*sigma) )
-			
-			//// par[0]: amplitude gaus, par[1]: x0; par[2]: sigma, par[3]: amplitude skewed gaus, par[4]: beta,par[5]: amplitude smooted step, par[6]: constant
-
-			//Double_t Gausian = par[0]/TMath::Sqrt(2 * TMath::Pi())/par[2] * TMath::Exp(- 0.5*pow((x[0] - par[1])/par[2],2)); // par[0]: amplitude, par[1]: x[0]0; par[2]: sigma
-			//Double_t SkewedGausian = par[3] 
-							//* TMath::Exp((x[0]-par[1])/par[4]) 
-							//* TMath::Erfc( ((x[0] - par[1]) /(TMath::Sqrt(2)*par[2]) ) + par[2]/TMath::Sqrt(2)/par[4]); //par[3]: amplitude, par[4]: beta
-			//Double_t SmoothedStep = par[5] * TMath::Erfc( (x[0] - par[1]) /(TMath::Sqrt(2)*par[2])); // par[5]: amplitude
-			//Double_t Constant = par[6]; // par[6]: constant
-	//return Gausian + SkewedGausian + SmoothedStep +  Constant;
-//}
-
-
 void THypGeSpectrumAnalyser::PeakSort()
 {
 	std::cout << "Sorting Peaks" << endl;
@@ -409,6 +584,10 @@ Int_t THypGeSpectrumAnalyser::DrawCalibratedSpectrum()
 {
 	std::cout << "Drawing of CalibratedSpectrum" <<endl;
 	fCalSpecCanvas = new TCanvas("fCalSpecCanvas", "Calibrated spectrum",800,600);				//all "canvas stuff" may need changes for go4
+	if (isGo4Mode)
+	{
+		cout << "Added CalCanvas " << fGo4Ana->AddCanvas (fCalSpecCanvas,"test") << endl;
+	}
 	fCalSpecCanvas->cd();
 	fhEnergySpectrum->GetXaxis()->UnZoom();
 	//fhCalibratedSpectrum = new TH1D("fhCalibratedSpectrum","Calibrated spectrum;Energy [keV];Counts [a.u.]",fhEnergySpectrum->GetNbinsX(),Calibrate(fhEnergySpectrum->GetXaxis()->GetBinCenter(fhEnergySpectrum->GetXaxis()->GetFirst())),Calibrate(fhEnergySpectrum->GetXaxis()->GetBinCenter(fhEnergySpectrum->GetXaxis()->GetLast())));
@@ -436,15 +615,15 @@ Int_t THypGeSpectrumAnalyser::DrawCalibratedSpectrum()
 		
 		CalibratedFunction[i] = new TF1(*FitFunc[i]);
 		//adapt parameters to energy spectrum
-		Double_t OldSigma = CalibratedFunction[i]->GetParameter(2);
+		//Double_t OldSigma = CalibratedFunction[i]->GetParameter(2);
 		CalibratedFunction[i]->SetParameter(2,Calibrate(CalibratedFunction[i]->GetParameter(1))-Calibrate(CalibratedFunction[i]->GetParameter(1)-CalibratedFunction[i]->GetParameter(2)));
 		CalibratedFunction[i]->SetParameter(4,Calibrate(CalibratedFunction[i]->GetParameter(1))-Calibrate(CalibratedFunction[i]->GetParameter(1)-CalibratedFunction[i]->GetParameter(4)));
 		CalibratedFunction[i]->SetParameter(1,Calibrate(CalibratedFunction[i]->GetParameter(1)));
 		//adapt amplitudes, this has to be done, because of the par[2] (sigma) in the denominator in front of the gausian part. Since the gausian ampl. (par[0]) is in the denominator of any other part their ampl. must be adapted too. The lin. bg gradient must not be adapted, because the factors from the change of x and par[0] cancel each other
-		CalibratedFunction[i]->SetParameter(0,CalibratedFunction[i]->GetParameter(0)*CalibratedFunction[i]->GetParameter(2)/OldSigma);
+		//CalibratedFunction[i]->SetParameter(0,CalibratedFunction[i]->GetParameter(0)*CalibratedFunction[i]->GetParameter(2)/OldSigma);
 		//std::cout << "new ampl" << CalibratedFunction[i]->GetParameter(0) << endl;
-		CalibratedFunction[i]->SetParameter(3,CalibratedFunction[i]->GetParameter(3)*CalibratedFunction[i]->GetParameter(2)/OldSigma);
-		CalibratedFunction[i]->SetParameter(5,CalibratedFunction[i]->GetParameter(5)*CalibratedFunction[i]->GetParameter(2)/OldSigma);
+		//CalibratedFunction[i]->SetParameter(3,CalibratedFunction[i]->GetParameter(3)*CalibratedFunction[i]->GetParameter(2)/OldSigma);
+		//CalibratedFunction[i]->SetParameter(5,CalibratedFunction[i]->GetParameter(5)*CalibratedFunction[i]->GetParameter(2)/OldSigma);
 		//function range must be adapted
 		CalibratedFunction[i]->SetRange(Calibrate(CalibratedFunction[i]->GetXmin()),Calibrate(CalibratedFunction[i]->GetXmax()));
 		
@@ -477,14 +656,25 @@ Double_t THypGeSpectrumAnalyser::Calibrate(Double_t Channel)
 {
 	Double_t a = CalFunc->GetParameter(0);
 	Double_t b = CalFunc->GetParameter(1);
-	Double_t c = CalFunc->GetParameter(2);
-	return a + b *Channel + c * Channel * Channel;
+	Double_t CalibratedValue = a + b *Channel;
+	if (!useLinCal)
+	{
+		Double_t c = CalFunc->GetParameter(2);
+		CalibratedValue += c * Channel * Channel;
+	}
+		return CalibratedValue;
 }
 
 
 Int_t THypGeSpectrumAnalyser::ExportToTextFile(TString TxtFilename_ext )
 {
-	TxtFile.open(TxtFilename_ext.Data());
+	TString TxtFilenameWithPath;
+	if (OutputPath)
+		TxtFilenameWithPath = OutputPath;
+	if (!TxtFilename)
+		TxtFilename = TxtFilename_ext;
+	TxtFilenameWithPath += TxtFilename;
+	TxtFile.open(TxtFilenameWithPath.Data());
 	TxtFile << "File:\t" << fhEnergySpectrum->GetTitle()<< endl;
 	TxtFile << "Nuclei:\t" << endl;
 	TxtFile << "Energy [keV]\t\tFWHM [keV]\t\tFWTM [keV]\t\tFWTM/FWHM\t\tPeakCounts" << endl;
@@ -503,12 +693,19 @@ Int_t THypGeSpectrumAnalyser::ExportToTextFile(TString TxtFilename_ext )
 }
 Int_t THypGeSpectrumAnalyser::ExportToRootFile(TString RootFilename_ext )
 {
-	RootFile = (TFile*)gROOT->FindObject(RootFilename_ext); 
+	TString RootFilenameWithPath;
+	if (OutputPath)
+		RootFilenameWithPath = OutputPath;
+	if (!RootFilename)
+		RootFilename += RootFilename_ext;				// if no filename is set by SetRootFileOutputName(), default value is set
+	RootFilenameWithPath += RootFilename;
+	
+	RootFile = (TFile*)gROOT->FindObject(RootFilenameWithPath); 
 	if (RootFile) 
 		RootFile->Close();
-	RootFile = new TFile(RootFilename_ext,"RECREATE",RootFilename_ext);
+	RootFile = new TFile(RootFilenameWithPath,"RECREATE",RootFilenameWithPath);
 		
-	TNtuple* DataNTuple = new TNtuple("DataNTuple","Datao ntuple","PeakNumber:Energy:FWHM:FWTM:TH-Ratio:PeakCounts");
+	TNtuple* DataNTuple = new TNtuple("DataNTuple","Data ntuple","PeakNumber:Energy:FWHM:FWTM:FWTMtoFWHMratio:PeakCounts");
 	Double_t wEnergy,wFWHM,wFWTM,wRatio,wPeakCounts;				// w means "write"
 	Int_t wPeakNumber;
 	std::map<double,double>::const_iterator it=FWHM_en.begin();
@@ -525,6 +722,7 @@ Int_t THypGeSpectrumAnalyser::ExportToRootFile(TString RootFilename_ext )
 		it++;
 		it2++;
 	}
+	fhEnergySpectrum->Write();
 	DataNTuple->Write();
 	fCalCanvas->Write();
 	fCalSpecCanvas->Write();
@@ -537,6 +735,60 @@ void THypGeSpectrumAnalyser::SetSearchRange(Double_t RangeMin,Double_t RangeMax)
 	fhEnergySpectrum->GetXaxis()->SetRange(RangeMin,RangeMax);
 }
 
+void THypGeSpectrumAnalyser::SetTxtFileOutputName(TString TxtFilename_ext)
+{
+	TxtFilename = TxtFilename_ext; 
+}
+void THypGeSpectrumAnalyser::SetRootFileOutputName(TString RootFilename_ext)
+{
+	 RootFilename = RootFilename_ext;
+}
+
+void THypGeSpectrumAnalyser::SetOutputPath(TString OutputPath_ext)
+{
+	OutputPath = OutputPath_ext;
+}
+
+
+void THypGeSpectrumAnalyser::SetGaussianFitting()
+{
+	fFittingMethod =0;
+}
+
+Bool_t THypGeSpectrumAnalyser::IsGaussianFitting()
+{
+	if (fFittingMethod == 0)
+		return 1;
+	else
+		return 0;
+}
+
+
+void THypGeSpectrumAnalyser::SetFreeSkewedFitting()
+{
+	fFittingMethod =2;
+}
+
+Bool_t THypGeSpectrumAnalyser::IsFreeSkewedFitting()
+{
+	if (fFittingMethod == 2)
+		return 1;
+	else
+		return 0;
+}
+
+void THypGeSpectrumAnalyser::SetSecondGausianFitting()
+{
+	fFittingMethod =3;
+}
+
+Bool_t THypGeSpectrumAnalyser::IsSecondGausianFitting()
+{
+	if (fFittingMethod == 3)
+		return 1;
+	else
+		return 0;
+}
 void THypGeSpectrumAnalyser::EnableGo4Mode(Bool_t isGo4)
 {
 	isGo4Mode= isGo4;
@@ -547,4 +799,9 @@ void THypGeSpectrumAnalyser::SetAnalysisObject(TGo4Analysis *Go4Ana)
 	fGo4Ana=Go4Ana;
 	if (Go4Ana)
 		cout << "Enabled Go4 specific options" << endl;
+}
+
+void THypGeSpectrumAnalyser::SetLinearCalibration(Bool_t linCal )
+{
+	useLinCal = linCal;
 }

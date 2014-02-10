@@ -25,7 +25,6 @@
 #pragma link C++ class THypGeAnlProc+;
 #pragma link C++ class THypGeMWD+;
 #pragma link C++ class THypGeSpectrumAnalyser+;
-#pragma link C++ class THypGePeakFitFunction+;
 
 #endif
 

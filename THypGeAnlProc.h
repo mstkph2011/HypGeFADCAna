@@ -22,6 +22,9 @@
 
 #include "THypGeMWD.h"
 
+#include "TMatrixD.h"
+#include "TVectorD.h"
+
 class THypGeParameter;
 class THypGeAnlEvent;
 
@@ -32,8 +35,15 @@ class THypGeAnlProc : public TGo4EventProcessor {
       virtual ~THypGeAnlProc();
 
       virtual Bool_t BuildEvent(TGo4EventElement* dest);
+#ifdef EXA_CODE
+      TH1              	*fSum1;
+      TH1              	*fSum2;
+      TH1              	*fSum3;
 
-			THypGeParameter  	*fParam1;
+      
+      TGo4WinCond      	*fWinCon;
+#endif
+			THypGeParameter  	*fHypPar;
 			Int_t 						EventCounter;
 			//Add items (histograms, conditions, ...) used only  in this step here
 			TH1D							*fhTrace[FADC_CHAN];
@@ -45,11 +55,34 @@ class THypGeAnlProc : public TGo4EventProcessor {
 			TH1D							*fhAmplitude;
 			TH1D							*fhMWD;
 			TH1D							*fhEnergySpectrum;
+			TH1D							*fhRisetimegrad;
 			TH1D							*fhRisetime1090;
 			TH1D							*fhRisetime3090;
 			TH1D							*fhMWD_MA;
-			TH2D							*fhEnergyRise1090Corr;
-			TH2D							*fhEnergyRise3090Corr;
+			
+			TH1D          *fTrace[8];
+			TH1D			*fMax;			//Marcell_edt
+			TH1D			*fRisetime;		//Marcell_edt
+			TH1D			*fMovAvg;		//Marcell_edt
+			TH1D			*fAmplitude;		//Marcell_edt
+			TH1D          *fTraceBaselineCorrected[8];
+			//TH1D			*fBaseline;   //Kai edit
+			TH1D			*fSmoothedTrace;
+			TH1D			*fMWD;
+			TH1D			*fEnergy;
+			TH1D			*fRisetime1090;
+			TH1D			*fRisetime3090;
+			TH1D			*fMWDMA;
+			TH2D			*fEnergyRise1090Corr;
+			TH2D			*fEnergyRise3090Corr;
+			int			Max, Min, MaxBin, MinBin,*MovAvgArr,*Ampl;		//Marcell_edt
+			
+			TH1D			*fhAmplBaselinegradient;
+			
+			TMatrixD 		*S;
+			TMatrixD 		*T;
+			TVectorD 		*w;
+			TVectorD 		*v;
 
 			//real analysis object
 			THypGeMWD					*fMWDAna;

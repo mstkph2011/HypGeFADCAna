@@ -39,6 +39,10 @@ class THypGeAnalysis : public TGo4Analysis  {
       TGo4MbsEvent       *fMbsEvent;
       THypGeUnpackEvent    *fRawEvent;
       THypGeAnlEvent       *fCalEvent;
+#ifdef EXA_CODE
+      
+      TGo4WinCond        *fWinCon1;
+#endif
 
 			THypGeParameter      *fPar;
 			TH1D               *fSize;
@@ -48,11 +52,23 @@ class THypGeAnalysis : public TGo4Analysis  {
       //put elements here, that have to be accesed in more than one step or in UserPostLoop()
       TH1D							 	*fhTrace[FADC_CHAN];
       TH1D								*fhEnergySpectrum;
+   
       TH1D								*fhRisetime1090;
       TH1D								*fhRisetime3090;
       TH2D								*fhEnergyRise1090Corr;
       TH2D								*fhEnergyRise3090Corr;
 
+
+	int MWDm ;			// M of MWD
+	int MAl ;				// L of MA
+	int NoS;				// Number of smoothings of mean and WA filter
+	int Width;				// Width of mean filter
+	int sigmaGaus ;			// sigma of gaussian shaper
+	int sigmaBil ;			// second sigma of bil shaper
+	Double_t tau;					//tau of MWD, time constant of preamp
+	int EnableMA ;			// Switch for second moving average filter
+	int EnableSmoothing ;	// Switch smoothing on or off
+	int EnableBaselineCorrection ; 	//Switch baseline correction on or off
 			
    ClassDef(THypGeAnalysis,1)
 };
