@@ -1,2 +1,14 @@
 G__HypGe.cxx
 G__HypGe.h
+
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.d
+*.rootmap
