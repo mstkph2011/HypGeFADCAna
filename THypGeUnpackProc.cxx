@@ -327,8 +327,8 @@ Bool_t THypGeUnpackProc::BuildEvent(TGo4EventElement* dest)
    //         }
    //////////////////////////////////////////////////////////////////
    */ 
-	Int_t lwords;
-	Int_t *pdata;
+	//Int_t lwords;
+	//Int_t *pdata;
 
 	// HS, NEW variables
 
@@ -342,7 +342,7 @@ Bool_t THypGeUnpackProc::BuildEvent(TGo4EventElement* dest)
 			 ch_cnt,
 			 ch_mask,
 			 mask,
-			 time_tag,
+			/* time_tag,*/
 			 samples,    // no of samples per trace
 			 chan = 0;       // channel number
 
