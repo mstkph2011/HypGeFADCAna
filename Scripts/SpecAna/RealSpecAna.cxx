@@ -1,0 +1,150 @@
+#include "TH1.h"
+#include "TFile.h"
+#include "TRandom.h"
+#include "TSpectrum.h"
+#include "TCanvas.h"
+#include "TString.h"
+#include "TRint.h"							// starts the interactive mode of ROOT (needed for canvas etc.)
+
+#include "THypGeSpectrumAnalyser.h"
+
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <map>
+
+using namespace std;
+
+int main(int argc, char* argv[] )
+{
+	
+	//TRint *App = new TRint("ROOT",0,0); //&argc,argv);
+
+	TFile *InFile[1000];
+  int i = 0;
+  
+  TString InputListPath = getenv("COSYTESTANADIR");
+	//ifstream InputList("files.txt");
+	ifstream InputList("files2.txt");
+	ofstream CorruptedList ("CorruptedFiles.txt",std::fstream::trunc);
+	
+	Int_t MRange [13] = {60,80,100,120,140,160,180,200,220,240,260,280,300};
+	Int_t SigmaBilRange [10] = {300,700,900,1100,1300,1500,1700,1900,2100};
+	Int_t SigmaGausRange [6] = {1,3,5,7,9,11};
+	
+	//create maps here!!!		130 for bil filter + 13 for gaus filter	, first 10 for first M value and running SigmaBil
+	std::map<Int_t,Double_t> ResultMapBil[130];
+	std::map<Int_t,Double_t> ResultMapGaus[13];
+	
+	if(!InputList)
+	{
+		cout << "ERROR - file does NOT exist" << endl;
+	}
+	else
+	{
+	  while (InputList.good())																//loop over all lines
+		{
+			char buffer[200] = "";
+			InputList.getline(buffer,200);												//read name of a ROOT file
+			cout << "File:\t\t\t\t"<<buffer << endl;
+			TString InFileName = buffer; 
+			cout << "BufferLength: \t" << InFileName.Length() << endl;
+			if (InFileName.Length() == 0)
+				continue;
+			//extract parameter values from file name
+			int M, FilterType,SigmaGaus,SigmaBil;
+			sscanf(InFileName.Data(),"COSY_Ana%i,%i,%i,%i.root",&M,&FilterType,&SigmaGaus,&SigmaBil);
+			InFile[i] = new TFile(InFileName);								//open ROOT file
+			//InFile[i] = new TFile("COSY_Ana200,4,11,300.root");								//open ROOT file
+			cout << InFile[i]->GetSize() << endl;
+			if (InFile[i]->GetSize() < 600)
+			{
+				CorruptedList << InFileName.Data() << endl;
+				cout << "corrupted file" << endl;
+				continue;
+			}
+			TH1D* hEnergy;
+			InFile[i]->GetObject("/Histograms/V1724/Energyspectrum/Energy;1",hEnergy);									// get histrogram
+			cout <<hEnergy->GetMaximum() << endl;
+	
+			TString Path, InfileName,RootFilename, TxtFilename;
+			Int_t LengthOfPath;
+			
+			Path = "/data/work/kpha1/rittgen/analysis/COSY/CombinedData/Fit/";
+			RootFilename = "Fitted_" + InFileName ;
+			TxtFilename = "Fitted_" + InFileName + ".txt";
+			THypGeSpectrumAnalyser *Ana = new THypGeSpectrumAnalyser(hEnergy,"co60", 35 );
+			
+			Ana->SetSearchRange(1000,2000);
+			Ana->SetOutputPath(Path);
+			Ana->SetTxtFileOutputName(TxtFilename);
+			Ana->SetRootFileOutputName(RootFilename);
+			Ana->SetGaussianFitting();
+			//Ana->SetFreeSkewedFitting();
+			//Ana->SetSecondGausianFitting();
+			Ana->AnalyseSpectrum();
+			cout << Ana->GetFWHMCo() << endl;
+			//write to maps
+			if (SigmaBil != 3)	// bil
+			{
+				ResultMapBil[(M /20 -3 )*10 + ((SigmaBil -100)/200 )-1][SigmaGaus] = Ana->GetFWHMCo();
+				
+			}
+			if (SigmaBil == 3)	// gaus
+			{
+				ResultMapGaus[M /20 -3][SigmaGaus] = Ana->GetFWHMCo();
+			}
+			delete Ana;
+			delete hEnergy;
+			InFile[i]->Close();
+			delete InFile[i];
+			i++;
+		}
+	}
+	ofstream Output ("Outputnonoise.txt",std::fstream::trunc);
+	
+	Output << "SigmaGausRange" << endl;
+	for (int i = 0; i<6;i++)
+	{
+		cout << SigmaGausRange[i] << "\t";
+		Output << SigmaGausRange[i] << "\t";
+	}
+	cout << endl;
+	Output << endl;
+	cout << "bil" <<endl;
+	Output << "bil" <<endl;
+	for (int i = 0; i<130; i++)
+	{
+		cout << "M\t SigmaBil: \t\t\t\t" <<  (int(i/10)+3)*20 <<"\t" << ((i % 10)+1)*200+100 << endl;
+		Output << "M\t SigmaBil: \t\t\t\t" << (int(i/10)+3)*20 <<"\t" << ((i % 10)+1)*200+100 << endl;
+		
+		for (std::map<Int_t,Double_t>::iterator it=ResultMapBil[i].begin(); it!=ResultMapBil[i].end(); ++it)
+    {
+			cout << it->second << "\t";
+			Output << it->second << "\t";
+		}
+		cout << endl;
+		Output << endl;
+	}
+	cout << "gaus" <<endl;
+	Output << "gaus" <<endl;
+	
+	for (int i = 0; i<13; i++)
+	{
+		cout << "M: \t\t\t\t" <<  (i+3)*20  << endl;
+		Output << "M: \t\t\t\t" << (i+3)*20  << endl;
+		
+		for (std::map<Int_t,Double_t>::iterator it=ResultMapGaus[i].begin(); it!=ResultMapGaus[i].end(); ++it)
+    {
+			cout << it->second << "\t";
+			Output << it->second << "\t";
+		}
+		cout << endl;
+		Output << endl;
+	}
+	Output.close();
+	InputList.close();
+	CorruptedList.close();
+	//App->Run();
+	return 0;
+}
