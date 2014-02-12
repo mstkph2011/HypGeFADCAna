@@ -280,17 +280,20 @@ Int_t THypGeAnalysis::UserPostLoop()	// fitting can be done here
 
 	// ana of energyspectrum
 
-	THypGeSpectrumAnalyser* SpecAna = new THypGeSpectrumAnalyser(fhEnergySpectrum,"co60",10);			// 2 is placeholder
-		SpecAna->SetLinearCalibration(1);
-		//SpecAna->SetTxtFileOutputName(TxtFilename);
-		SpecAna->SetTxtFileOutputName("test.txt");
-		//SpecAna->SetRootFileOutputName(RootFilename);
-		SpecAna->SetRootFileOutputName("test.root");
-		SpecAna->SetGaussianFitting();
-		SpecAna->EnableGo4Mode();
-		SpecAna->SetAnalysisObject(this);
-		SpecAna->AnalyseSpectrum();
-		fhEnergySpectrum->Draw();
+	//  (12.02.2014) fitting is done afterwards
+	
+	
+	//THypGeSpectrumAnalyser* SpecAna = new THypGeSpectrumAnalyser(fhEnergySpectrum,"co60",10);			// 2 is placeholder
+		//SpecAna->SetLinearCalibration(1);
+		////SpecAna->SetTxtFileOutputName(TxtFilename);
+		//SpecAna->SetTxtFileOutputName("test.txt");
+		////SpecAna->SetRootFileOutputName(RootFilename);
+		//SpecAna->SetRootFileOutputName("test.root");
+		//SpecAna->SetGaussianFitting();
+		//SpecAna->EnableGo4Mode();
+		//SpecAna->SetAnalysisObject(this);
+		//SpecAna->AnalyseSpectrum();
+		//fhEnergySpectrum->Draw();
 	return 0;
 }
 

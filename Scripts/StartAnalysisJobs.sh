@@ -5,19 +5,19 @@
 
 SubPath=COSY
 
-user=$USER				#### this is taken from system variable and used for job sending via the "double queue" (automatic queue if the internal himster queue is to full)
+user=$USER				#### this is taken from system variable and used for job sending via the "double queue" (wait with job submissing if the internal himster queue is to full and send the jobs when there is enough space)
 
 MWDmin=200
 MWDmax=200
 MWDstep=20
 #if only a fixed value for sigma gaus should be used make min = max
-sigmaGausmin=110
-sigmaGausmax=110
+sigmaGausmin=20
+sigmaGausmax=20
 sigmaGausstep=2
 #if only a fixed value for sigma bil should be used make min = max
-sigmaBilmin=1500
+sigmaBilmin=100
 #100
-sigmaBilmax=1500
+sigmaBilmax=500
 #900
 sigmaBilstep=200
 
