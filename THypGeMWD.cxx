@@ -1410,6 +1410,9 @@ void THypGeMWD::SetUseMWD(Bool_t useMWD_ext)
 
 void THypGeMWD::CalculateGausCoeff()
 {
+	/**
+	* Function to calculate the coefficients of the gaussian smoothing filter. This values are also used for the first gaussian of the bilateral filter.
+	*/
 	Double_t limit = 0.999;
 	
 	GausBreakUp = 0;
@@ -1437,13 +1440,13 @@ Double_t THypGeMWD::EnergyRtCorrection(Double_t Rt, Double_t EnergyUncorr )
 	return EnergyCorr;
 }
 
-Double_t THypGeMWD::Gaus(Double_t x)
+Double_t THypGeMWD::Gaus(Double_t x)				// function used by bilateral filter to calculate the value of den second gausian
 {
 	Double_t Norm =sqrt(2*TMath::Pi());
 	return (TMath::Exp(-pow((x/(sqrt(2)*Sigma2)),2)))/Double_t(Sigma2)/Norm;
 }
 
-Double_t THypGeMWD::CorrFunc(Double_t x)
+Double_t THypGeMWD::CorrFunc(Double_t x)						// function for Energy risetime correction
 {
 	Double_t par[5];
 	par[0] =1;
