@@ -23,10 +23,16 @@ int main(int argc, char* argv[] )
 	TFile *InFile[1000];
   int i = 0;
   
-  TString InputListPath = getenv("COSYTESTANADIR");
+  TString COSYTESTANADIR= getenv("COSYTESTANADIR");
+  TString InputListPath = COSYTESTANADIR;
+  InputListPath +="/COSY/txtfiles/";
+  TString InputFile = InputListPath + "Filestofit.txt";
+  TString CorruptedFileList = InputListPath +"CorruptedFiles.txt";
 	//ifstream InputList("files.txt");
-	ifstream InputList("files2.txt");
-	ofstream CorruptedList ("CorruptedFiles.txt",std::fstream::trunc);
+	cout << InputFile.Data() << endl;
+	ifstream InputList(InputFile.Data());
+	//ifstream InputList("files2.txt");
+	ofstream CorruptedList (CorruptedFileList.Data(),std::fstream::trunc);
 	
 	Int_t MRange [13] = {60,80,100,120,140,160,180,200,220,240,260,280,300};
 	Int_t SigmaBilRange [10] = {300,700,900,1100,1300,1500,1700,1900,2100};
@@ -53,7 +59,9 @@ int main(int argc, char* argv[] )
 				continue;
 			//extract parameter values from file name
 			int M, FilterType,SigmaGaus,SigmaBil;
-			sscanf(InFileName.Data(),"COSY_Ana%i,%i,%i,%i.root",&M,&FilterType,&SigmaGaus,&SigmaBil);
+			TString ComparisonString = COSYTESTANADIR + "/COSY/CombinedData/COSY_Ana%i,%i,%i,%i.root";
+			cout << "File:\t\t\t\t"<< ComparisonString << endl;
+			sscanf(InFileName.Data(),ComparisonString.Data(),&M,&FilterType,&SigmaGaus,&SigmaBil);
 			InFile[i] = new TFile(InFileName);								//open ROOT file
 			//InFile[i] = new TFile("COSY_Ana200,4,11,300.root");								//open ROOT file
 			cout << InFile[i]->GetSize() << endl;
@@ -70,9 +78,26 @@ int main(int argc, char* argv[] )
 			TString Path, InfileName,RootFilename, TxtFilename;
 			Int_t LengthOfPath;
 			
-			Path = "/data/work/kpha1/rittgen/analysis/COSY/CombinedData/Fit/";
-			RootFilename = "Fitted_" + InFileName ;
-			TxtFilename = "Fitted_" + InFileName + ".txt";
+			Path = COSYTESTANADIR;
+				Path += "/COSY/CombinedData/Fit/";
+			RootFilename = "Fitted_COSY_Ana";
+				RootFilename+=M;
+				RootFilename+= ",";
+				RootFilename+= FilterType;
+				RootFilename+= ","; 
+				RootFilename += SigmaGaus; 
+				RootFilename+= ",";
+				RootFilename+= SigmaBil; 
+				RootFilename += ".root";
+				cout << RootFilename.Data() << endl;
+			TxtFilename = "Fitted_COSY_Ana";
+				TxtFilename += ",";
+				TxtFilename += FilterType;
+				TxtFilename += ","; 
+				TxtFilename += SigmaGaus; 
+				TxtFilename+= ",";
+				TxtFilename+= SigmaBil; 
+				TxtFilename+= ".txt";
 			THypGeSpectrumAnalyser *Ana = new THypGeSpectrumAnalyser(hEnergy,"co60", 35 );
 			
 			Ana->SetSearchRange(1000,2000);
@@ -94,14 +119,19 @@ int main(int argc, char* argv[] )
 			{
 				ResultMapGaus[M /20 -3][SigmaGaus] = Ana->GetFWHMCo();
 			}
+			cout << "test1" << endl;
 			delete Ana;
 			delete hEnergy;
 			InFile[i]->Close();
 			delete InFile[i];
 			i++;
+			cout << "test2" << endl;
 		}
 	}
-	ofstream Output ("Outputnonoise.txt",std::fstream::trunc);
+	
+	TString OutputFile = COSYTESTANADIR;
+				OutputFile += "/COSY/CombinedData/Fit/Output.txt";
+	ofstream Output (OutputFile.Data(),std::fstream::trunc);
 	
 	Output << "SigmaGausRange" << endl;
 	for (int i = 0; i<6;i++)

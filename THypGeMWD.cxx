@@ -1412,21 +1412,21 @@ void THypGeMWD::CalculateGausCoeff()
 {
 	Double_t limit = 0.999;
 	
-		GausBreakUp = 0;
-		Double_t Norm =sqrt(2*TMath::Pi());
-		Double_t GaussInt = 0;
-		
-		do{
-			g[GausBreakUp] = (TMath::Exp(-pow((Double_t(GausBreakUp)/(sqrt(2)*Sigma)),2)))/Double_t(Sigma)/Norm;
-			if(GausBreakUp==0)
-				GaussInt += g[GausBreakUp];
-			else
-				GaussInt += 2*g[GausBreakUp];
-			
-			GausBreakUp++;
-			//cout << g[GausBreakUp] <<endl;
-		}
-		while( (GaussInt < limit ) );
+	GausBreakUp = 0;
+	Double_t Norm =sqrt(2*TMath::Pi());
+	Double_t GaussInt = 0;
+	
+	do{
+		g[GausBreakUp] = (TMath::Exp(-pow((Double_t(GausBreakUp)/(sqrt(2)*Sigma)),2)))/Double_t(Sigma)/Norm;
+		if(GausBreakUp==0)
+			GaussInt += g[GausBreakUp];
+		else
+			GaussInt += 2*g[GausBreakUp];
+		GausBreakUp++;
+		//cout << g[GausBreakUp] <<endl;
+	}
+	while( (GaussInt < limit ) );
+	GausNorm = GaussInt;
 	//cout << "GC calcd" << endl;
 }
 
@@ -1514,64 +1514,51 @@ void THypGeMWD::DoWeightedAverageFilter(TH1D* hSmoothedTrace)
 }
 void THypGeMWD::DoGaussianFilter(TH1D* hSmoothedTrace)
 {
+	Double_t value;
+	//Double_t norm;
 	// gauss
-	for(Int_t i=1;i<=TraceLength;i++)
+	for(Int_t i=1;i<=TraceLength;i++)				//loop over every point of the trace
 	{	
-		Double_t u = 0;
-		for(Int_t k=0;k<GausBreakUp;k++)
+		value = 0;
+		//norm = 0;
+		for (Int_t j = i-GausBreakUp; j <= i+GausBreakUp; j++)			// smoothing loop
 		{
-			if (i < GausBreakUp)	
-			{
-				u += g[k] * (2*hTrace_internal->GetBinContent(i+k));
-				if(k==0)
-				{
-					u = u - g[0] * hTrace_internal->GetBinContent(i);
-				}
-			}
-			else
-			{
-				if (i > TraceLength-GausBreakUp-1)
-				{
-					u += g[k] * (2*hTrace_internal->GetBinContent(i-k));
-					if(k==0)
-					{
-						u = u - g[0] * hTrace_internal->GetBinContent(i);
-					}
-				}
-				else
-				{					
-					u += g[k] * (hTrace_internal->GetBinContent(i-k) + hTrace_internal->GetBinContent(i+k));
-					if(k==0)
-					{
-						u = u - g[0] * hTrace_internal->GetBinContent(i);
-					}
-				}
-			}
+			//cout << j << endl;
+			if (j <1 )			// condition to fit the algorithm to the beginning of the trace
+				continue;
+			if (j > TraceLength) 		// condition to fit the algorithm to the end of the trace
+				continue;
+			value += g[abs(j-i)] * hTrace_internal->GetBinContent (j);			// real gaussian smoothing
+			//norm += g[abs(j-i)];																						// since we don't integrate over the whole gaussian we have to renormate the value, this has only to be calcutated once --> GausNorm in CalculateGausCoeff
+			//cout << g[j] << endl;
 		}
-		hSmoothedTrace->SetBinContent(i,u);
+		value = value/GausNorm; //norm;							// renormalization of the value, because not the whole Gaus is included (GausNorm < 1)
+		
+		//cout << value << "\t" << norm << endl;
+		hSmoothedTrace->SetBinContent(i,value);
 	}
 }
 void THypGeMWD::DoBilateralFilter(TH1D* hSmoothedTrace)
 {
 // bilateral
 	Double_t value;
-	Double_t norm;
-	for (Int_t i=1;i<=TraceLength;i++)
+	//Double_t norm;
+	for (Int_t i=1;i<=TraceLength;i++)				//loop over every point of the trace
 	{
 		value = 0;
-		norm = 0;
-		for (Int_t j = i-GausBreakUp; j <= i+GausBreakUp; j++)
+		//norm = 0;
+		for (Int_t j = i-GausBreakUp; j <= i+GausBreakUp; j++)			// smoothing loop
 		{
 			//cout << j << endl;
-			if (j <1 )
+			if (j <1 )			// condition to fit the algorithm to the beginning of the trace
 				continue;
-			if (j > TraceLength)
+			if (j > TraceLength) 		// condition to fit the algorithm to the end of the trace
 				continue;
-			value += g[abs(j-i)]* Gaus(hTrace_internal->GetBinContent (i)-hTrace_internal->GetBinContent (j)) *hTrace_internal->GetBinContent (j);
-			norm += g[abs(j-i)]* Gaus(hTrace_internal->GetBinContent (i)-hTrace_internal->GetBinContent (j));
+			value += g[abs(j-i)]* Gaus(hTrace_internal->GetBinContent (i)-hTrace_internal->GetBinContent (j)) *hTrace_internal->GetBinContent (j);				// bilateral (2d gaussian) smoothing
+			//norm += g[abs(j-i)]* Gaus(hTrace_internal->GetBinContent (i)-hTrace_internal->GetBinContent (j));				// since we don't integrate over the whole gaussian we have to renormate the value, this has only to be calcutated once --> GausNorm in CalculateGausCoeff
 			//cout << g[j] << endl;
 		}
-		value = value/norm;
+		value = value/GausNorm; //norm;							
 		
 		//cout << value << "\t" << norm << endl;
 		hSmoothedTrace->SetBinContent(i,value);

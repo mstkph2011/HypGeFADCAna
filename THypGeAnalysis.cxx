@@ -159,20 +159,8 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 step2->SetSourceEnabled(kFALSE);
 	 step2->SetStoreEnabled(kFALSE);
 	 step2->SetProcessEnabled(kTRUE);
-	 
-#ifdef EXA_CODE
-
-	 //////////////// Parameter //////////////////////////
-	 // At this point, auto-save file has not yet been read!
-	 // Therefore parameter values set here will be overwritten
-	 // if an auto-save file is there.
-																	
-	 // This condition is used in both steps.
-	 // Therfore we create it here
-																	fWinCon1 = MakeWinCond("wincon1", 50, 2000);
-#endif
 	
-	//fPar = (THypGeParameter *)MakeParameter("HypGeParameter","THypGeParameter");
+	// Parameters of the analysis
 	fPar = new THypGeParameter("HypGeParameter");
 	 cout << "ParAdded " << AddParameter(fPar)  << endl;
 	 fPar->SetParameters( MWDm, MAl,NoS, Width ,sigmaGaus,sigmaBil, tau, EnableMA, EnableSmoothing, EnableBaselineCorrection);

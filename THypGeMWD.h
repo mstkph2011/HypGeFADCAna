@@ -132,6 +132,7 @@ class THypGeMWD
 		Double_t g[10000];
 		
 		Int_t 		GausBreakUp;
+		Double_t 	GausNorm;
 		
 		Double_t mCorrection;
 		//TH1D* Baseline;

@@ -15,11 +15,11 @@ sigmaGausmin=20
 sigmaGausmax=20
 sigmaGausstep=2
 #if only a fixed value for sigma bil should be used make min = max
-sigmaBilmin=100
+sigmaBilmin=10
 #100
-sigmaBilmax=500
+sigmaBilmax=90
 #900
-sigmaBilstep=200
+sigmaBilstep=20
 
 AnaLibDir=/home/steinen/work/HypGeFADCAna
 DataInputFilePath=${COSYTESTDATADIR}/3110/2
