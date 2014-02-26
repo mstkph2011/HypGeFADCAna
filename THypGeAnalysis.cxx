@@ -171,7 +171,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 		{
 			snprintf(chis,15,"Trace%02d",i+1);	
 			snprintf(chead,63,"Trace channel %2d",i+1);
-			fhTrace[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH);
+			fhTrace[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH*10);
 			AddHistogram(fhTrace[i],"V1724");
 		}
 		

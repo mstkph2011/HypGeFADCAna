@@ -24,6 +24,8 @@
 #include "TFile.h"
 #include "TROOT.h"
 #include "TMath.h"
+#include "TVirtualFFT.h"
+
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -35,6 +37,7 @@ using namespace std;
 //default constructor DON'T use!
 THypGeMWD::THypGeMWD()
 {
+	
 }
 
 THypGeMWD::THypGeMWD(Int_t TraceLength_ext)            //constructor
@@ -132,28 +135,7 @@ Int_t THypGeMWD::Smoothing(TH1D* hTrace_ext, TH1D* hSmoothedTrace)
 
 	*/
 	
-	/*
-	cout << "test" <<endl;
 	
-	w = new TVectorD(TraceLength);
-	v = new TVectorD(TraceLength);
-	for(Int_t i=0;i<=TraceLength-1;i++)
-	{
-		(*v)(i) = hTrace_internal->GetBinContent(i+1);
-	}
-	cout << "test2" <<endl;
-	
-	//TMatrixD *S = TFile::Open("local/data/Go4_Analysen/Kai/S_Matrices/SmoothingMatrices/2048/MatrixTr2048_Sm100.root");
-	//gFile->GetObject("local/data/Go4_Analysen/Kai/S_Matrices/SmoothingMatrices/2048/MatrixTr2048_Sm100.root",S);
-	//S = S_Matrices.Get;
-	
-	
-	(*w) = (*S) * (*v);
-	for(Int_t i=0;i<=TraceLength-1;i++)
-	{
-		hTrace_internal->SetBinContent(i+1,(*w)(i));
-	}
-	*/
 /*
 	// weighted average
 	for(Int_t k=0;k<NoOfSmoothing;k++)		//Smoothing k times
@@ -262,31 +244,7 @@ Int_t THypGeMWD::Smoothing(TH1D* hTrace_ext, TH1D* hSmoothedTrace)
 		DoGaussianFilter(hSmoothedTrace);
 	if( EnableSmoothing == 4)	
 		DoBilateralFilter(hSmoothedTrace);
-	//// bilateral
-	//Double_t value;
-	//Double_t norm;
-	//for (Int_t i=1;i<=TraceLength;i++)
-	//{
-		//value = 0;
-		//norm = 0;
-		//for (Int_t j = i-GausBreakUp; j <= i+GausBreakUp; j++)
-		//{
-			////cout << j << endl;
-			//if (j <1 )
-				//continue;
-			//if (j > TraceLength)
-				//continue;
-			//value += g[abs(j-i)]* Gaus(hTrace_internal->GetBinContent (i)-hTrace_internal->GetBinContent (j)) *hTrace_internal->GetBinContent (j);
-			//norm += g[abs(j-i)]* Gaus(hTrace_internal->GetBinContent (i)-hTrace_internal->GetBinContent (j));
-			////cout << g[j] << endl;
-		//}
-		//value = value/norm;
 		
-		////cout << value << "\t" << norm << endl;
-		//hSmoothedTrace->SetBinContent(i,value);
-	//}
-	
-	
 //	*hSmoothedTrace = *hTrace_internal;			//use for weighted average and rectangular only
 	*hTrace_internal = *hSmoothedTrace;
 	hSmoothedTrace->SetName("SmoothedTrace");
@@ -854,13 +812,13 @@ Int_t THypGeMWD::FindLocalMinimumBin(Double_t *Array,Int_t low, Int_t high)
    return MinBin;
 }
 
-Int_t THypGeMWD::FindLocalMinimumBin(TH1D* fHisto2,Int_t low2, Int_t high2)
+Int_t THypGeMWD::FindLocalMinimumBin(TH1D* fHisto2,Int_t low2, Int_t high2)				// whatever this function is used for (steinen)
 {
-	//Find local minimum bin between low and high
+	//Find local minimum bin between low and high, starting at the high value
    Double_t Min = 0;
    Int_t MinBin = low2;
    
-   for (Int_t bin=high2;bin<=low2;bin-1) 
+   for (Int_t bin=high2 ; bin >=low2; --bin) 								// 26.2.14 : correction of loop header (steinen)
    {
       if (fHisto2->GetBinContent(bin) < Min)
       {
@@ -871,10 +829,7 @@ Int_t THypGeMWD::FindLocalMinimumBin(TH1D* fHisto2,Int_t low2, Int_t high2)
    return MinBin;
 }
 
-void THypGeMWD::GetS(TMatrixD* S_ext)
-{
-	S = S_ext;
-}
+
 
 void THypGeMWD::SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Width_ext, Int_t Sigma_ext, Int_t SigmaBil_ext, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC)
 {
@@ -1566,4 +1521,17 @@ void THypGeMWD::DoBilateralFilter(TH1D* hSmoothedTrace)
 		//cout << value << "\t" << norm << endl;
 		hSmoothedTrace->SetBinContent(i,value);
 	}
+}
+
+void THypGeMWD::DoFourierTransformation()
+{
+	
+}
+void THypGeMWD::DoBandStopFilter()
+{
+	
+}
+void THypGeMWD::DoFourierBackTransformation()
+{
+	
 }

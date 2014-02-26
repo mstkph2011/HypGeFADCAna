@@ -33,6 +33,7 @@
 #include "TH1D.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"
+#include "TVirtualFFT.h"
 
 class THypGeMWD
 {
@@ -70,7 +71,7 @@ class THypGeMWD
 		Int_t 		FindLocalMaximumBin(Double_t *Array,Int_t low, Int_t high);
 		Int_t 		FindLocalMinimumBin(Double_t *Array,Int_t low, Int_t high);
 		Int_t 		FindLocalMinimumBin(TH1D* fHisto2,Int_t low2, Int_t high2);
-		void 		GetS(TMatrixD* S_ext);
+		
 		void 		SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Width_ext, Int_t Sigma_ext, Int_t SigmaBil_ext, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC);
 		
 		void 		EvaluateAmplitude(TH1D* hEnergy);
@@ -89,20 +90,19 @@ class THypGeMWD
 		void 		DoGaussianFilter(TH1D* hSmoothedTrace);
 		void	 	DoBilateralFilter(TH1D* hSmoothedTrace);
 		
+		private : void 		DoFourierTransformation();
+		private : void 		DoBandStopFilter();
+		private : void 		DoFourierBackTransformation();
+		
 		
 		
 	private:
 		Int_t 		TraceLength;
 		Int_t 		PeakCounter;
-		TH1D		*hTrace_internal;
+		TH1D			*hTrace_internal;
 
 		Double_t offset_av;
 		
-		TMatrixD 	*S;
-		TMatrixD 	*T;
-	
-		TVectorD 	*v;
-		TVectorD 	*w;
 		
 		std::vector<Int_t> border_max;
 		std::vector<Int_t> border_min;
