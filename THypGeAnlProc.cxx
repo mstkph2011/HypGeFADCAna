@@ -107,7 +107,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 	cout << "fHypPar" <<fHypPar << endl;
 		//cout << "\tMWDm " << fHypPar->GetMWDm() << endl;
 		// real analysis object
-	fMWDAna = new THypGeMWD(TRACE_LENGTH*10);
+	fMWDAna = new THypGeMWD(TRACE_LENGTH);
 	
 	cout << "**** THypGeAnlProc: Create" << endl;
 }
