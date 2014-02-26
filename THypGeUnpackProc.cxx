@@ -251,12 +251,7 @@ Bool_t THypGeUnpackProc::BuildEvent(TGo4EventElement* dest)
 		}  //  end V1724 subevent
 	}  // end while
 
-#ifdef EXA_CODE
-   TString latext;
-   latext.Form("#scale[3.0]{#color[2]{Event number:%d}}",inp_evt->GetCount());
-   //latext.Form("Event number:%d",inp_evt->GetCount());
-   fLaText->SetText(0.5,0.5,latext.Data());
-#endif
+
    out_evt->SetValid(isValid); // to store or not to store
    // default calling Fill method will set validity of out_evt to return value!
 

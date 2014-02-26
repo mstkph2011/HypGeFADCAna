@@ -35,14 +35,7 @@ class THypGeAnlProc : public TGo4EventProcessor {
       virtual ~THypGeAnlProc();
 
       virtual Bool_t BuildEvent(TGo4EventElement* dest);
-#ifdef EXA_CODE
-      TH1              	*fSum1;
-      TH1              	*fSum2;
-      TH1              	*fSum3;
 
-      
-      TGo4WinCond      	*fWinCon;
-#endif
 			THypGeParameter  	*fHypPar;
 			Int_t 						EventCounter;
 			//Add items (histograms, conditions, ...) used only  in this step here
@@ -59,9 +52,8 @@ class THypGeAnlProc : public TGo4EventProcessor {
 			TH1D							*fhRisetime3090;
 			TH2D							*fhEnergyRise1090Corr;
 			TH2D							*fhEnergyRise3090Corr;
-			int			Max, Min, MaxBin, MinBin;		//Marcell_edt
-			
-			TH1D			*fhAmplBaselinegradient;
+					
+			TH1D							*fhAmplBaselinegradient;
 			
 
 			//real analysis object

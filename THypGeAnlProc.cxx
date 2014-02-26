@@ -34,11 +34,6 @@
 //-----------------------------------------------------------
 THypGeAnlProc::THypGeAnlProc() :
    TGo4EventProcessor()
-#ifdef EXA_CODE
-   ,
-   fSum1(0), fSum2(0), fSum3(0),
-   fParam1(0), fWinCon(0)
-#endif
 {
 }
 //-----------------------------------------------------------
@@ -142,12 +137,7 @@ Bool_t THypGeAnlProc::BuildEvent(TGo4EventElement* dest)
 		fhAmplBaselinegradient->Fill((fhTrace_deconv[0]->GetBinContent(1)-fhTrace_deconv[0]->GetBinContent(301))/300);
 	
 	
-		//this shows number of real events
-		//EventCounter++;
-		//cout << "EventCounter " << EventCounter << endl;
-
-	
-
+	//this shows number of real events
 	
 	//EventCounter++;
 	//cout << "EventCounter " << EventCounter << endl;

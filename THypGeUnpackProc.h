@@ -33,26 +33,6 @@ class THypGeUnpackProc : public TGo4EventProcessor {
       virtual Bool_t BuildEvent(TGo4EventElement* dest);
 
    protected:
-#ifdef EXA_CODE
-      TH1           *fCr1Ch[HypGe_NUM_CHAN];
-      TH1           *fCr2Ch[HypGe_NUM_CHAN];
-      TH2           *fCr1Ch1x2;
-      TH1           *fHis1;
-      TH1           *fHis1gate;
-      TH1           *fHis2;
-      TH1           *fHis2gate;
-      TGo4WinCond   *fconHis1;
-      TGo4WinCond   *fconHis2;
-      TGo4WinCond   *fWinCon1;
-      TGo4WinCond   *fWinCon2;
-      TGo4PolyCond  *fPolyCon1;
-      TGo4CondArray *fConArr1;
-      TGo4CondArray *fConArr2;
-      THypGeParameter *fParam1;
-      TGo4Picture   *fPicture1;
-      TGo4Picture   *fcondSet;
-      TLatex* fLaText;
-#endif
      
       THypGeParameter *fParam1; 
       Int_t 				UnpackCounter;

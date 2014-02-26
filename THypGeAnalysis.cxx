@@ -179,21 +179,11 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	fhEnergySpectrum = new TH1D("Energy","Energy",4000,0,4000);
 	AddHistogram(fhEnergySpectrum,"V1724/Energyspectrum");
 
-	//create histograms for risetime (10%->90% and 30%->90%)
-			//fhRisetime1090 = new TH1D("Rt1090","Rt1090",10000,0,1000);
-			//AddHistogram(fhRisetime1090,"V1724/Rt1090");
-			//fhRisetime3090 = new TH1D("Rt3090","Rt3090",10000,0,1000);
-			//AddHistogram(fhRisetime3090,"V1724/Rt3090");
-	
-	// create histograms for energy risetime correlation
-			//fhEnergyRise1090Corr = new TH2D("Er1090Corr","Enegy-Risetime1090-Correlation;E;Rt",2000,0,2000,100,0,1000);
-			//AddHistogram(fhEnergyRise1090Corr,"V1724/ER1090Corr");
-			//fhEnergyRise3090Corr = new TH2D("ER3090Corr","Enegy-Risetime3090-Correlation;E;Rt",2000,0,2000,100,0,1000);
-			//AddHistogram(fhEnergyRise3090Corr,"V1724/Er3090Corr");
 	cout << "All global histograms created"<< endl;
 	
 	
-	//SetDynListInterval(1000);
+	//SetDynListInterval(1000);					// set the auto save interval. the value is the time between 2 automatic saves in seconds
+	//SetDynListInterval (100);					// change this value to get more updates on the drawing of histograms. the value is the number of events processed before a TTree::Draw() is called. only in GUI mode
 }
 //***********************************************************
 THypGeAnalysis::~THypGeAnalysis()
