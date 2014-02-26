@@ -54,9 +54,9 @@ class THypGeAnalysis : public TGo4Analysis  {
       TH1D								*fhEnergySpectrum;
    
       TH1D								*fhRisetime1090;
-      TH1D								*fhRisetime3090;
-      TH2D								*fhEnergyRise1090Corr;
-      TH2D								*fhEnergyRise3090Corr;
+			TH1D								*fhRisetime3090;
+			TH2D								*fhEnergyRise1090Corr;
+			TH2D								*fhEnergyRise3090Corr;
 
 
 	int MWDm ;			// M of MWD

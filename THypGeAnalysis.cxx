@@ -171,13 +171,23 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 		{
 			snprintf(chis,15,"Trace%02d",i+1);	
 			snprintf(chead,63,"Trace channel %2d",i+1);
-			fhTrace[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH*10);
+			fhTrace[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH);
 			AddHistogram(fhTrace[i],"V1724");
 		}
 		
 	//create histogram for energy spectrum
 	fhEnergySpectrum = new TH1D("Energy","Energy",4000,0,4000);
 	AddHistogram(fhEnergySpectrum,"V1724/Energyspectrum");
+
+		//risetime histos
+	fhRisetime1090 = new TH1D("Risetime1090","Risetime1090",100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
+	AddHistogram(fhRisetime1090,"V1724/Risetime1090");
+	fhRisetime3090 = new TH1D("Risetime3090","Risetime3090",100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
+	AddHistogram(fhRisetime3090,"V1724/Risetime3090");
+	fhEnergyRise1090Corr = new TH2D("EnergyRise1090Corr","Enegy-Risetime1090-Correlation;Rt;E",100,0,1000,2000,0,2000);
+	AddHistogram(fhEnergyRise1090Corr,"V1724/EnergyRise1090Corr");
+	fhEnergyRise3090Corr = new TH2D("EnergyRise3090Corr","Enegy-Risetime3090-Correlation;Rt;E",100,0,1000,2000,0,2000);
+	AddHistogram(fhEnergyRise3090Corr,"V1724/EnergyRise3090Corr");
 
 	cout << "All global histograms created"<< endl;
 	
