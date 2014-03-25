@@ -49,27 +49,28 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext)            //constructor
 	L = 100;					// top width for MA
 	NoOfSmoothing = 100;
 	Width = 3;
-	Sigma =10;					// sigma for gaussian smoothing
-	Sigma2 = 10;
-	tau = 50000;
+	Sigma =11;					// sigma for gaussian smoothing
+	Sigma2 = 1500;
+	tau = 5383;				// tau of pre amp in samples (1 sample = 10 ns @ 100 MSa/s)
 	EnableMA = 0;			// Switch for second moving average filter
-	EnableSmoothing = 1;	// Switch smoothing on or off
+	SmoothingMethod = 4;	// Switch smoothing on or off
 	EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
 	
 	useMWD= 1;
+	GausNorm = new Double_t[TraceLength];
 	CalculateGausCoeff();
 	//CalculateSecondGausCoeff();
 }
 
 THypGeMWD::~THypGeMWD()            //destructor
 {
-	
+	cout << "HypGeMWD deconstructed!" << endl;
 }
 
-Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergy, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr)
+Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergy, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr, TH2D* hEnergyTimeSinceLastPulse)
 {
-	//cout << EnableSmoothing << endl;
-	if ( EnableSmoothing)
+	//cout << SmoothingMethod << endl;
+	if ( SmoothingMethod)
 		Smoothing(hTrace_ext, hSmoothedTrace);
 	Baseline(hTrace_ext, hTrace_bc);
 	if (MWD(hTrace_ext, hMWD, hAmplitude) == -1)
@@ -83,7 +84,8 @@ Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* 
 		Energyspectrum(hTrace_ext, hEnergy, hAmplitude);		//needs MWD
 	Risetime(hTrace_ext, hRisetime1090, hRisetime3090);		//needs Energyspectrum
 	ERC(hEnergyRise1090Corr, hEnergyRise3090Corr);			//needs Energyspectrum and Risetime
-		
+	EnergyTimeSinceLastPulseCorrelation(hEnergyTimeSinceLastPulse);
+	
 	return 0;
 }
 
@@ -95,159 +97,21 @@ Int_t THypGeMWD::Smoothing(TH1D* hTrace_ext, TH1D* hSmoothedTrace)
 	
 	SetTrace(hTrace_ext);
 	
-	/*
-
-
-	Double_t lower_frequency = 1;
-	Double_t upper_frequency = 10;
-	Double_t attenuation = 1;
-    //Double_t M_PI = 3.1415;
-
-    
-	for(Int_t k=1; k<=TraceLength; k++)
-	{
-		std::complex<double> sum(0.0,0.0);
-		for(Int_t j=1; j<=TraceLength; j++)
-		{
-			Int_t factor1 = -2*j*k;
-			std::complex<Double_t> exponent1(0.0, M_PI/TraceLength*(Double_t)factor1);
-			sum += hTrace_internal->GetBinContent(j) * std::exp(exponent1);
-		}
-		hTrace_fourier->SetBinContent(k,sum);
-	}
-
-	for(Int_t k=lower_frequency; k<=upper_frequency; k++)
-	{ 
-		hTrace_fourier->SetBinContent(k,hTrace_fourier->GetBinContent(k)/attenuation);
-	}
-
-	for(Int_t k=1; k<=TraceLength; k++)
-	{
-		std::complex<double> sum2(0.0,0.0);
-		for(int j=1; j<=TraceLength; j++)
-		{
-			Int_t factor2 = 2*j*k;
-			std::complex<Double_t> exponent2(0.0, M_PI/TraceLength*(Double_t)factor2);
-			sum2 += hTrace_fourier->GetBinContent(j) * std::exp(exponent2);
-		}
-		hTrace_internal->SetBinContent(k,sum2);
-	}
-
-	*/
-	
-	
-/*
-	// weighted average
-	for(Int_t k=0;k<NoOfSmoothing;k++)		//Smoothing k times
-	{
-		for(Int_t i=1;i<=TraceLength;i++)	
-		{
-			if (i == 1)	
-				hSmoothedTrace->SetBinContent(i,Double_t(hTrace_internal->GetBinContent(i))/2 + Double_t(hTrace_internal->GetBinContent(i+1))/2);
-			else
-				if (i == TraceLength)
-					hSmoothedTrace->SetBinContent(i,Double_t(hTrace_internal->GetBinContent(i-1))/2 + Double_t(hTrace_internal->GetBinContent(i))/2);
-				else
-					hSmoothedTrace->SetBinContent(i,Double_t(hTrace_internal->GetBinContent(i-1))/4 + Double_t(hTrace_internal->GetBinContent(i))/2 + Double_t(hTrace_internal->GetBinContent(i+1))/4);
-		}
-	}
-	
-*/
-
-
-
-/*
-	//Rectangular
-	Double_t width = 3;
-	
-	for(Int_t k=0;k<NoOfSmoothing;k++)		//Smoothing k times
-	{
-		for(Int_t i=1;i<=TraceLength;i++)
-		{
-			Double_t Content = 0;
-			if(i <= width)
-			{
-				for(Int_t j=1-i;j<=width;j++)
-				{
-					Content += hTrace_internal->GetBinContent(i+j);
-				}
-				Content = Content/(width+i);
-			}
-			else
-			{
-				if(i >= TraceLength-width)
-				{
-					for(Int_t j=-width;j<=TraceLength-i;j++)
-					{
-						Content += hTrace_internal->GetBinContent(i+j);
-					}
-					Content = Content/(width+TraceLength-i+1);
-				}	
-				else
-				{
-					for(Int_t j=-width;j<=width;j++)
-					{
-						Content += hTrace_internal->GetBinContent(i+j);
-					}
-					Content = Content/(2*width+1);
-				}
-			}
-			hSmoothedTrace->SetBinContent(i,Content);
-		}
-	}
-*/	
-
-	// gauss
-	//Double_t Sigma = 7;		// changed to external parameter
-	
-		
-		/*for(Int_t i=1;i<=TraceLength;i++)
-		{	
-			Double_t u = 0;
-			for(Int_t k=0;k<GausBreakUp;k++)
-			{
-				if (i < GausBreakUp)	
-				{
-					u += g[k] * (2*hTrace_internal->GetBinContent(i+k));
-					if(k==0)
-					{
-						u = u - g[0] * hTrace_internal->GetBinContent(i);
-					}
-				}
-				else
-				{
-					if (i > TraceLength-GausBreakUp-1)
-					{
-						u += g[k] * (2*hTrace_internal->GetBinContent(i-k));
-						if(k==0)
-						{
-							u = u - g[0] * hTrace_internal->GetBinContent(i);
-						}
-					}
-					else
-					{					
-						u += g[k] * (hTrace_internal->GetBinContent(i-k) + hTrace_internal->GetBinContent(i+k));
-						if(k==0)
-						{
-							u = u - g[0] * hTrace_internal->GetBinContent(i);
-						}
-					}
-				}
-			}
-			hSmoothedTrace->SetBinContent(i,u);
-		}*/
-	if( EnableSmoothing == 1)
+	if( SmoothingMethod == 1)
 		DoMeanFilter(hSmoothedTrace);
-	if( EnableSmoothing == 2)
+	if( SmoothingMethod == 2)
 		DoWeightedAverageFilter(hSmoothedTrace);
-	if( EnableSmoothing == 3)
+	if( SmoothingMethod == 3)
 		DoGaussianFilter(hSmoothedTrace);
-	if( EnableSmoothing == 4)	
+	if( SmoothingMethod == 4)	
 		DoBilateralFilter(hSmoothedTrace);
 		
 //	*hSmoothedTrace = *hTrace_internal;			//use for weighted average and rectangular only
-	*hTrace_internal = *hSmoothedTrace;
-	hSmoothedTrace->SetName("SmoothedTrace");
+	//*hTrace_internal = *hSmoothedTrace;
+	
+	for (Int_t i =0; i <= hSmoothedTrace->GetNbinsX(); i++)
+		hTrace_internal->SetBinContent(i,hSmoothedTrace->GetBinContent(i));
+	//hSmoothedTrace->SetName("SmoothedTrace");
 	return 0;
 }
 	
@@ -273,10 +137,8 @@ Int_t THypGeMWD::Baseline(TH1D* hTrace_ext, TH1D* hTrace_bc)
 		for(Int_t i=1;i<=TraceLength;i++)
 		{
 			hTrace_internal->SetBinContent(i,hTrace_internal->GetBinContent(i) - offset_av);
+			hTrace_bc->SetBinContent(i,hTrace_internal->GetBinContent(i));
 		}
-		
-	*hTrace_bc = *hTrace_internal;
-	hTrace_bc->SetName("Trace_bc_1");
 	return 0;
 }
 	
@@ -288,9 +150,6 @@ Int_t THypGeMWD::MWD(TH1D* hTrace_ext, TH1D* hMWD, TH1D* hAmplitude)
 	SetTrace(hTrace_ext);
 	
 	Double_t A[TraceLength+1], MWD[TraceLength+1];
-		
-	//tau =5000;//5383; //5294; //400; //1158;		//tau is time-constant of Preamlifier in 1/100 µs			// changed to external parameter
-	//Double_t M = 200;		//Window broadness				// changed to external parameter
 		
 	A[0] = hTrace_internal->GetBinContent(1);			// first value of baseline corrected trace
 	
@@ -311,15 +170,15 @@ Int_t THypGeMWD::MWD(TH1D* hTrace_ext, TH1D* hMWD, TH1D* hAmplitude)
 	SumAmpOffset= SumAmpOffset/LengthSumOffsetAverage;
 		
 	// try to correct slope in baseline - not working (yet)
-	Double_t mCorrA[301];			// mCorrA[0] = sum and later on the mean
-	mCorrA[0] = 0;
-	for (Int_t i=1; i <= 300; i++)
-	{
-		mCorrA[i] = (A[1]-A[i+1])/i;				// get gradient of first 300 slope triangles
-		mCorrA[0] += mCorrA[i];
-	}
-	mCorrection = mCorrA[0]/300;					// mean of slope
-	
+							/*	Double_t mCorrA[301];			// mCorrA[0] = sum and later on the mean
+								mCorrA[0] = 0;
+								for (Int_t i=1; i <= 300; i++)
+								{
+									mCorrA[i] = (A[1]-A[i+1])/i;				// get gradient of first 300 slope triangles
+									mCorrA[0] += mCorrA[i];
+								}
+								mCorrection = mCorrA[0]/300;					// mean of slope
+	*/
 	for(Int_t i=1;i<=TraceLength;i++)
 	{
 		A[i]= A[i]-SumAmpOffset; //+ mCorrection*i;						// bc correction of amplitude signal
@@ -330,7 +189,7 @@ Int_t THypGeMWD::MWD(TH1D* hTrace_ext, TH1D* hMWD, TH1D* hAmplitude)
 			MWD[i] = A[i]-A[1];				// added to cover edge efects 
 			
 		
-		//hAmplitude->SetBinContent(i,A[i]);
+		hAmplitude->SetBinContent(i,A[i]);
 		
 		hMWD->SetBinContent(i,MWD[i]);
 	}
@@ -339,16 +198,16 @@ Int_t THypGeMWD::MWD(TH1D* hTrace_ext, TH1D* hMWD, TH1D* hAmplitude)
 		Double_t GradMWD2[TraceLength];
 		for(Int_t i=1;i<=TraceLength;i++)
 		{
-			GradMWD1[i] = hMWD->GetBinContent(i+5) - hMWD->GetBinContent(i);
+			GradMWD1[i] = hMWD->GetBinContent(i+1) - hMWD->GetBinContent(i);
 		}
 		for(Int_t i=1;i<=TraceLength;i++)
 		{
-			GradMWD2[i] = GradMWD1[i+5] - GradMWD1[i];
+			GradMWD2[i] = GradMWD1[i+1] - GradMWD1[i];
 		}
-		for(Int_t i=1;i<=TraceLength;i++)
-		{
-			hAmplitude->SetBinContent(i,GradMWD2[i]);
-		}
+		//for(Int_t i=1;i<=TraceLength;i++)
+		//{
+			//hAmplitude->SetBinContent(i,GradMWD2[i]);
+		//}
 
 	//if ((hAmplitude->GetBinContent(1)-hAmplitude->GetBinContent(301))/300 > 0.01)
 		//return -1;
@@ -373,10 +232,10 @@ Int_t THypGeMWD::MA(TH1D* hTrace_ext, TH1D* hMWDMA, TH1D* hMWD)
 		else
 			MWDMA[n] = MWDMA[n-1] + 1./L * (hMWD->GetBinContent(n) - hMWD->GetBinContent(1));
 		
+		hTrace_internal->SetBinContent(n,MWDMA[n]);
 		hMWDMA->SetBinContent(n,MWDMA[n]);
 	}
 
-	*hTrace_internal = *hMWDMA;
 	return 0;
 }
 
@@ -636,10 +495,6 @@ Int_t THypGeMWD::ERC(TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr)
 }
 	
 
-void THypGeMWD::DoMWD()
-{
-	cout << "Doing Analysis" << endl;
-}
 
 TH1D* THypGeMWD::GetTrace()
 {
@@ -845,7 +700,7 @@ void THypGeMWD::SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Wid
 	Sigma2 = SigmaBil_ext;
 	tau = tau_ext;
 	EnableMA = EnaMA;			// Switch for second moving average filter
-	EnableSmoothing = EnaSmo;	// Switch smoothing on or off
+	SmoothingMethod = EnaSmo;	// Switch smoothing on or off
 	EnableBaselineCorrection = EnaBC; 	//Switch baseline correction on or off
 
 }
@@ -966,7 +821,7 @@ void THypGeMWD::EvaluateMWD(TH1D* hEnergy)
 {
 	//for MWD
  
-	Double_t threshold_MWD = 150;		//threshold up where signals were identified as useful for MWD
+	Double_t threshold_MWD = 150;		//threshold value for energy of signals 
 	Double_t grad_MWD = 2;			//gradient threshold to identify the borders of MWD-Signal
 	
 	Double_t leftborder_low, leftborder_high, rightborder_high;
@@ -1241,10 +1096,11 @@ if(border_max.size() == border_min.size())
 	Int_t abort1 = 0;
 	leftborder.clear();
 	rightborder.clear();
+	SignalTime.clear();
 	energy.clear();
 	Double_t energysum = 0;
 
-	do
+	for(;;)			// loop is finished internally
 	{
 		Double_t Sumenergy = 0;
 		Double_t Sumnoise_left = 0;
@@ -1253,67 +1109,68 @@ if(border_max.size() == border_min.size())
 		Double_t Noise_av = 0;
 	
 		Int_t i = rightborder_low+10;
-		do
+		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) < grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) < grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) < grad_MWD)	// check if derivative of trace is smaller than a threshold for 3 continous times, when this fails the start of a signal is found
 		{
-			if(i+10 >= TraceLength)
+			if(i+10 >= TraceLength)		// break of the outer loop
 			{
 				abort1 = 1;
 				break;
 			}
 			i++;
 		}	
-		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) < grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) < grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) < grad_MWD);
+		if (abort1) break;
 		
-		leftborder_low = hTrace_internal->GetBin(i);
+		leftborder_low = hTrace_internal->GetBin(i);			// start of MWD signal
 						
-		//leftborder.push_back(leftborder_low);		//used for Risetime (add +10 to leftborder_low a high smoothing rates -> results from the discrepance between smoothed and unsmoothed MWD-shape)
+		//leftborder.push_back(leftborder_low);		//used for Risetime (add +10 to leftborder_low at high smoothing rates -> results from the discrepance between smoothed and unsmoothed MWD-shape)
 		//cout << leftborder_low << endl;
 		i = leftborder_low+5;
-		do
+		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) >= grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) >= grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) >= grad_MWD) // check if derivative of trace is bigger than a threshold for 3 continous times, when this fails the top of a signal is found
 		{
-			if(i+10 >= TraceLength)
+			if(i+10 >= TraceLength) // break of the outer loop
 			{
 				abort1 = 1;
 				break;
 			}
 			i++;
 		}	
-		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) >= grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) >= grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) >= grad_MWD);
+		if (abort1) break;
 		
-		leftborder_high = hTrace_internal->GetBin(i);
+		leftborder_high = hTrace_internal->GetBin(i);			// upper left edge of MWD signal
 				
-		i = leftborder_high+5;
-		do
+		i = leftborder_high+5;	// little offset just as a speedup
+		
+		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) > -grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) > -grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) > -grad_MWD) // check if derivative of trace is bigger than a threshold for 3 continous times, when this fails the end of the flat top of a signal is found
 		{
-			if(i+10 >= TraceLength)
+			if(i+10 >= TraceLength) // break of the outer loop
 			{
 				abort1 = 1;
 				break;
 			}
 			i++;
 		}	
-		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) > -grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) > -grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) > -grad_MWD);
+		if (abort1) break;
 	
-		rightborder_high = hTrace_internal->GetBin(i);
+		rightborder_high = hTrace_internal->GetBin(i);		// upper right edge of MWD signal
 		
 		i = rightborder_high+5;
-		do
+		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) <= -grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) <= -grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) <= -grad_MWD) // check if derivative of trace is smaller than a threshold for 3 continous times, when this fails the end of the MWD signal is found
 		{
-			if(i+10 >= TraceLength)
+			if(i+10 >= TraceLength) // break of the outer loop
 			{
 				abort1 = 1;
 				break;
 			}
 			i++;
 		}	
-		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) <= -grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) <= -grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) <= -grad_MWD);
+		if (abort1) break;
 	
-		rightborder_low = hTrace_internal->GetBin(i);
+		rightborder_low = hTrace_internal->GetBin(i);		// end of MWD signal
 	
 		if(hTrace_internal->GetBinContent(leftborder_low) < threshold_MWD && hTrace_internal->GetBinContent(rightborder_low) < threshold_MWD && hTrace_internal->GetBinContent(leftborder_high) > threshold_MWD && hTrace_internal->GetBinContent(rightborder_high) > threshold_MWD)
 		{
 			
-			for(i=leftborder_high+10;i<=rightborder_high-10;i++)
+			for(i=leftborder_high+10;i<=rightborder_high-10;i++)			// calculate average value of flat top
 			{
 				Sumenergy = Sumenergy + hTrace_internal->GetBinContent(i);
 			}
@@ -1322,16 +1179,16 @@ if(border_max.size() == border_min.size())
 			
 			Int_t k = 0;
 			
-			for(i=leftborder_low-10;i<leftborder_low;i++)
+			for(i=leftborder_low-10;i<leftborder_low;i++)							// calculate average value of base before pulse
 			{	
 				if(hTrace_internal->GetBinContent(i) < threshold_MWD)
 				{
-					Sumnoise_left = Sumnoise_left + hTrace_internal->GetBinContent(i);
+					Sumnoise_left = Sumnoise_left + hTrace_internal->GetBinContent(i);	
 					k++;
 				}
 			}
 			
-			for(i=rightborder_low+1;i<=rightborder_low+10;i++)
+			for(i=rightborder_low+1;i<=rightborder_low+10;i++)				// calculate average value of base after pulse
 			{	
 				if(hTrace_internal->GetBinContent(i) < threshold_MWD)
 				{
@@ -1340,7 +1197,7 @@ if(border_max.size() == border_min.size())
 				}
 			}
 			
-			Noise_av = (Sumnoise_left + Sumnoise_right)/k;
+			Noise_av = (Sumnoise_left + Sumnoise_right)/k;					// average of complete noise (left + right)/NoAllBaselinePoints
 			
 			Energy_av = Energy_av - Noise_av; //+ M*mCorrection/50;			// added correction for inclined amplitude signal --> most likely not working
 			
@@ -1352,10 +1209,12 @@ if(border_max.size() == border_min.size())
 				energy.push_back(Energy_av);		//used for Energy-Risetime-Correlation 
 				leftborder.push_back(leftborder_low);		//used for Risetime
 				rightborder.push_back(leftborder_high);		//used for Risetime 
+				SignalTime.push_back((leftborder_low+leftborder_high)/2/100);	// used for Energy - time before pulse Correlation, time value in µs
+				
 			}
 		}
 	}
-	while(abort1==0);
+	
 }
 
 void THypGeMWD::SetUseMWD(Bool_t useMWD_ext)
@@ -1384,8 +1243,22 @@ void THypGeMWD::CalculateGausCoeff()
 		//cout << g[GausBreakUp] <<endl;
 	}
 	while( (GaussInt < limit ) );
-	GausNorm = GaussInt;
-	//cout << "GC calcd" << endl;
+	
+	// the norm for every point should be calculated in order to prevent effects at the beginning and the end of the trace
+	
+	for (Int_t i=1;i<=TraceLength;i++)				//loop over every point of the trace
+	{
+		GausNorm[i-1]=0;
+		for (Int_t j = i-GausBreakUp; j <= i+GausBreakUp; j++)
+		{
+			if (j <1 )			// condition to fit the algorithm to the beginning of the trace
+				continue;
+			if (j > TraceLength) 		// condition to fit the algorithm to the end of the trace
+				continue;
+			GausNorm[i-1] += g[abs(j-i)];
+		}
+	}
+	cout << "coefficients of gausian filter (re)calculated" << endl;
 }
 
 Double_t THypGeMWD::EnergyRtCorrection(Double_t Rt, Double_t EnergyUncorr )
@@ -1473,26 +1346,21 @@ void THypGeMWD::DoWeightedAverageFilter(TH1D* hSmoothedTrace)
 void THypGeMWD::DoGaussianFilter(TH1D* hSmoothedTrace)
 {
 	Double_t value;
-	//Double_t norm;
-	// gauss
+
 	for(Int_t i=1;i<=TraceLength;i++)				//loop over every point of the trace
 	{	
 		value = 0;
-		//norm = 0;
 		for (Int_t j = i-GausBreakUp; j <= i+GausBreakUp; j++)			// smoothing loop
 		{
-			//cout << j << endl;
-			if (j <1 )			// condition to fit the algorithm to the beginning of the trace
-				continue;
-			if (j > TraceLength) 		// condition to fit the algorithm to the end of the trace
+			if (j <1  || j > TraceLength)			// condition to fit the algorithm to the beginning and the end of the trace
 				continue;
 			value += g[abs(j-i)] * hTrace_internal->GetBinContent (j);			// real gaussian smoothing
-			//norm += g[abs(j-i)];																						// since we don't integrate over the whole gaussian we have to renormate the value, this has only to be calcutated once --> GausNorm in CalculateGausCoeff
+			// since we don't integrate over the whole gaussian we have to renormate the value, this has to be calcutated only once --> GausNorm[] in CalculateGausCoeff
 			//cout << g[j] << endl;
 		}
-		value = value/GausNorm; //norm;							// renormalization of the value, because not the whole Gaus is included (GausNorm < 1)
+		value = value/GausNorm[i-1];							// renormalization of the value, because not the whole Gaus is included (GausNorm < 1)
 		
-		//cout << value << "\t" << norm << endl;
+		//cout << value << "\t" << GausNorm[i-1] << endl;
 		hSmoothedTrace->SetBinContent(i,value);
 	}
 }
@@ -1500,24 +1368,21 @@ void THypGeMWD::DoBilateralFilter(TH1D* hSmoothedTrace)
 {
 // bilateral
 	Double_t value;
-	//Double_t norm;
+	Double_t norm;
 	for (Int_t i=1;i<=TraceLength;i++)				//loop over every point of the trace
 	{
 		value = 0;
-		//norm = 0;
+		norm = 0;
 		for (Int_t j = i-GausBreakUp; j <= i+GausBreakUp; j++)			// smoothing loop
 		{
-			//cout << j << endl;
-			if (j <1 )			// condition to fit the algorithm to the beginning of the trace
+			if (j <1  || j > TraceLength)			// condition to fit the algorithm to the beginning and the end of the trace
 				continue;
-			if (j > TraceLength) 		// condition to fit the algorithm to the end of the trace
-				continue;
-			value += g[abs(j-i)]* Gaus(hTrace_internal->GetBinContent (i)-hTrace_internal->GetBinContent (j)) *hTrace_internal->GetBinContent (j);				// bilateral (2d gaussian) smoothing
-			//norm += g[abs(j-i)]* Gaus(hTrace_internal->GetBinContent (i)-hTrace_internal->GetBinContent (j));				// since we don't integrate over the whole gaussian we have to renormate the value, this has only to be calcutated once --> GausNorm in CalculateGausCoeff
-			//cout << g[j] << endl;
+			value += g[abs(j-i)]* Gaus(hTrace_internal->GetBinContent (i)-hTrace_internal->GetBinContent (j)) * hTrace_internal->GetBinContent (j);				// bilateral (2d gaussian) smoothing
+			norm += g[abs(j-i)]* Gaus(hTrace_internal->GetBinContent (i)-hTrace_internal->GetBinContent (j));				// here we have to recalculate the norm every time because of the non-linearity of the bilateral filter (norm is not const for position i)
+			
 		}
-		value = value/GausNorm; //norm;							
 		
+		value = value/norm;				
 		//cout << value << "\t" << norm << endl;
 		hSmoothedTrace->SetBinContent(i,value);
 	}
@@ -1534,4 +1399,14 @@ void THypGeMWD::DoBandStopFilter()
 void THypGeMWD::DoFourierBackTransformation()
 {
 	
+}
+
+Int_t THypGeMWD::EnergyTimeSinceLastPulseCorrelation(TH2D* hEnergyTimeSinceLastPulse)
+{
+	for (Int_t i =1; i <Int_t(SignalTime.size()); i++)
+	{
+		hEnergyTimeSinceLastPulse->Fill(energy[i],SignalTime[i]- SignalTime[i-1]);
+		//cout << i << "\t" <<energy[i]<< "\t" << SignalTime[i]- SignalTime[i-1] << endl;
+	}
+	return 0;
 }

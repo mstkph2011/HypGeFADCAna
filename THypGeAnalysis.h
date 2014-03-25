@@ -57,6 +57,8 @@ class THypGeAnalysis : public TGo4Analysis  {
 			TH1D								*fhRisetime3090;
 			TH2D								*fhEnergyRise1090Corr;
 			TH2D								*fhEnergyRise3090Corr;
+			
+			TH2D								*fhEnergyTimeSinceLastPulse;
 
 
 	int MWDm ;			// M of MWD
@@ -67,7 +69,7 @@ class THypGeAnalysis : public TGo4Analysis  {
 	int sigmaBil ;			// second sigma of bil shaper
 	Double_t tau;					//tau of MWD, time constant of preamp
 	int EnableMA ;			// Switch for second moving average filter
-	int EnableSmoothing ;	// Switch smoothing on or off
+	int SmoothingMethod ;	// Switch smoothing on or off
 	int EnableBaselineCorrection ; 	//Switch baseline correction on or off
 			
    ClassDef(THypGeAnalysis,1)

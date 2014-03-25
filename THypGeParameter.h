@@ -36,9 +36,9 @@ class THypGeParameter : public TGo4Parameter {
 	Int_t sigmaBil;			// second sigma of bilateral shaper
 	Double_t tau;					//tau of MWD, time constant of preamp
 	Int_t EnableMA;			// Switch for second moving average filter
-	Int_t EnableSmoothing;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
+	Int_t SmoothingMethod;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
 	Int_t EnableBaselineCorrection; 	//Switch baseline correction on or off
-		
+	Bool_t ParametersChanged;		
 		
 	void SetParameters( Int_t M, Int_t L, Int_t NOS_ext, Int_t Width_ext, Int_t Sigma, Int_t SigmaBil, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC);
 	void PrintParameters();
@@ -50,8 +50,9 @@ class THypGeParameter : public TGo4Parameter {
 	Int_t GetSigmaBil();
 	Double_t GetTau();
 	Int_t GetEnableMA();
-	Int_t GetEnableSmoothing();
+	Int_t GetSmoothingMethod();
 	Int_t GetEnableBaselineCorrection();
+	Bool_t GetParametersChanged();
 	
 
 	

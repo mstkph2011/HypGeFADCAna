@@ -75,11 +75,11 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 MAl = 100;				// L of MA
 	 NoS = 100;				// Number of smoothings of mean and WA filter
 	 Width = 3;				// Width of mean filter
-	 sigmaGaus = 7;			// sigma of gaussian shaper
-	 sigmaBil = 50;			// sigma of gaussian shaper
+	 sigmaGaus = 11;			// sigma of gaussian shaper
+	 sigmaBil = 1500;			// sigma of gaussian shaper
 	 tau = 5383;			// tau of deconvolution
 	 EnableMA = 0;			// Switch for second moving average filter
-	 EnableSmoothing = 3;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
+	 SmoothingMethod = 4;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
 	 EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
 	 
 	 if (argc>1)
@@ -124,7 +124,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	}
 	if (argc>9)
 	{
-		EnableSmoothing = atoi(argv[9]);
+		SmoothingMethod = atoi(argv[9]);
 		cout << "Enable Smoothing\t" << argv[9] << endl;
 	}
 	if (argc>10)
@@ -163,15 +163,18 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	// Parameters of the analysis
 	fPar = new THypGeParameter("HypGeParameter");
 	 cout << "ParAdded " << AddParameter(fPar)  << endl;
-	 fPar->SetParameters( MWDm, MAl,NoS, Width ,sigmaGaus,sigmaBil, tau, EnableMA, EnableSmoothing, EnableBaselineCorrection);
+	 fPar->SetParameters( MWDm, MAl,NoS, Width ,sigmaGaus,sigmaBil, tau, EnableMA, SmoothingMethod, EnableBaselineCorrection);
 
 	
 	char chis[100], chead[100];
 	for(Int_t i=0;i<FADC_CHAN;i++)
 		{
 			snprintf(chis,15,"Trace%02d",i+1);	
-			snprintf(chead,63,"Trace channel %2d",i+1);
-			fhTrace[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH);
+			snprintf(chead,63,"Trace channel %2d; time [#mus];Amplitude [a.u.]",i+1);
+			fhTrace[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
+			fhTrace[i]->GetXaxis()->CenterTitle();
+			fhTrace[i]->GetYaxis()->CenterTitle();
+			
 			AddHistogram(fhTrace[i],"V1724");
 		}
 		
@@ -188,7 +191,10 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	AddHistogram(fhEnergyRise1090Corr,"V1724/EnergyRise1090Corr");
 	fhEnergyRise3090Corr = new TH2D("EnergyRise3090Corr","Enegy-Risetime3090-Correlation;Rt;E",100,0,1000,2000,0,2000);
 	AddHistogram(fhEnergyRise3090Corr,"V1724/EnergyRise3090Corr");
-
+	
+	fhEnergyTimeSinceLastPulse = new TH2D("EnergyTimeSinceLastPulse","Energy- Time since last Pulse - Correlation;E ;Time since last pulse [#mus]",20000,0,2000,200,0,200);
+	AddHistogram(fhEnergyTimeSinceLastPulse,"V1724/EnergyTimeSinceLastPulse");
+	
 	cout << "All global histograms created"<< endl;
 	
 	
@@ -219,7 +225,7 @@ Int_t THypGeAnalysis::UserPreLoop()
 	 // At this point, the histogram has been restored
 	 // from auto-save file if any.
 	 fSize = (TH1D*) MakeTH1('D',"Eventsize", "Event size [b]",160,1,160);
-	 fPar->SetParameters( MWDm, MAl,NoS, Width, sigmaGaus, sigmaBil, tau, EnableMA, EnableSmoothing, EnableBaselineCorrection);
+	 fPar->SetParameters( MWDm, MAl,NoS, Width, sigmaGaus, sigmaBil, tau, EnableMA, SmoothingMethod, EnableBaselineCorrection);
 	 fPar->PrintParameters();
 	 //cout << "1111111   " <<fPar->GetMWDm() << endl;
 	 return 0;

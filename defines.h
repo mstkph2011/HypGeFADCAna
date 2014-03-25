@@ -10,6 +10,6 @@
 #define FADC_CHAN 1
 // FADC_CHAN max 8 !!	
 
-//#define EXA_CODE 
-
+// this factor is calculated by the product of the Sampling Rate and the wanted x axis scale of your trace histograms. e.g. 100 MSa/s * 10⁻6 s --> 0.01 , axis in \mu s
+#define TIME_RESOLUTION_FACTOR 0.01
 #endif //DEFINES

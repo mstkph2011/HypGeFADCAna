@@ -17,17 +17,17 @@ using namespace std;
 THypGeParameter::THypGeParameter(const char* name) :
    TGo4Parameter(name)
 {
-#ifdef EXA_CODE
-   frP1=10;
-   frP2=20;
-   fbHisto=kTRUE;
-#endif
+	ParametersChanged = 0;
 
 
 }
 
 void THypGeParameter::SetParameters( Int_t M, Int_t L, Int_t NOS_ext, Int_t Width_ext, Int_t Sigma, Int_t SigmaBil, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC)
 {
+	if (MWDm != M || MAl != L || NoOfSmoothing != NOS_ext || Width != Width_ext || sigmaGaus != Sigma || sigmaBil != SigmaBil || tau != tau_ext || EnableMA != EnaMA || SmoothingMethod != EnaSmo || EnableBaselineCorrection != EnaBC )
+		ParametersChanged = 1;
+	else
+		ParametersChanged = 0;
 	MWDm = M;			// M of MWD
 	MAl = L;				// L of MA
 	NoOfSmoothing = NOS_ext;
@@ -36,7 +36,7 @@ void THypGeParameter::SetParameters( Int_t M, Int_t L, Int_t NOS_ext, Int_t Widt
 	sigmaBil = SigmaBil;			// second sigma of bil shaper
 	tau = tau_ext;
 	EnableMA = EnaMA;			// Switch for second moving average filter
-	EnableSmoothing = EnaSmo;	// Switch smoothing on or off
+	SmoothingMethod = EnaSmo;	// Switch smoothing on or off
 	EnableBaselineCorrection = EnaBC; 	//Switch baseline correction on or off
 	//std::cout << "MWDm is \t" << MWDm << "\t" << M << std::endl;
 }
@@ -50,7 +50,7 @@ void THypGeParameter::PrintParameters()
 	std::cout << "sB is \t" << sigmaBil << endl;
 	std::cout << "tau is \t" << tau << endl;
 	std::cout << "EnaMA is \t" << EnableMA << endl;
-	std::cout << "EnaSmo is \t" << EnableSmoothing << endl;
+	std::cout << "EnaSmo is \t" << SmoothingMethod << endl;
 	std::cout << "EnaBC is \t" << EnableBaselineCorrection << endl;
 }
 
@@ -88,11 +88,16 @@ Int_t THypGeParameter::GetEnableMA()
 {
 	return EnableMA;
 }
-Int_t THypGeParameter::GetEnableSmoothing()
+Int_t THypGeParameter::GetSmoothingMethod()
 {
-	return EnableSmoothing;
+	return SmoothingMethod;
 }
 Int_t THypGeParameter::GetEnableBaselineCorrection()
 {
 	return EnableBaselineCorrection;
+}
+
+Bool_t THypGeParameter::GetParametersChanged()
+{
+	return ParametersChanged;
 }

@@ -42,15 +42,16 @@ class THypGeMWD
 		THypGeMWD(Int_t TraceLength_ext);
 		virtual ~THypGeMWD();
 	
-		void DoMWD();
 		//Double_t CalculateRisetime(TH1D* hTrace_ext,Double_t* times);
 		
-		Double_t 	FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergy, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr);
+		Double_t 	FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergy, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr, TH2D* hEnergyTimeSinceLastPulse);
 		//TH1D*			MWD(TH1D* hTrace_ext);
 		TH1D*			GetTrace();
 		
 		void 			SetTrace(TH1D* hTrace_ext);
 		void			DoAna();
+		
+		//void			ConnectHistograms() // NYI 25.03.14  restructuring of analysis is needed for this. internal histograms necessary 
 		
 		//Double_t	EnergyRiseCorr(TH2D* fHisto);
 		Int_t		Smoothing(TH1D* hTrace_ext, TH1D* hSmoothedTrace);
@@ -60,6 +61,9 @@ class THypGeMWD
 		Int_t		Energyspectrum(TH1D* hTrace_ext, TH1D* hEnergy,TH1D* hMWD);
 		Int_t		Risetime(TH1D* hTrace_ext, TH1D* hRisetime1090, TH1D* hRisetime3090);
 		Int_t		ERC(TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr);
+		Int_t 	EnergyTimeSinceLastPulseCorrelation(TH2D* hEnergyTimeSinceLastPulse);
+		
+		private:
 		Int_t 		FindFirstBinAbove(TH1D* fHisto,Double_t threshold,Int_t low, Int_t high);
 		Double_t 	FindFirstBinAboveInterpolated(TH1D* fHisto, Double_t threshold,Int_t low, Int_t high);
 		Double_t 	FindFirstBinAboveInterpolated(Double_t *Array, Double_t threshold,Int_t low, Int_t high);
@@ -72,6 +76,7 @@ class THypGeMWD
 		Int_t 		FindLocalMinimumBin(Double_t *Array,Int_t low, Int_t high);
 		Int_t 		FindLocalMinimumBin(TH1D* fHisto2,Int_t low2, Int_t high2);
 		
+		public:
 		void 		SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Width_ext, Int_t Sigma_ext, Int_t SigmaBil_ext, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC);
 		
 		void 		EvaluateAmplitude(TH1D* hEnergy);
@@ -114,6 +119,8 @@ class THypGeMWD
 		std::vector<Double_t> energy;
 		std::vector<Double_t> risetime1090;
 		std::vector<Double_t> risetime3090;
+		
+		std::vector<Int_t> SignalTime;
 	
 			//external parameters
 		Double_t 	M;					// window width for MWD
@@ -124,7 +131,7 @@ class THypGeMWD
 		Double_t 	Sigma2;					// sigma for second gaussian of bilateral filter
 		Double_t 	tau;
 		Int_t 		EnableMA;			// Switch for second moving average filter
-		Int_t 		EnableSmoothing;	// Switch smoothing on or off
+		Int_t 		SmoothingMethod;	// Switch smoothing on or off
 		Int_t 		EnableBaselineCorrection; 	//Switch baseline correction on or off
 		
 		Bool_t 		useMWD;				// Switch between MWD and Amplitude evaluation for energy spetrum
@@ -132,7 +139,7 @@ class THypGeMWD
 		Double_t g[10000];
 		
 		Int_t 		GausBreakUp;
-		Double_t 	GausNorm;
+		Double_t 	*GausNorm;
 		
 		Double_t mCorrection;
 		//TH1D* Baseline;
