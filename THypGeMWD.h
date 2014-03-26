@@ -34,6 +34,7 @@
 #include "TMatrixD.h"
 #include "TVectorD.h"
 #include "TVirtualFFT.h"
+#include "TStopwatch.h"
 
 class THypGeMWD
 {
@@ -49,7 +50,6 @@ class THypGeMWD
 		TH1D*			GetTrace();
 		
 		void 			SetTrace(TH1D* hTrace_ext);
-		void			DoAna();
 		
 		//void			ConnectHistograms() // NYI 25.03.14  restructuring of analysis is needed for this. internal histograms necessary 
 		
@@ -138,8 +138,16 @@ class THypGeMWD
 		
 		Double_t g[10000];
 		
+		Double_t *Aarray;
+		Double_t *MWDarray;
+		Double_t *GradMWD1array;
+		Double_t *GradMWD2array;
+
 		Int_t 		GausBreakUp;
 		Double_t 	*GausNorm;
+		
+		TStopwatch timer;
+		
 		
 		Double_t mCorrection;
 		//TH1D* Baseline;

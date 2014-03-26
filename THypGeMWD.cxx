@@ -56,6 +56,11 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext)            //constructor
 	SmoothingMethod = 4;	// Switch smoothing on or off
 	EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
 	
+	
+	Aarray = new Double_t[TraceLength+1];
+	MWDarray = new Double_t[TraceLength+1];
+	GradMWD1array= new Double_t[TraceLength+1];
+	GradMWD2array = new Double_t[TraceLength+1];
 	useMWD= 1;
 	GausNorm = new Double_t[TraceLength];
 	CalculateGausCoeff();
@@ -69,22 +74,107 @@ THypGeMWD::~THypGeMWD()            //destructor
 
 Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergy, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr, TH2D* hEnergyTimeSinceLastPulse)
 {
+	bool UseTimer = 0;
+	if (UseTimer)
+	{ 
+		timer.Reset();
+		timer.Start();
+	}
 	//cout << SmoothingMethod << endl;
 	if ( SmoothingMethod)
+	{
 		Smoothing(hTrace_ext, hSmoothedTrace);
+		if (UseTimer) 
+		{
+			timer.Stop();
+			cout << "Smoothing step took " << timer.RealTime() << " seconds" << endl;
+		}
+	}
+	if (UseTimer)
+	{ 
+		timer.Reset();
+		timer.Start();
+	}
 	Baseline(hTrace_ext, hTrace_bc);
+	if (UseTimer) 
+	{	
+		timer.Stop();
+		cout << "Baseline correction step took " << timer.RealTime() << " seconds" << endl;
+	}
+	
+	
+	if (UseTimer)
+	{ 
+		timer.Reset();
+		timer.Start();
+	}
 	if (MWD(hTrace_ext, hMWD, hAmplitude) == -1)
 		return -1;
-	if (EnableMA)
-		MA(hTrace_ext, hMWDMA, hMWD);
 	
+	if (UseTimer)
+	{	
+		timer.Stop();
+		cout << "Devonvolution and MWD step took " << timer.RealTime() << " seconds" << endl;
+	}
+	
+	if (EnableMA)
+	{
+		if (UseTimer)
+		{ 
+			timer.Reset();
+			timer.Start();
+		}
+		MA(hTrace_ext, hMWDMA, hMWD);
+		if (UseTimer)
+		{	
+			timer.Stop();
+			cout << "MA step took " << timer.RealTime() << " seconds" << endl;
+		}
+	}
+	
+	if (UseTimer)
+	{ 
+		timer.Reset();
+		timer.Start();
+	}
 	if ( useMWD)
 		Energyspectrum(hTrace_ext, hEnergy, hMWD);				//needs MWD
 	else
 		Energyspectrum(hTrace_ext, hEnergy, hAmplitude);		//needs MWD
+	
+	if (UseTimer)
+	{	
+		timer.Stop();
+		cout << "Energyspectrum step took " << timer.RealTime() << " seconds" << endl;
+
+		timer.Reset();
+		timer.Start();
+	}
 	Risetime(hTrace_ext, hRisetime1090, hRisetime3090);		//needs Energyspectrum
+	if (UseTimer)
+	{	
+		timer.Stop();
+		cout << "Risetime step took " << timer.RealTime() << " seconds" << endl;
+
+		timer.Reset();
+		timer.Start();
+	}
 	ERC(hEnergyRise1090Corr, hEnergyRise3090Corr);			//needs Energyspectrum and Risetime
+	if (UseTimer)
+	{	
+		timer.Stop();
+		cout << "Energy Rt correlation step took " << timer.RealTime() << " seconds" << endl;
+
+		timer.Reset();
+		timer.Start();
+	}
 	EnergyTimeSinceLastPulseCorrelation(hEnergyTimeSinceLastPulse);
+	if (UseTimer)
+	{	
+		timer.Stop();
+		cout << "Energy TSLPulse correlation step took " << timer.RealTime() << " seconds" << endl;
+	}
+	
 	
 	return 0;
 }
@@ -149,24 +239,24 @@ Int_t THypGeMWD::MWD(TH1D* hTrace_ext, TH1D* hMWD, TH1D* hAmplitude)
 	if (hTrace_internal == 0)
 	SetTrace(hTrace_ext);
 	
-	Double_t A[TraceLength+1], MWD[TraceLength+1];
+	//Double_t A[TraceLength+1], MWDarray[TraceLength+1];
 		
-	A[0] = hTrace_internal->GetBinContent(1);			// first value of baseline corrected trace
+	Aarray[0] = hTrace_internal->GetBinContent(1);			// first value of baseline corrected trace
 	
 	for(Int_t i=1;i<=TraceLength;i++)
 	{
-		//A[0] = 0;
 		
-		A[i] = hTrace_internal->GetBinContent(i) - hTrace_internal->GetBinContent(i-1) * (1.-(1./tau)) + A[i-1];
+		
+		Aarray[i] = hTrace_internal->GetBinContent(i) - hTrace_internal->GetBinContent(i-1) * (1.-(1./tau)) + Aarray[i-1];
 		
 		
 	}
 	//bc correction of amp signal
-	A[0]=0;
+	Aarray[0]=0;
 	Double_t SumAmpOffset=0;
 	Int_t LengthSumOffsetAverage=20;
 	for(Int_t i = 1; i <= LengthSumOffsetAverage; i++)
-		SumAmpOffset+= A[i];
+		SumAmpOffset+= Aarray[i];
 	SumAmpOffset= SumAmpOffset/LengthSumOffsetAverage;
 		
 	// try to correct slope in baseline - not working (yet)
@@ -174,39 +264,38 @@ Int_t THypGeMWD::MWD(TH1D* hTrace_ext, TH1D* hMWD, TH1D* hAmplitude)
 								mCorrA[0] = 0;
 								for (Int_t i=1; i <= 300; i++)
 								{
-									mCorrA[i] = (A[1]-A[i+1])/i;				// get gradient of first 300 slope triangles
+									mCorrA[i] = (Aarray[1]-Aarray[i+1])/i;				// get gradient of first 300 slope triangles
 									mCorrA[0] += mCorrA[i];
 								}
 								mCorrection = mCorrA[0]/300;					// mean of slope
 	*/
 	for(Int_t i=1;i<=TraceLength;i++)
 	{
-		A[i]= A[i]-SumAmpOffset; //+ mCorrection*i;						// bc correction of amplitude signal
+		Aarray[i]= Aarray[i]-SumAmpOffset; //+ mCorrection*i;						// bc correction of amplitude signal
 
 		if (i > Int_t(M))
-			MWD[i] = A[i] - A[i-Int_t(M)];
+			MWDarray[i] = Aarray[i] - Aarray[i-Int_t(M)];
 		else
-			MWD[i] = A[i]-A[1];				// added to cover edge efects 
+			MWDarray[i] = Aarray[i]-Aarray[1];				// added to cover edge efects 
 			
 		
-		hAmplitude->SetBinContent(i,A[i]);
+		hAmplitude->SetBinContent(i,Aarray[i]);
 		
-		hMWD->SetBinContent(i,MWD[i]);
+		hMWD->SetBinContent(i,MWDarray[i]);
 	}
 	
-			Double_t GradMWD1[TraceLength];
-		Double_t GradMWD2[TraceLength];
+														
 		for(Int_t i=1;i<=TraceLength;i++)
 		{
-			GradMWD1[i] = hMWD->GetBinContent(i+1) - hMWD->GetBinContent(i);
+			GradMWD1array[i] = hMWD->GetBinContent(i+1) - hMWD->GetBinContent(i);
 		}
 		for(Int_t i=1;i<=TraceLength;i++)
 		{
-			GradMWD2[i] = GradMWD1[i+1] - GradMWD1[i];
+			GradMWD2array[i] = GradMWD1array[i+1] - GradMWD1array[i];
 		}
 		//for(Int_t i=1;i<=TraceLength;i++)
 		//{
-			//hAmplitude->SetBinContent(i,GradMWD2[i]);
+			//hAmplitude->SetBinContent(i,GradMWD2array[i]);
 		//}
 
 	//if ((hAmplitude->GetBinContent(1)-hAmplitude->GetBinContent(301))/300 > 0.01)
@@ -511,11 +600,6 @@ void THypGeMWD::SetTrace(TH1D* hTrace_ext)
 }
 
 
-
-void THypGeMWD::DoAna()
-{
-
-}
 
 Int_t THypGeMWD::FindFirstBinAbove(TH1D* fHisto,Double_t threshold,Int_t low, Int_t high)
 {
