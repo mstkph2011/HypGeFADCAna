@@ -56,7 +56,7 @@ class THypGeParameter : public TGo4Parameter {
 	
 
 	
-   ClassDef(THypGeParameter,3)
+   ClassDef(THypGeParameter,4)
 };
 
 #endif

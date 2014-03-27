@@ -60,7 +60,6 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 fMbsEvent(0),
 	 fRawEvent(0),
 	 fCalEvent(0),
-	 fSize(0),
 	 fEvents(0),
 	 fLastEvent(0)
 {
@@ -224,10 +223,8 @@ Int_t THypGeAnalysis::UserPreLoop()
 	 // create histogram for UserEventFunc
 	 // At this point, the histogram has been restored
 	 // from auto-save file if any.
-	 fSize = (TH1D*) MakeTH1('D',"Eventsize", "Event size [b]",160,1,160);
 	 fPar->SetParameters( MWDm, MAl,NoS, Width, sigmaGaus, sigmaBil, tau, EnableMA, SmoothingMethod, EnableBaselineCorrection);
 	 fPar->PrintParameters();
-	 //cout << "1111111   " <<fPar->GetMWDm() << endl;
 	 return 0;
 }
 //-----------------------------------------------------------
@@ -295,27 +292,6 @@ Int_t THypGeAnalysis::UserPostLoop()	// fitting can be done here
 Int_t THypGeAnalysis::UserEventFunc()
 {
 //// This function is called once for each event.
-	 Int_t value = 0;
-	 Int_t count = 0;
-	 if(fMbsEvent) value = fMbsEvent->GetDlen()/2+2; // total longwords
-	 fSize->Fill(value); // fill histogram
-	 fEvents++;
-	 //cout << fEvents << endl;
-	 if(fEvents == 1 || IsNewInputFile()) {
-			if(fMbsEvent) {
-				 count=fMbsEvent->GetCount();
-				 cout << "\nFirst event #: " << count	<< endl;
-				 s_bufhe* bufheader = fMbsEvent->GetMbsBufferHeader();
-				 if(bufheader) {
-						char sbuf[1000];
-						f_ut_utime(bufheader->l_time[0], bufheader->l_time[1], sbuf);
-						cout <<"First Buffer:"<<endl;
-						cout <<"\tNumber: "<<bufheader->l_buf << endl;
-						cout <<"\tTime: " << sbuf << endl;
-				 }
-			}
-			SetNewInputFile(kFALSE); // we have to reset the newfile flag
-	 }
-	 fLastEvent = count;
+	
 	 return 0;
 }

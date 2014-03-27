@@ -3,11 +3,12 @@
 ### script to find jobs that didn't produce any output file, new jobs are sent automatically
 
 #DataDir=/data/work/kpha1/rittgen/analysis/COSY
-DataDir=${COSYTESTANADIR}/COSY
+SubDir=COSYnew
+DataDir=${COSYTESTANADIR}/${SubDir}
+DataSubDir=${DataDir}/CombinedData
 
-SubDir=${DataDir}/CombinedData
 
-TxtDir=${COSYTESTANADIR}/COSY/txtfiles
+TxtDir=${COSYTESTANADIR}/${SubDir}/txtfiles
 rm -f ${TxtDir}/WrongFilesInFolder.txt														# removes log file for erroneous runs , uncomment to automate
 mkdir -p ${DataDir}/CombinedData
 ls -d ${DataDir}/COSY_Ana*/ &> ${TxtDir}/AnaFolderList.txt				# write all folders with runs (parameter configs) to file
@@ -35,14 +36,16 @@ do
 		done
 		echo $line >> ${TxtDir}/WrongFilesInFolder.txt								# file must be empty before!!!!  			 ### this shows the runs with errors
 	#else
-		#ls ${DataDir}/${line}/*.root | xargs hadd -f1 -T ${SubDir}/${line}.root				# lists all root files in the run folder and combine them into one file, xargs appends the output of the ls to the command that follows
-		#echo "File ${SubDir}/${line}.root created"
+		#ls ${DataDir}/${line}/*.root | xargs hadd -f1 -T ${DataSubDir}/${line}.root				# lists all root files in the run folder and combine them into one file, xargs appends the output of the ls to the command that follows
+		#echo "File ${DataSubDir}/${line}.root created"
 	fi
 done < ${TxtDir}/AnaFolderList.txt
 
 if [ $errors -ne 0 ]
 then
 	echo "there were some errors, check \"WrongFilesInFolder.txt\" to see in which run"
+else
+	echo "No errors found :)"
 fi
 
 ### start jobs without output file

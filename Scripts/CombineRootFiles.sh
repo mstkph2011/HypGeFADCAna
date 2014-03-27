@@ -2,7 +2,7 @@
 
 ### script to combine the output of single runs to a combined root file
 
-DataDir=${COSYTESTANADIR}/COSY
+DataDir=${COSYTESTANADIR}/COSYnew
 #DataDir=/data/work/kpha1/rittgen/analysis/COSYnoNoise
 
 SubDir=${DataDir}/CombinedData

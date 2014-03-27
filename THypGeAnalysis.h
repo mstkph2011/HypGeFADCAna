@@ -45,7 +45,7 @@ class THypGeAnalysis : public TGo4Analysis  {
 #endif
 
 			THypGeParameter      *fPar;
-			TH1D               *fSize;
+
       Int_t               fEvents;
       Int_t               fLastEvent;
       

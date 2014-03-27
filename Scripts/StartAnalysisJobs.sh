@@ -3,7 +3,7 @@
 ### script to start jobs on himster for germanium psa using go4
 ### v1.1 not tested! 			changed walltime for high sigmaGaus
 
-SubPath=COSY
+SubPath=COSYnew
 
 user=$USER				#### this is taken from system variable and used for job sending via the "double queue" (wait with job submissing if the internal himster queue is to full and send the jobs when there is enough space)
 
@@ -11,13 +11,13 @@ MWDmin=200
 MWDmax=200
 MWDstep=20
 #if only a fixed value for sigma gaus should be used make min = max
-sigmaGausmin=20
-sigmaGausmax=20
+sigmaGausmin=11
+sigmaGausmax=11
 sigmaGausstep=2
 #if only a fixed value for sigma bil should be used make min = max
-sigmaBilmin=10
+sigmaBilmin=2000
 #100
-sigmaBilmax=90
+sigmaBilmax=2000
 #900
 sigmaBilstep=20
 

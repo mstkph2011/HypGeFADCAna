@@ -6,11 +6,13 @@
 
 
 user=$USER				#### this is taken from system variable and used for job sending via the "double queue" (automatic queue if the internal himster queue is to full)
-
-JobLogDir=${COSYTESTANADIR}/COSY/joblogs
-JobDir=${COSYTESTANADIR}/COSY/jobs
-TxtDir=${COSYTESTANADIR}/COSY/txtfiles
-
+SubDir=COSYnew
+JobLogDir=${COSYTESTANADIR}/${SubDir}/joblogs
+JobDir=${COSYTESTANADIR}/${SubDir}/jobs
+TxtDir=${COSYTESTANADIR}/${SubDir}/txtfiles
+if [ ! -d $TxtDir ]; then 
+  mkdir -p $TxtDir
+fi
 rm ${TxtDir}/FailedJobs.txt
 #touch ${JobLogDir}/FailedJobs.txt
 ls ${JobLogDir} &> ${TxtDir}/AllJobs.txt					# Datei mit allen JobLog Namen erstellen
