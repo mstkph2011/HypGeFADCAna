@@ -45,27 +45,33 @@ class THypGeMWD
 	
 		//Double_t CalculateRisetime(TH1D* hTrace_ext,Double_t* times);
 		
-		Double_t 	FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergy, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr, TH2D* hEnergyTimeSinceLastPulse);
+		//Double_t 	FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergy, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr, TH2D* hEnergyTimeSinceLastPulse);
+		Double_t FullAnalysis ();
+		void				ConnectTraceHistograms(TH1D* hTrace_ext, TH1D* hSmoothedTrace_ext, TH1D* hTrace_bc_ext, TH1D* hAmplitude_ext,TH1D* hMWD_ext,TH1D* hMWDMA_ext);
+		void 				Connect1DEnergySpectraHistograms(TH1D *hEnergySpectrum_ext,TH1D *hEnergySpectrumWithCut_ext);
+		void 				Connect1DRisetimeHistograms(TH1D* hRisetime1090_ext, TH1D* hRisetime3090_ext);
+		void 				Connect2DEnergyRisetimeHistograms(TH2D* hEnergyRise1090Corr_ext, TH2D* hEnergyRise3090Corr_ext);
+		void 				Connect2DEnergyTimeSinceLastPulseHistograms(TH2D* hEnergyTimeSinceLastPulse_ext);
 		
-		void 				ConnectHistograms(TH1D *hEnergySpectrumWithCut_ext);
-		
-		
+		private :
 		TH1D*			GetTrace();
 		
 		void 			SetTrace(TH1D* hTrace_ext);
 		
-		//void			ConnectHistograms() // NYI 25.03.14  restructuring of analysis is needed for this. internal histograms necessary 
-		
-		//Double_t	EnergyRiseCorr(TH2D* fHisto);
-		Int_t		Smoothing(TH1D* hTrace_ext, TH1D* hSmoothedTrace);
-		Int_t		Baseline(TH1D* hTrace_ext, TH1D* hTrace_bc);
-		Int_t		MWD(TH1D* hTrace_ext, TH1D* hMWD, TH1D* hAmplitude);
-		Int_t		MA(TH1D* hTrace_ext, TH1D* hMWDMA, TH1D* hMWD);
-		Int_t		Energyspectrum(TH1D* hTrace_ext, TH1D* hEnergy,TH1D* hMWD);
-		Int_t		Risetime(TH1D* hTrace_ext, TH1D* hRisetime1090, TH1D* hRisetime3090);
-		Int_t		ERC(TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr);
-		Int_t 	EnergyTimeSinceLastPulseCorrelation(TH2D* hEnergyTimeSinceLastPulse);
+		//single steps of the analysis
+		Int_t		Smoothing();
+		Int_t		Baseline();
+		Int_t		MWD();
+		Int_t		MA();
+		Int_t		Energyspectrum();
+		Int_t		Risetime();
+		Int_t		ERC();
+		Int_t 	EnergyTimeSinceLastPulseCorrelation();
 		Int_t		FillEnergySpectrumWithPileUpCut(Double_t CutValue);
+		
+		//functions used in the Energyspectrum step
+		void 		EvaluateAmplitude();
+		void		EvaluateMWD();
 		
 		private:
 		Int_t 		FindFirstBinAbove(TH1D* fHisto,Double_t threshold,Int_t low, Int_t high);
@@ -83,8 +89,7 @@ class THypGeMWD
 		public:
 		void 		SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Width_ext, Int_t Sigma_ext, Int_t SigmaBil_ext, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC);
 		
-		void 		EvaluateAmplitude(TH1D* hEnergy);
-		void		EvaluateMWD(TH1D* hEnergy);
+		
 		
 		void		SetUseMWD(Bool_t useMWD_ext);
 		
@@ -94,10 +99,10 @@ class THypGeMWD
 		Double_t 	CorrFunc(Double_t x);
 		Double_t	EnergyRtCorrection(Double_t Rt, Double_t EnergyUncorr );
 		
-		void 		DoMeanFilter(TH1D* hSmoothedTrace);
-		void 		DoWeightedAverageFilter(TH1D* hSmoothedTrace);
-		void 		DoGaussianFilter(TH1D* hSmoothedTrace);
-		void	 	DoBilateralFilter(TH1D* hSmoothedTrace);
+		void 		DoMeanFilter();
+		void 		DoWeightedAverageFilter();
+		void 		DoGaussianFilter();
+		void	 	DoBilateralFilter();
 		
 		private : void 		DoFourierTransformation();
 		private : void 		DoBandStopFilter();
@@ -109,8 +114,27 @@ class THypGeMWD
 		Int_t 		TraceLength;
 		Int_t 		PeakCounter;
 		TH1D			*hTrace_internal;
-
+		
+		//internal pointers to histograms
+		
+		TH1D			*hTrace; 
+		TH1D			*hSmoothedTrace;
+		TH1D			*hTrace_bc;
+		TH1D			*hAmplitude;
+		TH1D			*hMWD;
+		TH1D			*hMWDMA;
+		
+		TH1D			*hEnergySpectrum;
 		TH1D			*hEnergySpectrumWithCut;
+		
+		TH1D			*hRisetime1090;
+		TH1D			*hRisetime3090;
+		
+		TH2D			*hEnergyRise1090Corr;
+		TH2D			*hEnergyRise3090Corr;
+		
+		TH2D			*hEnergyTimeSinceLastPulse;
+
 
 		Double_t offset_av;
 		
@@ -140,10 +164,9 @@ class THypGeMWD
 		Int_t 		SmoothingMethod;	// Switch smoothing on or off
 		Int_t 		EnableBaselineCorrection; 	//Switch baseline correction on or off
 		Int_t 		PileUpTimeCut;
-		
 		Bool_t 		useMWD;				// Switch between MWD and Amplitude evaluation for energy spetrum
 		
-		Double_t g[10000];
+		Double_t g[10000];			// array for coefficient ofs gaussian filter
 		
 		Double_t *Aarray;
 		Double_t *MWDarray;

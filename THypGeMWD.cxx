@@ -72,7 +72,121 @@ THypGeMWD::~THypGeMWD()            //destructor
 	cout << "HypGeMWD deconstructed!" << endl;
 }
 
-Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergy, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr, TH2D* hEnergyTimeSinceLastPulse)
+//Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergySpectrum, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr, TH2D* hEnergyTimeSinceLastPulse)
+//{
+	//bool UseTimer = 0;
+	//if (UseTimer)
+	//{ 
+		//timer.Reset();
+		//timer.Start();
+	//}
+	////cout << SmoothingMethod << endl;
+	//if ( SmoothingMethod)
+	//{
+		//Smoothing(hTrace_ext, hSmoothedTrace);
+		//if (UseTimer) 
+		//{
+			//timer.Stop();
+			//cout << "Smoothing step took " << timer.RealTime() << " seconds" << endl;
+		//}
+	//}
+	//if (UseTimer)
+	//{ 
+		//timer.Reset();
+		//timer.Start();
+	//}
+	//Baseline(hTrace_ext, hTrace_bc);
+	//if (UseTimer) 
+	//{	
+		//timer.Stop();
+		//cout << "Baseline correction step took " << timer.RealTime() << " seconds" << endl;
+	//}
+	
+	
+	//if (UseTimer)
+	//{ 
+		//timer.Reset();
+		//timer.Start();
+	//}
+	//if (MWD(hTrace_ext, hMWD, hAmplitude) == -1)
+		//return -1;
+	
+	//if (UseTimer)
+	//{	
+		//timer.Stop();
+		//cout << "Devonvolution and MWD step took " << timer.RealTime() << " seconds" << endl;
+	//}
+	
+	//if (EnableMA)
+	//{
+		//if (UseTimer)
+		//{ 
+			//timer.Reset();
+			//timer.Start();
+		//}
+		//MA(hTrace_ext, hMWDMA, hMWD);
+		//if (UseTimer)
+		//{	
+			//timer.Stop();
+			//cout << "MA step took " << timer.RealTime() << " seconds" << endl;
+		//}
+	//}
+	
+	//if (UseTimer)
+	//{ 
+		//timer.Reset();
+		//timer.Start();
+	//}
+	//if ( useMWD)
+		//Energyspectrum(hTrace_ext, hEnergySpectrum, hMWD);				//needs MWD
+	//else
+		//Energyspectrum(hTrace_ext, hEnergySpectrum, hAmplitude);		//needs MWD
+	
+	//if (UseTimer)
+	//{	
+		//timer.Stop();
+		//cout << "Energyspectrum step took " << timer.RealTime() << " seconds" << endl;
+
+		//timer.Reset();
+		//timer.Start();
+	//}
+	//Risetime(hTrace_ext, hRisetime1090, hRisetime3090);		//needs Energyspectrum
+	//if (UseTimer)
+	//{	
+		//timer.Stop();
+		//cout << "Risetime step took " << timer.RealTime() << " seconds" << endl;
+
+		//timer.Reset();
+		//timer.Start();
+	//}
+	//ERC(hEnergyRise1090Corr, hEnergyRise3090Corr);			//needs Energyspectrum and Risetime
+	//if (UseTimer)
+	//{	
+		//timer.Stop();
+		//cout << "Energy Rt correlation step took " << timer.RealTime() << " seconds" << endl;
+
+		//timer.Reset();
+		//timer.Start();
+	//}
+	//EnergyTimeSinceLastPulseCorrelation(hEnergyTimeSinceLastPulse);
+	//if (UseTimer)
+	//{	
+		//timer.Stop();
+		//cout << "Energy TSLPulse correlation step took " << timer.RealTime() << " seconds" << endl;
+		
+		//timer.Reset();
+		//timer.Start();
+	//}
+	//FillEnergySpectrumWithPileUpCut(PileUpTimeCut);
+	//if (UseTimer)
+	//{	
+		//timer.Stop();
+		//cout << "Energy Spectrum with cut step took " << timer.RealTime() << " seconds" << endl;
+	//}
+	//return 0;
+//}
+
+Double_t THypGeMWD::FullAnalysis ()
 {
 	bool UseTimer = 0;
 	if (UseTimer)
@@ -83,7 +197,7 @@ Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* 
 	//cout << SmoothingMethod << endl;
 	if ( SmoothingMethod)
 	{
-		Smoothing(hTrace_ext, hSmoothedTrace);
+		Smoothing();
 		if (UseTimer) 
 		{
 			timer.Stop();
@@ -95,7 +209,7 @@ Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* 
 		timer.Reset();
 		timer.Start();
 	}
-	Baseline(hTrace_ext, hTrace_bc);
+	Baseline();
 	if (UseTimer) 
 	{	
 		timer.Stop();
@@ -108,7 +222,7 @@ Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* 
 		timer.Reset();
 		timer.Start();
 	}
-	if (MWD(hTrace_ext, hMWD, hAmplitude) == -1)
+	if (MWD() == -1)
 		return -1;
 	
 	if (UseTimer)
@@ -124,7 +238,7 @@ Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* 
 			timer.Reset();
 			timer.Start();
 		}
-		MA(hTrace_ext, hMWDMA, hMWD);
+		MA();
 		if (UseTimer)
 		{	
 			timer.Stop();
@@ -137,10 +251,8 @@ Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* 
 		timer.Reset();
 		timer.Start();
 	}
-	if ( useMWD)
-		Energyspectrum(hTrace_ext, hEnergy, hMWD);				//needs MWD
-	else
-		Energyspectrum(hTrace_ext, hEnergy, hAmplitude);		//needs MWD
+	
+	Energyspectrum();				//needs MWD
 	
 	if (UseTimer)
 	{	
@@ -150,7 +262,7 @@ Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* 
 		timer.Reset();
 		timer.Start();
 	}
-	Risetime(hTrace_ext, hRisetime1090, hRisetime3090);		//needs Energyspectrum
+	Risetime();		//needs Energyspectrum
 	if (UseTimer)
 	{	
 		timer.Stop();
@@ -159,7 +271,7 @@ Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* 
 		timer.Reset();
 		timer.Start();
 	}
-	ERC(hEnergyRise1090Corr, hEnergyRise3090Corr);			//needs Energyspectrum and Risetime
+	ERC();			//needs Energyspectrum and Risetime
 	if (UseTimer)
 	{	
 		timer.Stop();
@@ -168,7 +280,7 @@ Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* 
 		timer.Reset();
 		timer.Start();
 	}
-	EnergyTimeSinceLastPulseCorrelation(hEnergyTimeSinceLastPulse);
+	EnergyTimeSinceLastPulseCorrelation();
 	if (UseTimer)
 	{	
 		timer.Stop();
@@ -185,23 +297,22 @@ Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* 
 	}
 	return 0;
 }
-
 	
 	//Smoothing
 	
-Int_t THypGeMWD::Smoothing(TH1D* hTrace_ext, TH1D* hSmoothedTrace)
+Int_t THypGeMWD::Smoothing()
 {
 	
-	SetTrace(hTrace_ext);
+	SetTrace(hTrace);
 	
 	if( SmoothingMethod == 1)
-		DoMeanFilter(hSmoothedTrace);
+		DoMeanFilter();
 	if( SmoothingMethod == 2)
-		DoWeightedAverageFilter(hSmoothedTrace);
+		DoWeightedAverageFilter();
 	if( SmoothingMethod == 3)
-		DoGaussianFilter(hSmoothedTrace);
+		DoGaussianFilter();
 	if( SmoothingMethod == 4)	
-		DoBilateralFilter(hSmoothedTrace);
+		DoBilateralFilter();
 		
 //	*hSmoothedTrace = *hTrace_internal;			//use for weighted average and rectangular only
 	//*hTrace_internal = *hSmoothedTrace;
@@ -214,10 +325,10 @@ Int_t THypGeMWD::Smoothing(TH1D* hTrace_ext, TH1D* hSmoothedTrace)
 	
 	//Baseline
 	
-Int_t THypGeMWD::Baseline(TH1D* hTrace_ext, TH1D* hTrace_bc)
+Int_t THypGeMWD::Baseline()
 {
 	if (hTrace_internal == 0)
-		SetTrace(hTrace_ext);
+		SetTrace(hTrace);
 		
 	if (hTrace_internal->GetMaximum() == 0)
 		return -1;
@@ -241,10 +352,10 @@ Int_t THypGeMWD::Baseline(TH1D* hTrace_ext, TH1D* hTrace_bc)
 	
 	//Moving-Window-Deconvolution
 	
-Int_t THypGeMWD::MWD(TH1D* hTrace_ext, TH1D* hMWD, TH1D* hAmplitude)
+Int_t THypGeMWD::MWD()
 {
 	if (hTrace_internal == 0)
-	SetTrace(hTrace_ext);
+	SetTrace(hTrace);
 	
 	//Double_t A[TraceLength+1], MWDarray[TraceLength+1];
 		
@@ -313,10 +424,10 @@ Int_t THypGeMWD::MWD(TH1D* hTrace_ext, TH1D* hMWD, TH1D* hAmplitude)
 	
 	//Moving-Average
 	
-Int_t THypGeMWD::MA(TH1D* hTrace_ext, TH1D* hMWDMA, TH1D* hMWD)
+Int_t THypGeMWD::MA()
 {
 	if (hTrace_internal == 0)
-		SetTrace(hTrace_ext);
+		SetTrace(hTrace);
 	
 	Double_t  MWDMA[TraceLength+1];
 	
@@ -338,21 +449,20 @@ Int_t THypGeMWD::MA(TH1D* hTrace_ext, TH1D* hMWDMA, TH1D* hMWD)
 
 	//PileupCompensation and Energyspectrum
 		
-Int_t THypGeMWD::Energyspectrum(TH1D* hTrace_ext, TH1D* hEnergy, TH1D* hMWD)
+Int_t THypGeMWD::Energyspectrum()
 {
-	
 	
 	SetTrace(hMWD);
 	if (useMWD)
 	{
 		//if ( !EnableMA)
 			//SetTrace(hMWD);
-		EvaluateMWD( hEnergy);
+		EvaluateMWD();
 	}
 	else
 	{
 		//SetTrace(hMWD);
-		EvaluateAmplitude( hEnergy);
+		EvaluateAmplitude( );
 	}
 	
 	return 0;
@@ -360,11 +470,11 @@ Int_t THypGeMWD::Energyspectrum(TH1D* hTrace_ext, TH1D* hEnergy, TH1D* hMWD)
 	
 	//Risetime
 	
-Int_t THypGeMWD::Risetime(TH1D* hTrace_ext, TH1D* hRisetime1090, TH1D* hRisetime3090)
+Int_t THypGeMWD::Risetime()
 {
 	//cout << "new Trace" << endl;
-	if (hTrace_ext == 0)
-		SetTrace(hTrace_ext);
+	if (hTrace == 0)
+		SetTrace(hTrace);
 	/*
 	risetime1090.clear();
 	risetime3090.clear();
@@ -535,8 +645,8 @@ Int_t THypGeMWD::Risetime(TH1D* hTrace_ext, TH1D* hRisetime1090, TH1D* hRisetime
 		}
 	}
 	*/
-	if (hTrace_ext == 0)
-	SetTrace(hTrace_ext);
+	if (hTrace == 0)
+	SetTrace(hTrace);
 		
 	risetime1090.clear();
 	risetime3090.clear();
@@ -545,14 +655,14 @@ Int_t THypGeMWD::Risetime(TH1D* hTrace_ext, TH1D* hRisetime1090, TH1D* hRisetime
 
 	for(Int_t k=0;k<Int_t(leftborder.size());k++)
 	{		
-		Double_t rightborder = FindLocalMaximumBin(hTrace_ext,leftborder[k],leftborder[k]+40);
+		Double_t rightborder = FindLocalMaximumBin(hTrace,leftborder[k],leftborder[k]+40);
 						
-		if(hTrace_ext->GetBinContent(rightborder) > threshold_Risetime+hTrace_ext->GetBinContent(leftborder[k]))
+		if(hTrace->GetBinContent(rightborder) > threshold_Risetime+hTrace->GetBinContent(leftborder[k]))
 		{
-			Double_t l = (hTrace_ext->GetBinContent(rightborder)-hTrace_ext->GetBinContent(leftborder[k]))/10;		//Calculates 10% of height of the rising signal
+			Double_t l = (hTrace->GetBinContent(rightborder)-hTrace->GetBinContent(leftborder[k]))/10;		//Calculates 10% of height of the rising signal
 						
-			Double_t RiseX1090 = Double_t(FindFirstBinAbove(hTrace_ext,hTrace_ext->GetBinContent(rightborder)-l,leftborder[k],rightborder)) - Double_t(FindFirstBinAbove(hTrace_ext,hTrace_ext->GetBinContent(rightborder)-9*l,leftborder[k],rightborder));
-			Double_t RiseX3090 = Double_t(FindFirstBinAbove(hTrace_ext,hTrace_ext->GetBinContent(rightborder)-l,leftborder[k],rightborder)) - Double_t(FindFirstBinAbove(hTrace_ext,hTrace_ext->GetBinContent(rightborder)-7*l,leftborder[k],rightborder));
+			Double_t RiseX1090 = Double_t(FindFirstBinAbove(hTrace,hTrace->GetBinContent(rightborder)-l,leftborder[k],rightborder)) - Double_t(FindFirstBinAbove(hTrace,hTrace->GetBinContent(rightborder)-9*l,leftborder[k],rightborder));
+			Double_t RiseX3090 = Double_t(FindFirstBinAbove(hTrace,hTrace->GetBinContent(rightborder)-l,leftborder[k],rightborder)) - Double_t(FindFirstBinAbove(hTrace,hTrace->GetBinContent(rightborder)-7*l,leftborder[k],rightborder));
 			
 			Double_t RiseT1090 = RiseX1090 * 10;		//Conversion into nanoseconds (FADC 100 MS/s)
 			Double_t RiseT3090 = RiseX3090 * 10;
@@ -569,7 +679,7 @@ Int_t THypGeMWD::Risetime(TH1D* hTrace_ext, TH1D* hRisetime1090, TH1D* hRisetime
 	
 	//Energy-Risetime-Correlation
 	
-Int_t THypGeMWD::ERC(TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr)
+Int_t THypGeMWD::ERC()
 {
 		
 	if(Int_t(energy.size()) == Int_t(risetime1090.size()))
@@ -796,7 +906,7 @@ void THypGeMWD::SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Wid
 
 }
 
-void THypGeMWD::EvaluateAmplitude(TH1D* hEnergy)
+void THypGeMWD::EvaluateAmplitude()
 {
 	
 	//for MWD without MA
@@ -829,9 +939,9 @@ void THypGeMWD::EvaluateAmplitude(TH1D* hEnergy)
 			}
 			i++;
 		}	
-		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) < grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) < grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) < grad_MWD);
+		while(hAmplitude->GetBinContent(i+1) - hAmplitude->GetBinContent(i) < grad_MWD && hAmplitude->GetBinContent(i+2) - hAmplitude->GetBinContent(i+1) < grad_MWD && hAmplitude->GetBinContent(i+3) - hAmplitude->GetBinContent(i+2) < grad_MWD);
 		
-		leftborder_low = hTrace_internal->GetBin(i);
+		leftborder_low = hAmplitude->GetBin(i);
 						
 		//leftborder.push_back(leftborder_low);		//used for Risetime (add +10 to leftborder_low at high smoothing rates -> results from the discrepance between smoothed and unsmoothed MWD-shape)
 
@@ -845,17 +955,17 @@ void THypGeMWD::EvaluateAmplitude(TH1D* hEnergy)
 			}
 			i++;
 		}	
-		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) >= grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) >= grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) >= grad_MWD);
+		while(hAmplitude->GetBinContent(i+1) - hAmplitude->GetBinContent(i) >= grad_MWD && hAmplitude->GetBinContent(i+2) - hAmplitude->GetBinContent(i+1) >= grad_MWD && hAmplitude->GetBinContent(i+3) - hAmplitude->GetBinContent(i+2) >= grad_MWD);
 		
-		leftborder_high = hTrace_internal->GetBin(i);
+		leftborder_high = hAmplitude->GetBin(i);
 				
 				
-		if(hTrace_internal->GetBinContent(leftborder_low) < threshold_MWD && hTrace_internal->GetBinContent(leftborder_high) > threshold_MWD)
+		if(hAmplitude->GetBinContent(leftborder_low) < threshold_MWD && hAmplitude->GetBinContent(leftborder_high) > threshold_MWD)
 		{
 			
 			for(i=leftborder_high+5;i<=leftborder_high+15;i++)
 			{
-				Sumenergy = Sumenergy + hTrace_internal->GetBinContent(i);
+				Sumenergy = Sumenergy + hAmplitude->GetBinContent(i);
 			}
 			
 			Energy_av = Sumenergy/11;
@@ -864,9 +974,9 @@ void THypGeMWD::EvaluateAmplitude(TH1D* hEnergy)
 			
 			for(i=leftborder_low-10;i<leftborder_low;i++)
 			{	
-				if(hTrace_internal->GetBinContent(i) < threshold_MWD)
+				if(hAmplitude->GetBinContent(i) < threshold_MWD)
 				{
-					Sumnoise_left = Sumnoise_left + hTrace_internal->GetBinContent(i);
+					Sumnoise_left = Sumnoise_left + hAmplitude->GetBinContent(i);
 					k++;
 				}
 			}
@@ -876,7 +986,7 @@ void THypGeMWD::EvaluateAmplitude(TH1D* hEnergy)
 			Energy_av = Energy_av - Noise_av;
 			if (Energy_av > threshold_MWD)
 			{
-				hEnergy->Fill(Energy_av);
+				hEnergySpectrum->Fill(Energy_av);
 				leftborder.push_back(leftborder_low);		//used for Risetime
 				rightborder.push_back(leftborder_high);		//used for Risetime 
 				energy.push_back(Energy_av);		//used for Energy-Risetime-Correlation 
@@ -908,7 +1018,7 @@ for(Int_t i=0;i<=TraceLength;i++)
 		
 		
 
-void THypGeMWD::EvaluateMWD(TH1D* hEnergy)
+void THypGeMWD::EvaluateMWD()
 {
 	//for MWD
  
@@ -994,7 +1104,7 @@ if(border_max.size() == border_min.size())
 				Energy = Energy - Noise;
 				if(Energy>20 && Energy<3500)
 				{
-					hEnergy->Fill(Energy);
+					hEnergySpectrum->Fill(Energy);
 				}
 			}
 			if(border_max[k] < border_min[k] && border_max[k+1] < border_min[k+1] && border_max[k+2] > border_min[k+2] && border_max[k+3] > border_min[k+3])
@@ -1028,7 +1138,7 @@ if(border_max.size() == border_min.size())
 				Energy = Energy - Noise;
 				if(Energy>20 && Energy<3500)
 				{
-					hEnergy->Fill(Energy);
+					hEnergySpectrum->Fill(Energy);
 				}
 				Sumenergy = 0;
 				for(Int_t i=border_max[k+2]+10;i<=border_min[k+3]-10;i++)
@@ -1039,7 +1149,7 @@ if(border_max.size() == border_min.size())
 				Energy = Energy - Noise;
 				if(Energy>20 && Energy<3500)
 				{
-					hEnergy->Fill(Energy);
+					hEnergySpectrum->Fill(Energy);
 				}
 			}
 			
@@ -1081,7 +1191,7 @@ if(border_max.size() == border_min.size())
 				}
 				Double_t Noise = Sumnoise/p;
 				Energy = Energy - Noise;
-				hEnergy->Fill(Energy);
+				hEnergySpectrum->Fill(Energy);
 			}
 			if(border_max[k] > border_min[k] && border_max[k+1] < border_min[k+1])
 			{
@@ -1111,7 +1221,7 @@ if(border_max.size() == border_min.size())
 				}
 				Double_t Noise = Sumnoise/p;
 				Energy = Energy - Noise;
-				hEnergy->Fill(Energy);
+				hEnergySpectrum->Fill(Energy);
 			}
 			if(border_max[k] < border_min[k] && border_max[k+1] < border_min[k+1])
 			{
@@ -1141,7 +1251,7 @@ if(border_max.size() == border_min.size())
 				}
 				Double_t Noise = Sumnoise/p;
 				Energy = Energy - Noise;
-				hEnergy->Fill(Energy);
+				hEnergySpectrum->Fill(Energy);
 			}
 			if(border_max[k] > border_min[k] && border_max[k+1] > border_min[k+1])
 			{
@@ -1171,7 +1281,7 @@ if(border_max.size() == border_min.size())
 				}
 				Double_t Noise = Sumnoise/p;
 				Energy = Energy - Noise;
-				hEnergy->Fill(Energy);
+				hEnergySpectrum->Fill(Energy);
 			}
 		}
 	}
@@ -1179,7 +1289,7 @@ if(border_max.size() == border_min.size())
 	/*
 	for(Int_t i=0;i<=TraceLength;i++)
 	{
-		hEnergy->SetBinContent(i,Grad4[i]);
+		hEnergySpectrum->SetBinContent(i,Grad4[i]);
 	}
 	*/
 	
@@ -1200,7 +1310,7 @@ if(border_max.size() == border_min.size())
 		Double_t Noise_av = 0;
 	
 		Int_t i = rightborder_low+10;
-		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) < grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) < grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) < grad_MWD)	// check if derivative of trace is smaller than a threshold for 3 continous times, when this fails the start of a signal is found
+		while(hMWD->GetBinContent(i+1) - hMWD->GetBinContent(i) < grad_MWD && hMWD->GetBinContent(i+2) - hMWD->GetBinContent(i+1) < grad_MWD && hMWD->GetBinContent(i+3) - hMWD->GetBinContent(i+2) < grad_MWD)	// check if derivative of trace is smaller than a threshold for 3 continous times, when this fails the start of a signal is found
 		{
 			if(i+10 >= TraceLength)		// break of the outer loop
 			{
@@ -1211,12 +1321,12 @@ if(border_max.size() == border_min.size())
 		}	
 		if (abort1) break;
 		
-		leftborder_low = hTrace_internal->GetBin(i);			// start of MWD signal
+		leftborder_low = hMWD->GetBin(i);			// start of MWD signal
 						
 		//leftborder.push_back(leftborder_low);		//used for Risetime (add +10 to leftborder_low at high smoothing rates -> results from the discrepance between smoothed and unsmoothed MWD-shape)
 		//cout << leftborder_low << endl;
 		i = leftborder_low+5;
-		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) >= grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) >= grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) >= grad_MWD) // check if derivative of trace is bigger than a threshold for 3 continous times, when this fails the top of a signal is found
+		while(hMWD->GetBinContent(i+1) - hMWD->GetBinContent(i) >= grad_MWD && hMWD->GetBinContent(i+2) - hMWD->GetBinContent(i+1) >= grad_MWD && hMWD->GetBinContent(i+3) - hMWD->GetBinContent(i+2) >= grad_MWD) // check if derivative of trace is bigger than a threshold for 3 continous times, when this fails the top of a signal is found
 		{
 			if(i+10 >= TraceLength) // break of the outer loop
 			{
@@ -1227,11 +1337,11 @@ if(border_max.size() == border_min.size())
 		}	
 		if (abort1) break;
 		
-		leftborder_high = hTrace_internal->GetBin(i);			// upper left edge of MWD signal
+		leftborder_high = hMWD->GetBin(i);			// upper left edge of MWD signal
 				
 		i = leftborder_high+5;	// little offset just as a speedup
 		
-		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) > -grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) > -grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) > -grad_MWD) // check if derivative of trace is bigger than a threshold for 3 continous times, when this fails the end of the flat top of a signal is found
+		while(hMWD->GetBinContent(i+1) - hMWD->GetBinContent(i) > -grad_MWD && hMWD->GetBinContent(i+2) - hMWD->GetBinContent(i+1) > -grad_MWD && hMWD->GetBinContent(i+3) - hMWD->GetBinContent(i+2) > -grad_MWD) // check if derivative of trace is bigger than a threshold for 3 continous times, when this fails the end of the flat top of a signal is found
 		{
 			if(i+10 >= TraceLength) // break of the outer loop
 			{
@@ -1242,10 +1352,10 @@ if(border_max.size() == border_min.size())
 		}	
 		if (abort1) break;
 	
-		rightborder_high = hTrace_internal->GetBin(i);		// upper right edge of MWD signal
+		rightborder_high = hMWD->GetBin(i);		// upper right edge of MWD signal
 		
 		i = rightborder_high+5;
-		while(hTrace_internal->GetBinContent(i+1) - hTrace_internal->GetBinContent(i) <= -grad_MWD && hTrace_internal->GetBinContent(i+2) - hTrace_internal->GetBinContent(i+1) <= -grad_MWD && hTrace_internal->GetBinContent(i+3) - hTrace_internal->GetBinContent(i+2) <= -grad_MWD) // check if derivative of trace is smaller than a threshold for 3 continous times, when this fails the end of the MWD signal is found
+		while(hMWD->GetBinContent(i+1) - hMWD->GetBinContent(i) <= -grad_MWD && hMWD->GetBinContent(i+2) - hMWD->GetBinContent(i+1) <= -grad_MWD && hMWD->GetBinContent(i+3) - hMWD->GetBinContent(i+2) <= -grad_MWD) // check if derivative of trace is smaller than a threshold for 3 continous times, when this fails the end of the MWD signal is found
 		{
 			if(i+10 >= TraceLength) // break of the outer loop
 			{
@@ -1256,14 +1366,14 @@ if(border_max.size() == border_min.size())
 		}	
 		if (abort1) break;
 	
-		rightborder_low = hTrace_internal->GetBin(i);		// end of MWD signal
+		rightborder_low = hMWD->GetBin(i);		// end of MWD signal
 	
-		if(hTrace_internal->GetBinContent(leftborder_low) < threshold_MWD && hTrace_internal->GetBinContent(rightborder_low) < threshold_MWD && hTrace_internal->GetBinContent(leftborder_high) > threshold_MWD && hTrace_internal->GetBinContent(rightborder_high) > threshold_MWD)
+		if(hMWD->GetBinContent(leftborder_low) < threshold_MWD && hMWD->GetBinContent(rightborder_low) < threshold_MWD && hMWD->GetBinContent(leftborder_high) > threshold_MWD && hMWD->GetBinContent(rightborder_high) > threshold_MWD)
 		{
 			
 			for(i=leftborder_high+10;i<=rightborder_high-10;i++)			// calculate average value of flat top
 			{
-				Sumenergy = Sumenergy + hTrace_internal->GetBinContent(i);
+				Sumenergy = Sumenergy + hMWD->GetBinContent(i);
 			}
 			
 			Energy_av = Sumenergy/(rightborder_high-leftborder_high-20);
@@ -1272,18 +1382,18 @@ if(border_max.size() == border_min.size())
 			
 			for(i=leftborder_low-10;i<leftborder_low;i++)							// calculate average value of base before pulse
 			{	
-				if(hTrace_internal->GetBinContent(i) < threshold_MWD)
+				if(hMWD->GetBinContent(i) < threshold_MWD)
 				{
-					Sumnoise_left = Sumnoise_left + hTrace_internal->GetBinContent(i);	
+					Sumnoise_left = Sumnoise_left + hMWD->GetBinContent(i);	
 					k++;
 				}
 			}
 			
 			for(i=rightborder_low+1;i<=rightborder_low+10;i++)				// calculate average value of base after pulse
 			{	
-				if(hTrace_internal->GetBinContent(i) < threshold_MWD)
+				if(hMWD->GetBinContent(i) < threshold_MWD)
 				{
-					Sumnoise_right = Sumnoise_right + hTrace_internal->GetBinContent(i);
+					Sumnoise_right = Sumnoise_right + hMWD->GetBinContent(i);
 					k++;
 				}
 			}
@@ -1296,7 +1406,7 @@ if(border_max.size() == border_min.size())
 			
 			if (Energy_av > threshold_MWD)
 			{
-				hEnergy->Fill(Energy_av);
+				hEnergySpectrum->Fill(Energy_av);
 				energy.push_back(Energy_av);		//used for Energy-Risetime-Correlation 
 				leftborder.push_back(leftborder_low);		//used for Risetime
 				rightborder.push_back(leftborder_high);		//used for Risetime 
@@ -1378,7 +1488,7 @@ Double_t THypGeMWD::CorrFunc(Double_t x)						// function for Energy risetime co
 	Double_t CorrValue = par[0] + par[1] * x + par[2] * x *x + par[3] * x * x * x +  par[4] * x * x * x * x ;
 	return CorrValue;
 }
-void THypGeMWD::DoMeanFilter(TH1D* hSmoothedTrace)
+void THypGeMWD::DoMeanFilter()
 {
 	//Rectangular filter
 	for(Int_t k=0;k<NoOfSmoothing;k++)		//Smoothing k times
@@ -1417,7 +1527,7 @@ void THypGeMWD::DoMeanFilter(TH1D* hSmoothedTrace)
 		}
 	}
 }
-void THypGeMWD::DoWeightedAverageFilter(TH1D* hSmoothedTrace)
+void THypGeMWD::DoWeightedAverageFilter()
 {
 	// weighted average
 	for(Int_t k=0;k<NoOfSmoothing;k++)		//Smoothing k times
@@ -1434,7 +1544,7 @@ void THypGeMWD::DoWeightedAverageFilter(TH1D* hSmoothedTrace)
 		}
 	}
 }
-void THypGeMWD::DoGaussianFilter(TH1D* hSmoothedTrace)
+void THypGeMWD::DoGaussianFilter()
 {
 	Double_t value;
 
@@ -1455,7 +1565,7 @@ void THypGeMWD::DoGaussianFilter(TH1D* hSmoothedTrace)
 		hSmoothedTrace->SetBinContent(i,value);
 	}
 }
-void THypGeMWD::DoBilateralFilter(TH1D* hSmoothedTrace)
+void THypGeMWD::DoBilateralFilter()
 {
 // bilateral
 	Double_t value;
@@ -1492,7 +1602,7 @@ void THypGeMWD::DoFourierBackTransformation()
 	
 }
 
-Int_t THypGeMWD::EnergyTimeSinceLastPulseCorrelation(TH2D* hEnergyTimeSinceLastPulse)
+Int_t THypGeMWD::EnergyTimeSinceLastPulseCorrelation()
 {
 	for (Int_t i =1; i <Int_t(SignalTime.size()); i++)
 	{
@@ -1502,9 +1612,38 @@ Int_t THypGeMWD::EnergyTimeSinceLastPulseCorrelation(TH2D* hEnergyTimeSinceLastP
 	return 0;
 }
 
-void THypGeMWD::ConnectHistograms(TH1D *hEnergySpectrumWithCut_ext)
+void THypGeMWD::ConnectTraceHistograms(TH1D* hTrace_ext, TH1D* hSmoothedTrace_ext, TH1D* hTrace_bc_ext, TH1D* hAmplitude_ext,TH1D* hMWD_ext,TH1D* hMWDMA_ext)
 {
+	for (Int_t i=0; i<1; i++)		// this must be adapted for more channels
+	{
+		hTrace = hTrace_ext; 
+		hSmoothedTrace = hSmoothedTrace_ext;
+		hTrace_bc = hTrace_bc_ext;
+		hAmplitude = hAmplitude_ext;
+		hMWD = hMWD_ext;
+		hMWDMA = hMWDMA_ext;
+	}
+}
+void THypGeMWD::Connect1DEnergySpectraHistograms(TH1D *hEnergySpectrum_ext,TH1D *hEnergySpectrumWithCut_ext)
+{
+	hEnergySpectrum = hEnergySpectrum_ext;
 	hEnergySpectrumWithCut = hEnergySpectrumWithCut_ext;
+}
+
+
+void THypGeMWD::Connect1DRisetimeHistograms(TH1D* hRisetime1090_ext, TH1D* hRisetime3090_ext)
+{
+	hRisetime1090 = hRisetime1090_ext;
+	hRisetime3090 = hRisetime3090_ext;
+}
+void THypGeMWD::Connect2DEnergyRisetimeHistograms(TH2D* hEnergyRise1090Corr_ext, TH2D* hEnergyRise3090Corr_ext)
+{
+	hEnergyRise1090Corr = hEnergyRise1090Corr_ext;
+	hEnergyRise3090Corr = hEnergyRise3090Corr_ext;
+}
+void THypGeMWD::Connect2DEnergyTimeSinceLastPulseHistograms(TH2D* hEnergyTimeSinceLastPulse_ext)
+{
+	hEnergyTimeSinceLastPulse = hEnergyTimeSinceLastPulse_ext;
 }
 
 Int_t		THypGeMWD::FillEnergySpectrumWithPileUpCut(Double_t CutValue)

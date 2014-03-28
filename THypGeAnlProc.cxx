@@ -111,7 +111,12 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		//cout << "\tMWDm " << fHypPar->GetMWDm() << endl;
 		// real analysis object
 	fMWDAna = new THypGeMWD(TRACE_LENGTH);
-	fMWDAna->ConnectHistograms(fhEnergySpectrum_withCut);
+		fMWDAna->ConnectTraceHistograms(fhTrace[0], fhTrace_Smoothed[0], fhTrace_BaseCorr[0], fhTrace_deconv[0], fhTrace_MWD[0], fhTrace_MA[0]);
+		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum,fhEnergySpectrum_withCut);
+		fMWDAna->Connect1DRisetimeHistograms(fhRisetime1090, fhRisetime3090);
+		fMWDAna->Connect2DEnergyRisetimeHistograms(fhEnergyRise1090Corr, fhEnergyRise3090Corr);
+		fMWDAna->Connect2DEnergyTimeSinceLastPulseHistograms(fhEnergyTimeSinceLastPulse);
+	
 	cout << "**** THypGeAnlProc: Create" << endl;
 }
 //-----------------------------------------------------------
@@ -150,7 +155,8 @@ Bool_t THypGeAnlProc::BuildEvent(TGo4EventElement* dest)
 	if (fHypPar->GetParametersChanged())
 		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection());
 
-	if (fMWDAna->FullAnalysis(fhTrace[0],fhTrace_Smoothed[0],fhTrace_BaseCorr[0], fhTrace_deconv[0],fhTrace_MWD[0],fhEnergySpectrum,fhRisetime1090,fhRisetime3090,fhTrace_MA[0],(TH2D*) fhEnergyRise1090Corr,(TH2D*) fhEnergyRise3090Corr, fhEnergyTimeSinceLastPulse) != -1)				// some error here
+	//if (fMWDAna->FullAnalysis(fhTrace[0],fhTrace_Smoothed[0],fhTrace_BaseCorr[0], fhTrace_deconv[0],fhTrace_MWD[0],fhEnergySpectrum,fhRisetime1090,fhRisetime3090,fhTrace_MA[0],(TH2D*) fhEnergyRise1090Corr,(TH2D*) fhEnergyRise3090Corr, fhEnergyTimeSinceLastPulse) != -1)				// some error here
+	if (fMWDAna->FullAnalysis() != -1)				// some error here
 		fhAmplBaselinegradient->Fill((fhTrace_deconv[0]->GetBinContent(1)-fhTrace_deconv[0]->GetBinContent(301))/300);
 	
 	//this shows number of real events
