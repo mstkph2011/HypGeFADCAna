@@ -191,14 +191,21 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	fhEnergyRise3090Corr = new TH2D("EnergyRise3090Corr","Enegy-Risetime3090-Correlation;Rt;E",100,0,1000,2000,0,2000);
 	AddHistogram(fhEnergyRise3090Corr,"V1724/EnergyRise3090Corr");
 	
+	
+	// histogram to see the correlation of energy and the time between two pulses to examine the effect of pile up
 	fhEnergyTimeSinceLastPulse = new TH2D("EnergyTimeSinceLastPulse","Energy- Time since last Pulse - Correlation;E ;Time since last pulse [#mus]",20000,0,2000,200,0,200);
 	AddHistogram(fhEnergyTimeSinceLastPulse,"V1724/EnergyTimeSinceLastPulse");
+	
+	//create histogram for energy spectrum with a cut in the pile up time
+	fhEnergySpectrum_withCut = new TH1D("Energy_withCut","Energy_withCut",4000,0,4000);
+	AddHistogram(fhEnergySpectrum_withCut,"V1724/Energyspectrum");
+	
 	
 	cout << "All global histograms created"<< endl;
 	
 	
-	//SetDynListInterval(1000);					// set the auto save interval. the value is the time between 2 automatic saves in seconds
-	//SetDynListInterval (100);					// change this value to get more updates on the drawing of histograms. the value is the number of events processed before a TTree::Draw() is called. only in GUI mode
+	//SetAutoSaveInterval(1000);					// set the auto save interval. the value is the time between 2 automatic saves in seconds; default 500
+	//SetDynListInterval (100);					// change this value to get more updates on the drawing of histograms. the value is the number of events processed before a TTree::Draw() is called. only in GUI mode; default 1000
 }
 //***********************************************************
 THypGeAnalysis::~THypGeAnalysis()
@@ -291,7 +298,27 @@ Int_t THypGeAnalysis::UserPostLoop()	// fitting can be done here
 //-----------------------------------------------------------
 Int_t THypGeAnalysis::UserEventFunc()
 {
-//// This function is called once for each event.
+//// This function is called once for each event. This part is used to update the Event Counter in the GO4 GUi
+	Int_t value = 0;
+	Int_t count = 0;
+	if(fMbsEvent) value = fMbsEvent->GetDlen()/2+2; // total longwords
+	fEvents++;
 	
+	if(fEvents == 1 || IsNewInputFile()) {
+		if(fMbsEvent) {
+			 count=fMbsEvent->GetCount();
+			 cout << "\nFirst event #: " << count	<< endl;
+			 s_bufhe* bufheader = fMbsEvent->GetMbsBufferHeader();
+			 if(bufheader) {
+					char sbuf[1000];
+					f_ut_utime(bufheader->l_time[0], bufheader->l_time[1], sbuf);
+					cout <<"First Buffer:"<<endl;
+					cout <<"\tNumber: "<<bufheader->l_buf << endl;
+					cout <<"\tTime: " << sbuf << endl;
+			 }
+		}
+		SetNewInputFile(kFALSE); // we have to reset the newfile flag
+	}
+	 fLastEvent = count;
 	 return 0;
 }

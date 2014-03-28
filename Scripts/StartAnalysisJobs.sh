@@ -11,8 +11,8 @@ MWDmin=200
 MWDmax=200
 MWDstep=20
 #if only a fixed value for sigma gaus should be used make min = max
-sigmaGausmin=11
-sigmaGausmax=11
+sigmaGausmin=9
+sigmaGausmax=9
 sigmaGausstep=2
 #if only a fixed value for sigma bil should be used make min = max
 sigmaBilmin=2000
@@ -126,7 +126,7 @@ EOF
 ### submit job to batch system
 				mkdir -p ${RunPath}/run$fileAdd
 				cp ${AnaLibDir}/libGo4UserAnalysis.so ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so
-				qsub $JobPath/job${fileAdd}.sh
+				qsub $JobPath/job${fileAdd}.sh >> Jobinfo.txt
 			done					### end of loop over files
 
 ### "double queue": check if there is enough space in the queue to send more jobs, if not wait 2 minutes and check again

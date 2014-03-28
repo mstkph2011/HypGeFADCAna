@@ -103,13 +103,15 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 	fhAmplBaselinegradient= new TH1D ("Baselinegrad","Gradient of the start of the baseline in amplitude signal",1000,0,10);
 	AddHistogram(fhAmplBaselinegradient,"V1724/BaseGrad");
 		
+	fhEnergySpectrum_withCut = (TH1D*) GetHistogram("V1724/Energyspectrum/Energy_withCut");
+	
 		// get parameters
 	fHypPar = (THypGeParameter*)  GetParameter("HypGeParameter");
 	cout << "fHypPar" <<fHypPar << endl;
 		//cout << "\tMWDm " << fHypPar->GetMWDm() << endl;
 		// real analysis object
 	fMWDAna = new THypGeMWD(TRACE_LENGTH);
-	
+	fMWDAna->ConnectHistograms(fhEnergySpectrum_withCut);
 	cout << "**** THypGeAnlProc: Create" << endl;
 }
 //-----------------------------------------------------------

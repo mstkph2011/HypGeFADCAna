@@ -46,7 +46,10 @@ class THypGeMWD
 		//Double_t CalculateRisetime(TH1D* hTrace_ext,Double_t* times);
 		
 		Double_t 	FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergy, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr, TH2D* hEnergyTimeSinceLastPulse);
-		//TH1D*			MWD(TH1D* hTrace_ext);
+		
+		void 				ConnectHistograms(TH1D *hEnergySpectrumWithCut_ext);
+		
+		
 		TH1D*			GetTrace();
 		
 		void 			SetTrace(TH1D* hTrace_ext);
@@ -62,6 +65,7 @@ class THypGeMWD
 		Int_t		Risetime(TH1D* hTrace_ext, TH1D* hRisetime1090, TH1D* hRisetime3090);
 		Int_t		ERC(TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr);
 		Int_t 	EnergyTimeSinceLastPulseCorrelation(TH2D* hEnergyTimeSinceLastPulse);
+		Int_t		FillEnergySpectrumWithPileUpCut(Double_t CutValue);
 		
 		private:
 		Int_t 		FindFirstBinAbove(TH1D* fHisto,Double_t threshold,Int_t low, Int_t high);
@@ -106,6 +110,8 @@ class THypGeMWD
 		Int_t 		PeakCounter;
 		TH1D			*hTrace_internal;
 
+		TH1D			*hEnergySpectrumWithCut;
+
 		Double_t offset_av;
 		
 		
@@ -133,6 +139,7 @@ class THypGeMWD
 		Int_t 		EnableMA;			// Switch for second moving average filter
 		Int_t 		SmoothingMethod;	// Switch smoothing on or off
 		Int_t 		EnableBaselineCorrection; 	//Switch baseline correction on or off
+		Int_t 		PileUpTimeCut;
 		
 		Bool_t 		useMWD;				// Switch between MWD and Amplitude evaluation for energy spetrum
 		

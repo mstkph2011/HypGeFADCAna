@@ -56,6 +56,8 @@ class THypGeAnlProc : public TGo4EventProcessor {
 			
 			TH1D							*fhAmplBaselinegradient;
 			
+			TH1D							 	*fhEnergySpectrum_withCut;
+			
 
 			//real analysis object
 			THypGeMWD					*fMWDAna;

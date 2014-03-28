@@ -59,6 +59,8 @@ class THypGeAnalysis : public TGo4Analysis  {
 			TH2D								*fhEnergyRise3090Corr;
 			
 			TH2D								*fhEnergyTimeSinceLastPulse;
+			
+			TH1D							 	*fhEnergySpectrum_withCut;
 
 
 	int MWDm ;			// M of MWD

@@ -55,7 +55,7 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext)            //constructor
 	EnableMA = 0;			// Switch for second moving average filter
 	SmoothingMethod = 4;	// Switch smoothing on or off
 	EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
-	
+	PileUpTimeCut = 20;	// in µs, no ext parameter yet (28.03.14)
 	
 	Aarray = new Double_t[TraceLength+1];
 	MWDarray = new Double_t[TraceLength+1];
@@ -173,9 +173,16 @@ Double_t THypGeMWD::FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* 
 	{	
 		timer.Stop();
 		cout << "Energy TSLPulse correlation step took " << timer.RealTime() << " seconds" << endl;
+		
+		timer.Reset();
+		timer.Start();
 	}
-	
-	
+	FillEnergySpectrumWithPileUpCut(PileUpTimeCut);
+	if (UseTimer)
+	{	
+		timer.Stop();
+		cout << "Energy Spectrum with cut step took " << timer.RealTime() << " seconds" << endl;
+	}
 	return 0;
 }
 
@@ -1490,6 +1497,22 @@ Int_t THypGeMWD::EnergyTimeSinceLastPulseCorrelation(TH2D* hEnergyTimeSinceLastP
 	for (Int_t i =1; i <Int_t(SignalTime.size()); i++)
 	{
 		hEnergyTimeSinceLastPulse->Fill(energy[i],SignalTime[i]- SignalTime[i-1]);
+		//cout << i << "\t" <<energy[i]<< "\t" << SignalTime[i]- SignalTime[i-1] << endl;
+	}
+	return 0;
+}
+
+void THypGeMWD::ConnectHistograms(TH1D *hEnergySpectrumWithCut_ext)
+{
+	hEnergySpectrumWithCut = hEnergySpectrumWithCut_ext;
+}
+
+Int_t		THypGeMWD::FillEnergySpectrumWithPileUpCut(Double_t CutValue)
+{
+	for (Int_t i =1; i <Int_t(SignalTime.size()); i++)
+	{
+		if (SignalTime[i]- SignalTime[i-1] > CutValue )
+			hEnergySpectrumWithCut->Fill(energy[i]);
 		//cout << i << "\t" <<energy[i]<< "\t" << SignalTime[i]- SignalTime[i-1] << endl;
 	}
 	return 0;
