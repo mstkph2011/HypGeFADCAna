@@ -174,33 +174,10 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 			fhTrace[i]->GetXaxis()->CenterTitle();
 			fhTrace[i]->GetYaxis()->CenterTitle();
 			
-			AddHistogram(fhTrace[i],"V1724");
+			AddHistogram(fhTrace[i],"Traces");
 		}
 		
-	//create histogram for energy spectrum
-	fhEnergySpectrum = new TH1D("Energy","Energy",4000,0,4000);
-	AddHistogram(fhEnergySpectrum,"V1724/Energyspectrum");
-
-		//risetime histos
-	fhRisetime1090 = new TH1D("Risetime1090","Risetime1090",100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
-	AddHistogram(fhRisetime1090,"V1724/Risetime1090");
-	fhRisetime3090 = new TH1D("Risetime3090","Risetime3090",100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
-	AddHistogram(fhRisetime3090,"V1724/Risetime3090");
-	fhEnergyRise1090Corr = new TH2D("EnergyRise1090Corr","Enegy-Risetime1090-Correlation;Rt;E",100,0,1000,2000,0,2000);
-	AddHistogram(fhEnergyRise1090Corr,"V1724/EnergyRise1090Corr");
-	fhEnergyRise3090Corr = new TH2D("EnergyRise3090Corr","Enegy-Risetime3090-Correlation;Rt;E",100,0,1000,2000,0,2000);
-	AddHistogram(fhEnergyRise3090Corr,"V1724/EnergyRise3090Corr");
-	
-	
-	// histogram to see the correlation of energy and the time between two pulses to examine the effect of pile up
-	fhEnergyTimeSinceLastPulse = new TH2D("EnergyTimeSinceLastPulse","Energy- Time since last Pulse - Correlation;E ;Time since last pulse [#mus]",20000,0,2000,200,0,200);
-	AddHistogram(fhEnergyTimeSinceLastPulse,"V1724/EnergyTimeSinceLastPulse");
-	
-	//create histogram for energy spectrum with a cut in the pile up time
-	fhEnergySpectrum_withCut = new TH1D("Energy_withCut","Energy_withCut",4000,0,4000);
-	AddHistogram(fhEnergySpectrum_withCut,"V1724/Energyspectrum");
-	
-	
+		
 	cout << "All global histograms created"<< endl;
 	
 	
@@ -298,7 +275,7 @@ Int_t THypGeAnalysis::UserPostLoop()	// fitting can be done here
 //-----------------------------------------------------------
 Int_t THypGeAnalysis::UserEventFunc()
 {
-//// This function is called once for each event. This part is used to update the Event Counter in the GO4 GUi
+//// This function is called once for each event. This part is used to update the Event Counter in the GO4 GUI
 	Int_t value = 0;
 	Int_t count = 0;
 	if(fMbsEvent) value = fMbsEvent->GetDlen()/2+2; // total longwords

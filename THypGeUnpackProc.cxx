@@ -55,7 +55,7 @@ THypGeUnpackProc::THypGeUnpackProc(const char* name) :
 	char chis[100];
 	for (Int_t i =0;i < FADC_CHAN; i++)
 	{
-		snprintf(chis,63,"V1724/Trace%02d",i+1);
+		snprintf(chis,63,"Traces/Trace%02d",i+1);
 		fhTrace[i] = (TH1D*) GetHistogram(chis);
 	}
 	if (!fhTrace[0])
