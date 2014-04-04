@@ -78,7 +78,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 sigmaBil = 1500;			// sigma of gaussian shaper
 	 tau = 5383;			// tau of deconvolution
 	 EnableMA = 0;			// Switch for second moving average filter
-	 SmoothingMethod = 4;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
+	 SmoothingMethod = 3;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
 	 EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
 	 
 	 if (argc>1)

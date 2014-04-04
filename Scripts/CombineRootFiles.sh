@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ### script to combine the output of single runs to a combined root file
-
-DataDir=${COSYTESTANADIR}/COSYnew
+Sub=COSYnew
+DataDir=${COSYTESTANADIR}/${Sub}
 #DataDir=/data/work/kpha1/rittgen/analysis/COSYnoNoise
 
 SubDir=${DataDir}/CombinedData
-TxtDir=${COSYTESTANADIR}/COSY/txtfiles
+TxtDir=${COSYTESTANADIR}/${Sub}/txtfiles
 NumberOfFiles=106
 
 rm -f ${DataDir}/WrongFilesInFolder.txt														# removes log file for erroneous runs , uncomment to automate

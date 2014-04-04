@@ -53,9 +53,9 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext)            //constructor
 	Sigma2 = 1500;
 	tau = 5383;				// tau of pre amp in samples (1 sample = 10 ns @ 100 MSa/s)
 	EnableMA = 0;			// Switch for second moving average filter
-	SmoothingMethod = 4;	// Switch smoothing on or off
+	SmoothingMethod = 3;	// Switch for smoothing methods
 	EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
-	PileUpTimeCut = 20;	// in µs, no ext parameter yet (28.03.14)
+	PileUpTimeThreshold = 20;	// in µs, no ext parameter yet (28.03.14)
 	
 	Aarray = new Double_t[TraceLength+1];
 	MWDarray = new Double_t[TraceLength+1];
@@ -64,6 +64,12 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext)            //constructor
 	useMWD= 1;
 	GausNorm = new Double_t[TraceLength];
 	CalculateGausCoeff();
+	
+	EnergyRtCorrFunc = new TF1("EnergyRtCorrFunc","pol4",0,2000);
+		EnergyRtCorrFunc->SetParameters(1,-9.1237e-05, 7.95504e-07, -3.0778e-09, 4.39764e-12);
+		
+	EnergyPileUpTimeCorrFunc = new TF1("EnergyPileUpTimeCorrFunc","[0]*(1-[1]/pow(x,[2]))",0,2000);
+		EnergyPileUpTimeCorrFunc->SetParameters(1,3.74495e-02,1.95113);
 	//CalculateSecondGausCoeff();
 }
 
@@ -168,7 +174,7 @@ THypGeMWD::~THypGeMWD()            //destructor
 		//timer.Reset();
 		//timer.Start();
 	//}
-	//EnergyTimeSinceLastPulseCorrelation(hEnergyTimeSinceLastPulse);
+	//AnaStep_EnergyTimeSinceLastPulseCorrelation(hEnergyTimeSinceLastPulse);
 	//if (UseTimer)
 	//{	
 		//timer.Stop();
@@ -177,7 +183,7 @@ THypGeMWD::~THypGeMWD()            //destructor
 		//timer.Reset();
 		//timer.Start();
 	//}
-	//FillEnergySpectrumWithPileUpCut(PileUpTimeCut);
+	//AnaStep_FillEnergySpectrumWithPileUpCut(PileUpTimeThreshold);
 	//if (UseTimer)
 	//{	
 		//timer.Stop();
@@ -198,7 +204,7 @@ Double_t THypGeMWD::FullAnalysis ()
 	//cout << SmoothingMethod << endl;
 	if ( SmoothingMethod)
 	{
-		Smoothing();
+		AnaStep_Smoothing();
 		if (UseTimer) 
 		{
 			timer.Stop();
@@ -210,7 +216,7 @@ Double_t THypGeMWD::FullAnalysis ()
 		timer.Reset();
 		timer.Start();
 	}
-	Baseline();
+	AnaStep_BaselineCorrection();
 	if (UseTimer) 
 	{	
 		timer.Stop();
@@ -223,7 +229,7 @@ Double_t THypGeMWD::FullAnalysis ()
 		timer.Reset();
 		timer.Start();
 	}
-	if (MWD() == -1)
+	if (AnaStep_DoMovingWindowDeconvolution() == -1)
 		return -1;
 	
 	if (UseTimer)
@@ -239,7 +245,7 @@ Double_t THypGeMWD::FullAnalysis ()
 			timer.Reset();
 			timer.Start();
 		}
-		MA();
+		AnaStep_DoMovingAverageFilter();
 		if (UseTimer)
 		{	
 			timer.Stop();
@@ -253,7 +259,7 @@ Double_t THypGeMWD::FullAnalysis ()
 		timer.Start();
 	}
 	
-	Energyspectrum();				//needs MWD
+	AnaStep_FillEnergyspectrum();				//needs MWD
 	
 	if (UseTimer)
 	{	
@@ -263,7 +269,7 @@ Double_t THypGeMWD::FullAnalysis ()
 		timer.Reset();
 		timer.Start();
 	}
-	Risetime();		//needs Energyspectrum
+	AnaStep_ExtractRisetime();		//needs Energyspectrum
 	if (UseTimer)
 	{	
 		timer.Stop();
@@ -272,7 +278,7 @@ Double_t THypGeMWD::FullAnalysis ()
 		timer.Reset();
 		timer.Start();
 	}
-	ERC();			//needs Energyspectrum and Risetime
+	AnaStep_DoEnergyRisetimeCorrelation();			//needs Energyspectrum and Risetime
 	if (UseTimer)
 	{	
 		timer.Stop();
@@ -281,7 +287,7 @@ Double_t THypGeMWD::FullAnalysis ()
 		timer.Reset();
 		timer.Start();
 	}
-	EnergyTimeSinceLastPulseCorrelation();
+	AnaStep_EnergyTimeSinceLastPulseCorrelation();
 	if (UseTimer)
 	{	
 		timer.Stop();
@@ -290,7 +296,7 @@ Double_t THypGeMWD::FullAnalysis ()
 		timer.Reset();
 		timer.Start();
 	}
-	FillEnergySpectrumWithPileUpCut(PileUpTimeCut);
+	AnaStep_FillEnergySpectrumWithPileUpCut(PileUpTimeThreshold);
 	if (UseTimer)
 	{	
 		timer.Stop();
@@ -301,7 +307,7 @@ Double_t THypGeMWD::FullAnalysis ()
 	
 	//Smoothing
 	
-Int_t THypGeMWD::Smoothing()
+Int_t THypGeMWD::AnaStep_Smoothing()
 {
 	
 	SetTrace(hTrace);
@@ -323,7 +329,7 @@ Int_t THypGeMWD::Smoothing()
 	
 	//Baseline
 	
-Int_t THypGeMWD::Baseline()
+Int_t THypGeMWD::AnaStep_BaselineCorrection()
 {
 	if (hTraceBuffer == 0)
 		SetTrace(hTrace);
@@ -350,7 +356,7 @@ Int_t THypGeMWD::Baseline()
 	
 	//Moving-Window-Deconvolution
 	
-Int_t THypGeMWD::MWD()
+Int_t THypGeMWD::AnaStep_DoMovingWindowDeconvolution()
 {
 	if (hTraceBuffer == 0)
 	SetTrace(hTrace);
@@ -422,7 +428,7 @@ Int_t THypGeMWD::MWD()
 	
 	//Moving-Average
 	
-Int_t THypGeMWD::MA()
+Int_t THypGeMWD::AnaStep_DoMovingAverageFilter()
 {
 	if (hTraceBuffer == 0)
 		SetTrace(hTrace);
@@ -447,7 +453,7 @@ Int_t THypGeMWD::MA()
 
 	//PileupCompensation and Energyspectrum
 		
-Int_t THypGeMWD::Energyspectrum()
+Int_t THypGeMWD::AnaStep_FillEnergyspectrum()
 {
 	
 	SetTrace(hMWD);
@@ -468,7 +474,7 @@ Int_t THypGeMWD::Energyspectrum()
 	
 	//Risetime
 	
-Int_t THypGeMWD::Risetime()
+Int_t THypGeMWD::AnaStep_ExtractRisetime()
 {
 	//cout << "new Trace" << endl;
 	if (hTrace == 0)
@@ -677,7 +683,7 @@ Int_t THypGeMWD::Risetime()
 	
 	//Energy-Risetime-Correlation
 	
-Int_t THypGeMWD::ERC()
+Int_t THypGeMWD::AnaStep_DoEnergyRisetimeCorrelation()
 {
 		
 	if(Int_t(energy.size()) == Int_t(risetime1090.size()))
@@ -1465,10 +1471,18 @@ void THypGeMWD::CalculateGausCoeff()
 
 Double_t THypGeMWD::EnergyRtCorrection(Double_t Rt, Double_t EnergyUncorr )
 {
-	Double_t EnergyCorr = EnergyUncorr / CorrFunc(Rt);
-	
+	Double_t EnergyCorr = EnergyUncorr / EnergyRtCorrFunc->Eval(Rt);
 	return EnergyCorr;
 }
+
+
+Double_t	THypGeMWD::EnergyPileUpTimeCorrection(Double_t PileUpTime, Double_t EnergyUncorr)
+{
+	// energy correction for high rates (close signals)
+	Double_t EnergyCorr = EnergyUncorr / EnergyPileUpTimeCorrFunc->Eval(PileUpTime);
+	return EnergyCorr;
+}
+
 
 Double_t THypGeMWD::Gaus(Double_t x)				// function used by bilateral filter to calculate the value of den second gausian
 {
@@ -1476,19 +1490,6 @@ Double_t THypGeMWD::Gaus(Double_t x)				// function used by bilateral filter to 
 	return (TMath::Exp(-pow((x/(sqrt(2)*Sigma2)),2)))/Double_t(Sigma2)/Norm;
 }
 
-Double_t THypGeMWD::CorrFunc(Double_t x)						// function for Energy risetime correction
-{
-	Double_t par[5];
-	par[0] =1;
-	par[1] = -9.1237e-05;
-	par[2] = 7.95504e-07;
-	par[3] =  -3.0778e-09;
-	par[4] = 4.39764e-12;
-	
-	
-	Double_t CorrValue = par[0] + par[1] * x + par[2] * x *x + par[3] * x * x * x +  par[4] * x * x * x * x ;
-	return CorrValue;
-}
 void THypGeMWD::DoMeanFilter()
 {
 	//Rectangular filter
@@ -1603,33 +1604,19 @@ void THypGeMWD::DoFourierBackTransformation()
 	
 }
 
-Int_t THypGeMWD::EnergyTimeSinceLastPulseCorrelation()
+Int_t THypGeMWD::AnaStep_EnergyTimeSinceLastPulseCorrelation()
 {
+	Double_t PUTime;
 	for (Int_t i =1; i <Int_t(SignalTime.size()); i++)
 	{
-		hEnergyTimeSinceLastPulse->Fill(SignalTime[i]- SignalTime[i-1],energy[i]);
-		if (energy[i-1] <800)
+		PUTime= SignalTime[i]- SignalTime[i-1];
+		hEnergyTimeSinceLastPulse->Fill(PUTime,energy[i]);
+		hEnergyTimeSinceLastPulseCorr->Fill(PUTime,EnergyPileUpTimeCorrection(PUTime, energy[i]));
+		for(Int_t j = 0; j < NumberOfPileUpTimeHistograms; j++)
 		{
-			hEnergyTimeSinceLastPulse_WithCuts[0]->Fill(SignalTime[i]- SignalTime[i-1],energy[i]);
-			
+			if (energy[i-1] > j*100 && energy[i-1] > (j+1)*100-1 )
+				hEnergyTimeSinceLastPulse_WithCuts[j]->Fill(PUTime,energy[i]);
 		}
-		else 
-			if (energy[i-1] <1600)
-			{
-				hEnergyTimeSinceLastPulse_WithCuts[1]->Fill(SignalTime[i]- SignalTime[i-1],energy[i]);
-				
-			}
-			else
-				if (energy[i-1] <1700)
-				{
-					hEnergyTimeSinceLastPulse_WithCuts[2]->Fill(SignalTime[i]- SignalTime[i-1],energy[i]);
-					
-				}
-				else
-				{
-					hEnergyTimeSinceLastPulse_WithCuts[3]->Fill(SignalTime[i]- SignalTime[i-1],energy[i]);
-					
-				}
 	}
 	return 0;
 }
@@ -1661,17 +1648,20 @@ void THypGeMWD::Connect2DEnergyRisetimeHistograms(TH2D* hEnergyRise1090Corr_ext,
 	hEnergyRise1090Corr = hEnergyRise1090Corr_ext;
 	hEnergyRise3090Corr = hEnergyRise3090Corr_ext;
 }
-void THypGeMWD::Connect2DEnergyTimeSinceLastPulseHistograms(TH2D* hEnergyTimeSinceLastPulse_ext ,TH2D* hEnergyTimeSinceLastPulse_WithCuts_ext[],Int_t NumberOfCuts)
+void THypGeMWD::Connect2DEnergyTimeSinceLastPulseHistograms(TH2D* hEnergyTimeSinceLastPulse_ext, TH2D* hEnergyTimeSinceLastPulseCorr_ext ,TH2D* hEnergyTimeSinceLastPulse_WithCuts_ext[],Int_t NumberOfCuts)
 {
+	NumberOfPileUpTimeHistograms = NumberOfCuts;
 	hEnergyTimeSinceLastPulse = hEnergyTimeSinceLastPulse_ext;
+	hEnergyTimeSinceLastPulseCorr = hEnergyTimeSinceLastPulseCorr_ext;
 	hEnergyTimeSinceLastPulse_WithCuts = hEnergyTimeSinceLastPulse_WithCuts_ext;
+	
 	//for (int i = 0; i < NumberOfCuts;i++)
 	//{
 		//cout << hEnergyTimeSinceLastPulse_WithCuts[i] << "\t\t" << hEnergyTimeSinceLastPulse_WithCuts_ext[i] << endl;
 	//}
 }
 
-Int_t		THypGeMWD::FillEnergySpectrumWithPileUpCut(Double_t CutValue)
+Int_t		THypGeMWD::AnaStep_FillEnergySpectrumWithPileUpCut(Double_t CutValue)
 {
 	for (Int_t i =1; i <Int_t(SignalTime.size()); i++)
 	{

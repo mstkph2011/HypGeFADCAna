@@ -12,7 +12,7 @@ MWDmax=200
 MWDstep=20
 #if only a fixed value for sigma gaus should be used make min = max
 sigmaGausmin=9
-sigmaGausmax=9
+sigmaGausmax=13
 sigmaGausstep=2
 #if only a fixed value for sigma bil should be used make min = max
 sigmaBilmin=2000
@@ -33,7 +33,7 @@ FilterWidth=3
 ### sigmaGaus and Bil taken from loop values, see above for values
 tau=5383;	
 EnableMA=0		
-FilterType=4									### 0 = none, 1 = rectanglur, 2 = weighted average, 3 = gausian filter, 4 = bil filter
+FilterType=3									### 0 = none, 1 = rectanglur, 2 = weighted average, 3 = gausian filter, 4 = bil filter
 EnableBaselineCorrection=1
 
 
@@ -110,7 +110,7 @@ do
 #PBS -j oe
 #PBS -o ${JobLogPath}/job${fileAdd}.log
 #PBS -V
-#PBS -l nodes=1:ppn=1,walltime=24:00:00
+#PBS -l nodes=1:ppn=1,walltime=02:00:00
 
 cd \$PBS_O_WORKDIR
 
@@ -126,7 +126,7 @@ EOF
 ### submit job to batch system
 				mkdir -p ${RunPath}/run$fileAdd
 				cp ${AnaLibDir}/libGo4UserAnalysis.so ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so
-				qsub $JobPath/job${fileAdd}.sh >> Jobinfo.txt
+				qsub $JobPath/job${fileAdd}.sh | tee Jobinfo.txt
 			done					### end of loop over files
 
 ### "double queue": check if there is enough space in the queue to send more jobs, if not wait 2 minutes and check again

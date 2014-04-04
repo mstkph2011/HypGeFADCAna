@@ -31,6 +31,7 @@
 
 #include "TH2D.h"
 #include "TH1D.h"
+#include "TF1.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"
 #include "TVirtualFFT.h"
@@ -51,7 +52,7 @@ class THypGeMWD
 		void 				Connect1DEnergySpectraHistograms(TH1D *hEnergySpectrum_ext,TH1D *hEnergySpectrumWithCut_ext);
 		void 				Connect1DRisetimeHistograms(TH1D* hRisetime1090_ext, TH1D* hRisetime3090_ext);
 		void 				Connect2DEnergyRisetimeHistograms(TH2D* hEnergyRise1090Corr_ext, TH2D* hEnergyRise3090Corr_ext);
-		void 				Connect2DEnergyTimeSinceLastPulseHistograms(TH2D* hEnergyTimeSinceLastPulse_ext,TH2D**hEnergyTimeSinceLastPulse_WithCuts_ext, Int_t NumberOfCuts);
+		void 				Connect2DEnergyTimeSinceLastPulseHistograms(TH2D* hEnergyTimeSinceLastPulse_ext,TH2D* hEnergyTimeSinceLastPulseCorr_ext, TH2D**hEnergyTimeSinceLastPulse_WithCuts_ext, Int_t NumberOfCuts);
 		
 		private :
 		TH1D*			GetTrace();
@@ -59,15 +60,15 @@ class THypGeMWD
 		void 			SetTrace(TH1D* hTrace_ext);
 		
 		//single steps of the analysis
-		Int_t		Smoothing();
-		Int_t		Baseline();
-		Int_t		MWD();
-		Int_t		MA();
-		Int_t		Energyspectrum();
-		Int_t		Risetime();
-		Int_t		ERC();
-		Int_t 	EnergyTimeSinceLastPulseCorrelation();
-		Int_t		FillEnergySpectrumWithPileUpCut(Double_t CutValue);
+		Int_t		AnaStep_Smoothing();
+		Int_t		AnaStep_BaselineCorrection();
+		Int_t		AnaStep_DoMovingWindowDeconvolution();
+		Int_t		AnaStep_DoMovingAverageFilter();
+		Int_t		AnaStep_FillEnergyspectrum();
+		Int_t		AnaStep_ExtractRisetime();
+		Int_t		AnaStep_DoEnergyRisetimeCorrelation();
+		Int_t 	AnaStep_EnergyTimeSinceLastPulseCorrelation();
+		Int_t		AnaStep_FillEnergySpectrumWithPileUpCut(Double_t CutValue);
 		
 		//functions used in the Energyspectrum step
 		void 		EvaluateAmplitude();
@@ -92,12 +93,16 @@ class THypGeMWD
 		
 		
 		void		SetUseMWD(Bool_t useMWD_ext);
+		private :
 		
 		void		CalculateGausCoeff();
 		Double_t 	Gaus(Double_t x);
 		
-		Double_t 	CorrFunc(Double_t x);
+		TF1				*EnergyRtCorrFunc;
 		Double_t	EnergyRtCorrection(Double_t Rt, Double_t EnergyUncorr );
+		
+		TF1				*EnergyPileUpTimeCorrFunc;
+		Double_t	EnergyPileUpTimeCorrection(Double_t PileUpTime, Double_t EnergyUncorr);						// energy correction for high rates (close signals)
 		
 		void 		DoMeanFilter();
 		void 		DoWeightedAverageFilter();
@@ -135,7 +140,8 @@ class THypGeMWD
 		
 		TH2D			*hEnergyTimeSinceLastPulse;
 		TH2D			**hEnergyTimeSinceLastPulse_WithCuts;
-
+		TH2D			*hEnergyTimeSinceLastPulseCorr;
+		
 		Double_t offset_av;
 		
 		
@@ -163,7 +169,7 @@ class THypGeMWD
 		Int_t 		EnableMA;			// Switch for second moving average filter
 		Int_t 		SmoothingMethod;	// Switch smoothing on or off
 		Int_t 		EnableBaselineCorrection; 	//Switch baseline correction on or off
-		Int_t 		PileUpTimeCut;
+		Int_t 		PileUpTimeThreshold;
 		Bool_t 		useMWD;				// Switch between MWD and Amplitude evaluation for energy spetrum
 		
 		Double_t g[10000];			// array for coefficient ofs gaussian filter
@@ -173,9 +179,12 @@ class THypGeMWD
 		Double_t *GradMWD1array;
 		Double_t *GradMWD2array;
 
+
 		Int_t 		GausBreakUp;
 		Double_t 	*GausNorm;
 		
+		Int_t 		NumberOfPileUpTimeHistograms;
+
 		TStopwatch timer;
 		
 		

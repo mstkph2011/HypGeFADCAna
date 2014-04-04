@@ -98,25 +98,26 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 	AddHistogram(fhRisetime1090,"Risetime1090");
 	fhRisetime3090 = new TH1D("Risetime3090","Risetime3090",100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
 	AddHistogram(fhRisetime3090,"Risetime3090");
-	fhEnergyRise1090Corr = new TH2D("EnergyRise1090Corr","Energy-Risetime1090-Correlation;Rt;ADC Value  [a.u.]",100,0,1000,2000,0,2000);
+	fhEnergyRise1090Corr = new TH2D("EnergyRise1090Corr","Energy-Risetime1090-Correlation;Rt;ADC Value [a.u.]",100,0,1000,2000,0,2000);
 	AddHistogram(fhEnergyRise1090Corr,"EnergyRise1090Corr");
 	
-	fhEnergyRise3090Corr = new TH2D("EnergyRise3090Corr","Energy-Risetime3090-Correlation;Rt;ADC Value  [a.u.]",100,0,1000,2000,0,2000);
+	fhEnergyRise3090Corr = new TH2D("EnergyRise3090Corr","Energy-Risetime3090-Correlation;Rt;ADC Value [a.u.]",100,0,1000,2000,0,2000);
 	AddHistogram(fhEnergyRise3090Corr,"EnergyRise3090Corr");
 	
 	
 	// histogram to see the correlation of energy and the time between two pulses to examine the effect of pile up
-	fhEnergyTimeSinceLastPulse = new TH2D("EnergyTimeSinceLastPulse","Energy- Time since last Pulse - Correlation;Time since last pulse [#mus];ADC Value  [a.u.]",200,0,200,20000,0,2000);
+	fhEnergyTimeSinceLastPulse = new TH2D("EnergyTimeSinceLastPulse","Energy- Time since last Pulse - Correlation;Time since last pulse [#mus];ADC Value [a.u.]",200,0,200,20000,0,2000);
 	AddHistogram(fhEnergyTimeSinceLastPulse,"EnergyTimeSinceLastPulse");
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 20; i++)
 	{
 		snprintf(chis,100,"EnergyTimeSinceLastPulse_withCut_%02d",i+1);  
-		snprintf(chead,100,"Energy- Time since last Pulse - Correlation with Cuts_%02d;Time since last pulse [#mus];ADC Value  [a.u.]",i+1);
+		snprintf(chead,100,"Energy- Time since last Pulse - Correlation with Cut on ADC value of previous signal (%d - %d);Time since last pulse [#mus];ADC Value [a.u.]",i*100,(i+1)*100-1);
 		fhEnergyTimeSinceLastPulse_withCut[i] = new TH2D(chis,chead,200,0,200,20000,0,2000);
 		AddHistogram(fhEnergyTimeSinceLastPulse_withCut[i],"EnergyTimeSinceLastPulse");
 		//cout << fhEnergyTimeSinceLastPulse_withCut[i] << endl;
 	}
-	
+		fhEnergyTimeSinceLastPulseCorr = new TH2D("EnergyTimeSinceLastPulseCorr","Energy- Time since last Pulse - Correlation with correction;Time since last pulse [#mus];ADC Value [a.u.]",200,0,200,20000,0,2000);
+		AddHistogram(fhEnergyTimeSinceLastPulseCorr,"EnergyTimeSinceLastPulse");
 	fhAmplBaselinegradient= new TH1D ("Baselinegrad","Gradient of the start of the baseline in amplitude signal",1000,0,10);
 	AddHistogram(fhAmplBaselinegradient,"BaseGrad");
 		
@@ -132,7 +133,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum,fhEnergySpectrum_withCut);
 		fMWDAna->Connect1DRisetimeHistograms(fhRisetime1090, fhRisetime3090);
 		fMWDAna->Connect2DEnergyRisetimeHistograms(fhEnergyRise1090Corr, fhEnergyRise3090Corr);
-		fMWDAna->Connect2DEnergyTimeSinceLastPulseHistograms(fhEnergyTimeSinceLastPulse, fhEnergyTimeSinceLastPulse_withCut,4);
+		fMWDAna->Connect2DEnergyTimeSinceLastPulseHistograms(fhEnergyTimeSinceLastPulse, fhEnergyTimeSinceLastPulseCorr, fhEnergyTimeSinceLastPulse_withCut,20);
 	
 	cout << "**** THypGeAnlProc: Create" << endl;
 }
