@@ -26,7 +26,7 @@ do
 		echo $line
 		echo $line >> ${TxtDir}/WrongFilesInFolder.txt								# file must be empty before!!!!
 	else
-		ls ${DataDir}/${line}/*.root | xargs hadd -f1 -T ${SubDir}/${line}.root				# lists all root files in the run folder and combine them into one file, xargs appends the output of the ls to the command that follows
+		ls ${DataDir}/${line}/*.root | xargs hadd -f5 -T ${SubDir}/${line}.root				# lists all root files in the run folder and combine them into one file, xargs appends the output of the ls to the command that follows
 		echo "File ${SubDir}/${line}.root created"
 	fi
 done < ${TxtDir}/AnaFolderList.txt

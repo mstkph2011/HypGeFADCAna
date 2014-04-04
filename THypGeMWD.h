@@ -52,7 +52,7 @@ class THypGeMWD
 		void 				Connect1DEnergySpectraHistograms(TH1D *hEnergySpectrum_ext,TH1D *hEnergySpectrumWithCut_ext);
 		void 				Connect1DRisetimeHistograms(TH1D* hRisetime1090_ext, TH1D* hRisetime3090_ext);
 		void 				Connect2DEnergyRisetimeHistograms(TH2D* hEnergyRise1090Corr_ext, TH2D* hEnergyRise3090Corr_ext);
-		void 				Connect2DEnergyTimeSinceLastPulseHistograms(TH2D* hEnergyTimeSinceLastPulse_ext,TH2D* hEnergyTimeSinceLastPulseCorr_ext, TH2D**hEnergyTimeSinceLastPulse_WithCuts_ext, Int_t NumberOfCuts);
+		void 				Connect2DEnergyTimeSinceLastPulseHistograms(TH2D* hEnergyTimeSinceLastPulse_ext,TH2D* hEnergyTimeSinceLastPulseCorr_ext, TH2D**hEnergyTimeSinceLastPulse_WithCuts_ext, TH2D** hEnergyTimeSinceLastPulseCorr_WithCuts_ext, Int_t NumberOfCuts);
 		
 		private :
 		TH1D*			GetTrace();
@@ -141,7 +141,7 @@ class THypGeMWD
 		TH2D			*hEnergyTimeSinceLastPulse;
 		TH2D			**hEnergyTimeSinceLastPulse_WithCuts;
 		TH2D			*hEnergyTimeSinceLastPulseCorr;
-		
+		TH2D			**hEnergyTimeSinceLastPulseCorr_WithCuts;
 		Double_t offset_av;
 		
 		

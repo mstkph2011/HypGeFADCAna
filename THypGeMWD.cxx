@@ -1614,7 +1614,7 @@ Int_t THypGeMWD::AnaStep_EnergyTimeSinceLastPulseCorrelation()
 		hEnergyTimeSinceLastPulseCorr->Fill(PUTime,EnergyPileUpTimeCorrection(PUTime, energy[i]));
 		for(Int_t j = 0; j < NumberOfPileUpTimeHistograms; j++)
 		{
-			if (energy[i-1] > j*100 && energy[i-1] > (j+1)*100-1 )
+			if (energy[i-1] > j*100 && energy[i-1] < (j+1)*100-1 )
 				hEnergyTimeSinceLastPulse_WithCuts[j]->Fill(PUTime,energy[i]);
 		}
 	}
@@ -1648,13 +1648,13 @@ void THypGeMWD::Connect2DEnergyRisetimeHistograms(TH2D* hEnergyRise1090Corr_ext,
 	hEnergyRise1090Corr = hEnergyRise1090Corr_ext;
 	hEnergyRise3090Corr = hEnergyRise3090Corr_ext;
 }
-void THypGeMWD::Connect2DEnergyTimeSinceLastPulseHistograms(TH2D* hEnergyTimeSinceLastPulse_ext, TH2D* hEnergyTimeSinceLastPulseCorr_ext ,TH2D* hEnergyTimeSinceLastPulse_WithCuts_ext[],Int_t NumberOfCuts)
+void THypGeMWD::Connect2DEnergyTimeSinceLastPulseHistograms(TH2D* hEnergyTimeSinceLastPulse_ext, TH2D* hEnergyTimeSinceLastPulseCorr_ext ,TH2D** hEnergyTimeSinceLastPulse_WithCuts_ext, TH2D** hEnergyTimeSinceLastPulseCorr_WithCuts_ext, Int_t NumberOfCuts)
 {
 	NumberOfPileUpTimeHistograms = NumberOfCuts;
 	hEnergyTimeSinceLastPulse = hEnergyTimeSinceLastPulse_ext;
 	hEnergyTimeSinceLastPulseCorr = hEnergyTimeSinceLastPulseCorr_ext;
 	hEnergyTimeSinceLastPulse_WithCuts = hEnergyTimeSinceLastPulse_WithCuts_ext;
-	
+	hEnergyTimeSinceLastPulseCorr_WithCuts = hEnergyTimeSinceLastPulseCorr_WithCuts_ext;
 	//for (int i = 0; i < NumberOfCuts;i++)
 	//{
 		//cout << hEnergyTimeSinceLastPulse_WithCuts[i] << "\t\t" << hEnergyTimeSinceLastPulse_WithCuts_ext[i] << endl;

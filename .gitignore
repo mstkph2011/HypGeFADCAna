@@ -1,6 +1,7 @@
 G__HypGe.cxx
 G__HypGe.h
-
+*.root
+*.txt
 
 # Compiled source #
 ###################
