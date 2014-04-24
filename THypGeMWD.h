@@ -48,7 +48,7 @@ class THypGeMWD
 		
 		//Double_t 	FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergy, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr, TH2D* hEnergyTimeSinceLastPulse);
 		Double_t FullAnalysis ();
-		void				ConnectTraceHistograms(TH1D* hTrace_ext, TH1D* hSmoothedTrace_ext, TH1D* hTrace_bc_ext, TH1D* hAmplitude_ext,TH1D* hMWD_ext,TH1D* hMWDMA_ext);
+		void				ConnectTraceHistograms(TH1D** hTrace_ext, TH1D** hSmoothedTrace_ext, TH1D** hTrace_bc_ext, TH1D** hAmplitude_ext,TH1D** hMWD_ext,TH1D** hMWDMA_ext,TH1D** hTrace_Direct_ext);
 		void 				Connect1DEnergySpectraHistograms(TH1D *hEnergySpectrum_ext,TH1D *hEnergySpectrumWithCut_ext);
 		void 				Connect1DRisetimeHistograms(TH1D* hRisetime1090_ext, TH1D* hRisetime3090_ext);
 		void 				Connect2DEnergyRisetimeHistograms(TH2D* hEnergyRise1090Corr_ext, TH2D* hEnergyRise3090Corr_ext);
@@ -64,6 +64,7 @@ class THypGeMWD
 		Int_t		AnaStep_BaselineCorrection();
 		Int_t		AnaStep_DoMovingWindowDeconvolution();
 		Int_t		AnaStep_DoMovingAverageFilter();
+		Int_t		AnaStep_DoDirectFilter();
 		Int_t		AnaStep_FillEnergyspectrum();
 		Int_t		AnaStep_ExtractRisetime();
 		Int_t		AnaStep_DoEnergyRisetimeCorrelation();
@@ -122,12 +123,13 @@ class THypGeMWD
 		
 		//internal pointers to histograms
 		
-		TH1D			*hTrace; 
-		TH1D			*hSmoothedTrace;
-		TH1D			*hTrace_bc;
-		TH1D			*hAmplitude;
-		TH1D			*hMWD;
-		TH1D			*hMWDMA;
+		TH1D			**hTrace; 
+		TH1D			**hSmoothedTrace;
+		TH1D			**hTrace_bc;
+		TH1D			**hAmplitude;
+		TH1D			**hMWD;
+		TH1D			**hMWDMA;
+		TH1D			**hTrace_Direct;
 		
 		TH1D			*hEnergySpectrum;
 		TH1D			*hEnergySpectrumWithCut;
@@ -172,14 +174,16 @@ class THypGeMWD
 		Int_t 		PileUpTimeThreshold;
 		Bool_t 		useMWD;				// Switch between MWD and Amplitude evaluation for energy spetrum
 		
-		Double_t g[10000];			// array for coefficient ofs gaussian filter
+		Double_t g[10000];			// array for coefficients of gaussian filter
 		
 		Double_t *Aarray;
 		Double_t *MWDarray;
 		Double_t *GradMWD1array;
 		Double_t *GradMWD2array;
 
-
+		Double_t *Sarray;		// array to store the result of the direct filter
+		Double_t *Parray;		// array to store an intermediate result of the direct filter
+		
 		Int_t 		GausBreakUp;
 		Double_t 	*GausNorm;
 		

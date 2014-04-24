@@ -85,6 +85,13 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fhTrace_MA[i]->GetXaxis()->CenterTitle();
 		fhTrace_MA[i]->GetYaxis()->CenterTitle();
 			AddHistogram(fhTrace_MA[i],"Traces");
+			
+		snprintf(chis,15,"Trace_Direct_%02d",i+1);  
+		snprintf(chead,63,"Trace channel %2d after Direct filter; time [#mus];Amplitude [a.u.] ",i+1);
+		fhTrace_Direct[i] = new TH1D(chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
+		fhTrace_Direct[i]->GetXaxis()->CenterTitle();
+		fhTrace_Direct[i]->GetYaxis()->CenterTitle();
+			AddHistogram(fhTrace_Direct[i],"Traces");
 	}
 	
 	//create histogram for energy spectrum
@@ -138,7 +145,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		//cout << "\tMWDm " << fHypPar->GetMWDm() << endl;
 		// real analysis object
 	fMWDAna = new THypGeMWD(TRACE_LENGTH);
-		fMWDAna->ConnectTraceHistograms(fhTrace[0], fhTrace_Smoothed[0], fhTrace_BaseCorr[0], fhTrace_deconv[0], fhTrace_MWD[0], fhTrace_MA[0]);
+		fMWDAna->ConnectTraceHistograms(fhTrace, fhTrace_Smoothed, fhTrace_BaseCorr, fhTrace_deconv, fhTrace_MWD, fhTrace_MA, fhTrace_Direct);
 		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum,fhEnergySpectrum_withCut);
 		fMWDAna->Connect1DRisetimeHistograms(fhRisetime1090, fhRisetime3090);
 		fMWDAna->Connect2DEnergyRisetimeHistograms(fhEnergyRise1090Corr, fhEnergyRise3090Corr);
