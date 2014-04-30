@@ -46,7 +46,6 @@ class THypGeMWD
 	
 		//Double_t CalculateRisetime(TH1D* hTrace_ext,Double_t* times);
 		
-		//Double_t 	FullAnalysis (TH1D* hTrace_ext, TH1D* hSmoothedTrace, TH1D* hTrace_bc, TH1D* hAmplitude,TH1D* hMWD, TH1D* hEnergy, TH1D* hRisetime1090, TH1D* hRisetime3090, TH1D* hMWDMA, TH2D* hEnergyRise1090Corr, TH2D* hEnergyRise3090Corr, TH2D* hEnergyTimeSinceLastPulse);
 		Double_t FullAnalysis ();
 		void				ConnectTraceHistograms(TH1D** hTrace_ext, TH1D** hSmoothedTrace_ext, TH1D** hTrace_bc_ext, TH1D** hAmplitude_ext,TH1D** hMWD_ext,TH1D** hMWDMA_ext,TH1D** hTrace_Direct_ext);
 		void 				Connect1DEnergySpectraHistograms(TH1D *hEnergySpectrum_ext,TH1D *hEnergySpectrumWithCut_ext);

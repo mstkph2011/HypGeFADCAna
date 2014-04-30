@@ -3,7 +3,7 @@
 //       The GSI Online Offline Object Oriented (Go4) Project
 //         Experiment Data Processing at EE department, GSI
 //-----------------------------------------------------------------------
-// Copyright (C) 2000- GSI Helmholtzzentrum für Schwerionenforschung GmbH
+// Copyright (C) 2000- GSI Helmholtzzentrum fï¿½r Schwerionenforschung GmbH
 //                     Planckstr. 1, 64291 Darmstadt, Germany
 // Contact:            http://go4.gsi.de
 //-----------------------------------------------------------------------
@@ -41,7 +41,6 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
    TGo4EventProcessor(name)
 {
 	EventCounter = 0;
-	
 	char chis[100],chead[100];
 	for (Int_t i =0;i < FADC_CHAN; i++)
 	{
@@ -142,6 +141,8 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		// get parameters
 	fHypPar = (THypGeParameter*)  GetParameter("HypGeParameter");
 	
+
+
 		//cout << "\tMWDm " << fHypPar->GetMWDm() << endl;
 		// real analysis object
 	fMWDAna = new THypGeMWD(TRACE_LENGTH);
