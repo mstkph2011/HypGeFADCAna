@@ -54,9 +54,6 @@ class THypGeMWD
 		void 				Connect2DEnergyTimeSinceLastPulseHistograms(TH2D** hEnergyTimeSinceLastPulse_ext,TH2D** hEnergyTimeSinceLastPulseCorr_ext, TH2D** hEnergyTimeSinceLastPulse_WithCuts_ext, TH2D** hEnergyTimeSinceLastPulseCorr_WithCuts_ext, Int_t NumberOfCuts);
 		
 		private :
-		TH1D*			GetTrace();
-		
-		void 			SetTrace(TH1D* hTrace_ext);
 		
 		//single steps of the analysis
 		Int_t		AnaStep_Smoothing();

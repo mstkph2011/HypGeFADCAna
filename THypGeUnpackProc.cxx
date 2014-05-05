@@ -3,7 +3,7 @@
 //       The GSI Online Offline Object Oriented (Go4) Project
 //         Experiment Data Processing at EE department, GSI
 //-----------------------------------------------------------------------
-// Copyright (C) 2000- GSI Helmholtzzentrum für Schwerionenforschung GmbH
+// Copyright (C) 2000- GSI Helmholtzzentrum fï¿½r Schwerionenforschung GmbH
 //                     Planckstr. 1, 64291 Darmstadt, Germany
 // Contact:            http://go4.gsi.de
 //-----------------------------------------------------------------------
@@ -55,7 +55,7 @@ THypGeUnpackProc::THypGeUnpackProc(const char* name) :
 	char chis[100];
 	for (Int_t i =0;i < FADC_CHAN; i++)
 	{
-		snprintf(chis,63,"Traces/Trace%02d",i+1);
+		snprintf(chis,63,"Traces/Trace_%02d",i+1);
 		fhTrace[i] = (TH1D*) GetHistogram(chis);
 	}
 	if (!fhTrace[0])

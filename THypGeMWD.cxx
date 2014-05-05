@@ -139,7 +139,6 @@ Double_t THypGeMWD::FullAnalysis ()
 		timer.Stop();
 		cout << "Devonvolution and MWD step took " << timer.RealTime() << " seconds" << endl;
 	}
-	
 	if (EnableMA)
 	{
 		if (UseTimer)
@@ -313,15 +312,15 @@ Int_t THypGeMWD::AnaStep_DoMovingAverageFilter()
 {
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
-		MWDMAarray[ChanNumber][0] = hMWD[0]->GetBinContent(1);
+		MWDMAarray[ChanNumber][0] = hMWD[ChanNumber]->GetBinContent(1);
 		for(Int_t n=1;n<=TraceLength;n++)
 		{
 			if (n > Int_t(L))
-				MWDMAarray[ChanNumber][n] = MWDMAarray[ChanNumber][n-1] + 1./L * (hMWD[0]->GetBinContent(n) - hMWD[0]->GetBinContent(n-Int_t(L)));
+				MWDMAarray[ChanNumber][n] = MWDMAarray[ChanNumber][n-1] + 1./L * (hMWD[ChanNumber]->GetBinContent(n) - hMWD[ChanNumber]->GetBinContent(n-Int_t(L)));
 			else
-				MWDMAarray[ChanNumber][n] = MWDMAarray[ChanNumber][n-1] + 1./L * (hMWD[0]->GetBinContent(n) - hMWD[0]->GetBinContent(1));
+				MWDMAarray[ChanNumber][n] = MWDMAarray[ChanNumber][n-1] + 1./L * (hMWD[ChanNumber]->GetBinContent(n) - hMWD[ChanNumber]->GetBinContent(1));
 
-			hMWDMA[0]->SetBinContent(n,MWDMAarray[ChanNumber][n]);
+			hMWDMA[ChanNumber]->SetBinContent(n,MWDMAarray[ChanNumber][n]);
 		}
 	}
 
@@ -432,24 +431,6 @@ Int_t THypGeMWD::AnaStep_DoEnergyRisetimeCorrelation()
 	}
 	return 0; 
 }
-	
-
-
-TH1D* THypGeMWD::GetTrace()
-{
-	return hTraceBuffer;
-}
-
-void THypGeMWD::SetTrace(TH1D* hTrace_ext)
-{
-
-	if (hTraceBuffer )
-		delete hTraceBuffer;
-	hTraceBuffer = (TH1D*) hTrace_ext->Clone("hTraceBuffer");
-	
-}
-
-
 
 Int_t THypGeMWD::FindFirstBinAbove(TH1D* fHisto,Double_t threshold,Int_t low, Int_t high)
 {
