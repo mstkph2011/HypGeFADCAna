@@ -3,7 +3,7 @@
 //       The GSI Online Offline Object Oriented (Go4) Project
 //         Experiment Data Processing at EE department, GSI
 //-----------------------------------------------------------------------
-// Copyright (C) 2000- GSI Helmholtzzentrum für Schwerionenforschung GmbH
+// Copyright (C) 2000- GSI Helmholtzzentrum fï¿½r Schwerionenforschung GmbH
 //                     Planckstr. 1, 64291 Darmstadt, Germany
 // Contact:            http://go4.gsi.de
 //-----------------------------------------------------------------------
@@ -47,21 +47,21 @@ class THypGeAnlProc : public TGo4EventProcessor {
 			TH1D							*fhTrace_MA[FADC_CHAN];
 			TH1D							*fhTrace_Direct[FADC_CHAN];
 			
-			TH1D							*fhEnergySpectrum;
-			TH1D							*fhRisetime1090;
-			TH1D							*fhRisetime3090;
-			TH2D							*fhEnergyRise1090Corr;
-			TH2D							*fhEnergyRise3090Corr;
+			TH1D							*fhEnergySpectrum[FADC_CHAN];
+			TH1D							*fhRisetime1090[FADC_CHAN];
+			TH1D							*fhRisetime3090[FADC_CHAN];
+			TH2D							*fhEnergyRise1090Corr[FADC_CHAN];
+			TH2D							*fhEnergyRise3090Corr[FADC_CHAN];
 					
-			TH2D							*fhEnergyTimeSinceLastPulse;
+			TH2D							*fhEnergyTimeSinceLastPulse[FADC_CHAN];
 			TH2D							*fhEnergyTimeSinceLastPulse_withCut[20];
 					
-			TH2D							*fhEnergyTimeSinceLastPulseCorr;
+			TH2D							*fhEnergyTimeSinceLastPulseCorr[FADC_CHAN];
 			TH2D							*fhEnergyTimeSinceLastPulseCorr_withCut[20];
 			
 			TH1D							*fhAmplBaselinegradient;
 			
-			TH1D							*fhEnergySpectrum_withCut;
+			TH1D							*fhEnergySpectrum_withCut[FADC_CHAN];
 			
 
 			//real analysis object

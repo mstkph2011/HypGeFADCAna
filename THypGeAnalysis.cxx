@@ -3,7 +3,7 @@
 //			 The GSI Online Offline Object Oriented (Go4) Project
 //				 Experiment Data Processing at EE department, GSI
 //-----------------------------------------------------------------------
-// Copyright (C) 2000- GSI Helmholtzzentrum für Schwerionenforschung GmbH
+// Copyright (C) 2000- GSI Helmholtzzentrum fï¿½r Schwerionenforschung GmbH
 //										 Planckstr. 1, 64291 Darmstadt, Germany
 // Contact:						http://go4.gsi.de
 //-----------------------------------------------------------------------
@@ -168,7 +168,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	char chis[100], chead[100];
 	for(Int_t i=0;i<FADC_CHAN;i++)
 		{
-			snprintf(chis,15,"Trace%02d",i+1);	
+			snprintf(chis,15,"Trace_%02d",i+1);
 			snprintf(chead,63,"Trace channel %2d; time [#mus];Amplitude [a.u.]",i+1);
 			fhTrace[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
 			fhTrace[i]->GetXaxis()->CenterTitle();

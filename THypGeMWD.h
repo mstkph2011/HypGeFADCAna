@@ -41,17 +41,17 @@ class THypGeMWD
 {
 	public:
 		THypGeMWD();			//default constructor DON'T use!
-		THypGeMWD(Int_t TraceLength_ext);
+		THypGeMWD(Int_t TraceLength_ext,Int_t NumberOfChannels_ext);
 		virtual ~THypGeMWD();
 	
 		//Double_t CalculateRisetime(TH1D* hTrace_ext,Double_t* times);
 		
 		Double_t FullAnalysis ();
 		void				ConnectTraceHistograms(TH1D** hTrace_ext, TH1D** hSmoothedTrace_ext, TH1D** hTrace_bc_ext, TH1D** hAmplitude_ext,TH1D** hMWD_ext,TH1D** hMWDMA_ext,TH1D** hTrace_Direct_ext);
-		void 				Connect1DEnergySpectraHistograms(TH1D *hEnergySpectrum_ext,TH1D *hEnergySpectrumWithCut_ext);
-		void 				Connect1DRisetimeHistograms(TH1D* hRisetime1090_ext, TH1D* hRisetime3090_ext);
-		void 				Connect2DEnergyRisetimeHistograms(TH2D* hEnergyRise1090Corr_ext, TH2D* hEnergyRise3090Corr_ext);
-		void 				Connect2DEnergyTimeSinceLastPulseHistograms(TH2D* hEnergyTimeSinceLastPulse_ext,TH2D* hEnergyTimeSinceLastPulseCorr_ext, TH2D**hEnergyTimeSinceLastPulse_WithCuts_ext, TH2D** hEnergyTimeSinceLastPulseCorr_WithCuts_ext, Int_t NumberOfCuts);
+		void 				Connect1DEnergySpectraHistograms(TH1D **hEnergySpectrum_ext,TH1D **hEnergySpectrumWithCut_ext);
+		void 				Connect1DRisetimeHistograms(TH1D** hRisetime1090_ext, TH1D** hRisetime3090_ext);
+		void 				Connect2DEnergyRisetimeHistograms(TH2D** hEnergyRise1090Corr_ext, TH2D** hEnergyRise3090Corr_ext);
+		void 				Connect2DEnergyTimeSinceLastPulseHistograms(TH2D** hEnergyTimeSinceLastPulse_ext,TH2D** hEnergyTimeSinceLastPulseCorr_ext, TH2D** hEnergyTimeSinceLastPulse_WithCuts_ext, TH2D** hEnergyTimeSinceLastPulseCorr_WithCuts_ext, Int_t NumberOfCuts);
 		
 		private :
 		TH1D*			GetTrace();
@@ -117,6 +117,7 @@ class THypGeMWD
 		
 	private:
 		Int_t 		TraceLength;
+		Int_t			NumberOfChannels;
 		Int_t 		PeakCounter;
 		TH1D			*hTraceBuffer;
 		
@@ -130,18 +131,18 @@ class THypGeMWD
 		TH1D			**hMWDMA;
 		TH1D			**hTrace_Direct;
 		
-		TH1D			*hEnergySpectrum;
-		TH1D			*hEnergySpectrumWithCut;
+		TH1D			**hEnergySpectrum;
+		TH1D			**hEnergySpectrumWithCut;
 		
-		TH1D			*hRisetime1090;
-		TH1D			*hRisetime3090;
+		TH1D			**hRisetime1090;
+		TH1D			**hRisetime3090;
 		
-		TH2D			*hEnergyRise1090Corr;
-		TH2D			*hEnergyRise3090Corr;
+		TH2D			**hEnergyRise1090Corr;
+		TH2D			**hEnergyRise3090Corr;
 		
-		TH2D			*hEnergyTimeSinceLastPulse;
+		TH2D			**hEnergyTimeSinceLastPulse;
 		TH2D			**hEnergyTimeSinceLastPulse_WithCuts;
-		TH2D			*hEnergyTimeSinceLastPulseCorr;
+		TH2D			**hEnergyTimeSinceLastPulseCorr;
 		TH2D			**hEnergyTimeSinceLastPulseCorr_WithCuts;
 		Double_t offset_av;
 		
@@ -151,13 +152,13 @@ class THypGeMWD
 		std::vector<Double_t> m;
 		std::vector<Double_t> x;
 		std::vector<Double_t> y;
-		std::vector<Int_t> leftborder;
-		std::vector<Int_t> rightborder;
-		std::vector<Double_t> energy;
-		std::vector<Double_t> risetime1090;
-		std::vector<Double_t> risetime3090;
+		std::vector<Int_t> leftborder[8];
+		std::vector<Int_t> rightborder[8];
+		std::vector<Double_t> energy[8];
+		std::vector<Double_t> risetime1090[8];
+		std::vector<Double_t> risetime3090[8];
 		
-		std::vector<Int_t> SignalTime;
+		std::vector<Int_t> SignalTime[8];
 	
 			//external parameters
 		Double_t 	M;					// window width for MWD
@@ -175,13 +176,14 @@ class THypGeMWD
 		
 		Double_t g[10000];			// array for coefficients of gaussian filter
 		
-		Double_t *Aarray;
-		Double_t *MWDarray;
-		Double_t *GradMWD1array;
-		Double_t *GradMWD2array;
+		Double_t **Aarray;
+		Double_t **MWDarray;
+		Double_t **GradMWD1array;
+		Double_t **GradMWD2array;
+		Double_t **MWDMAarray;
 
-		Double_t *Sarray;		// array to store the result of the direct filter
-		Double_t *Parray;		// array to store an intermediate result of the direct filter
+		Double_t **Sarray;		// array to store the result of the direct filter
+		Double_t **Parray;		// array to store an intermediate result of the direct filter
 		
 		Int_t 		GausBreakUp;
 		Double_t 	*GausNorm;

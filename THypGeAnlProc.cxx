@@ -45,7 +45,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 	for (Int_t i =0;i < FADC_CHAN; i++)
 	{
 		//get trace histograms
-		snprintf(chis,63,"Traces/Trace%02d",i+1);
+		snprintf(chis,63,"Traces/Trace_%02d",i+1);
 		fhTrace[i] = (TH1D*) GetHistogram(chis);
 		
 		// create histograms for smoothed traces
@@ -91,29 +91,47 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fhTrace_Direct[i]->GetXaxis()->CenterTitle();
 		fhTrace_Direct[i]->GetYaxis()->CenterTitle();
 			AddHistogram(fhTrace_Direct[i],"Traces");
+
+		//create histogram for energy spectrum
+		snprintf(chis,15,"Energy_%02d",i+1);
+		snprintf(chead,63,"Energy spectrum channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
+		fhEnergySpectrum[i] = new TH1D(chis,chead,4000,0,4000);
+			AddHistogram(fhEnergySpectrum[i],"Energyspectrum");
+		//create histogram for energy spectrum with a cut in the pile up time
+		snprintf(chis,30,"EnergyWithCut_%02d",i+1);
+		snprintf(chead,63,"Energy spectrum with cut channel %2d; ADC channel [a.u.];Counts [a.u.]",i+1);
+		fhEnergySpectrum_withCut[i] = new TH1D(chis,chead,4000,0,4000);
+			AddHistogram(fhEnergySpectrum_withCut[i],"Energyspectrum");
+
+		//risetime histos
+		snprintf(chis,30,"Risetime1090_%02d",i+1);
+		snprintf(chead,63,"Risetime1090 %2d; Risetime 1090 [ns];Counts [a.u.]",i+1);
+		fhRisetime1090[i] = new TH1D(chis,chead,100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
+			AddHistogram(fhRisetime1090[i],"Risetime1090");
+		snprintf(chis,30,"Risetime3090_%02d",i+1);
+		snprintf(chead,63,"Risetime3090 %2d; Risetime 1090 [ns];Counts [a.u.]",i+1);
+		fhRisetime3090[i] = new TH1D(chis,chead,100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
+			AddHistogram(fhRisetime3090[i],"Risetime3090");
+		snprintf(chis,30,"EnergyRise1090Corr_%02d",i+1);
+		snprintf(chead,63,"Energy-Risetime1090-Correlation channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
+		fhEnergyRise1090Corr[i] = new TH2D(chis,chead,100,0,1000,2000,0,2000);
+			AddHistogram(fhEnergyRise1090Corr[i],"EnergyRise1090Corr");
+		snprintf(chis,30,"EnergyRise3090Corr_%02d",i+1);
+		snprintf(chead,63,"Energy-Risetime3090-Correlation channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
+		fhEnergyRise3090Corr[i] = new TH2D(chis,chead,100,0,1000,2000,0,2000);
+			AddHistogram(fhEnergyRise3090Corr[i],"EnergyRise3090Corr");
+
+
+		// histogram to see the correlation of energy and the time between two pulses to examine the effect of pile up
+		snprintf(chis,30,"EnergyTimeSinceLastPulse_%02d",i+1);
+		snprintf(chead,100,"Energy- Time since last Pulse - Correlation channel %02d;Time since last pulse [#mus];ADC Value [a.u.]",i+1);
+		fhEnergyTimeSinceLastPulse[i] = new TH2D(chis,chead,200,0,200,20000,0,2000);
+			AddHistogram(fhEnergyTimeSinceLastPulse[i],"EnergyTimeSinceLastPulse");
+		snprintf(chis,50,"EnergyTimeSinceLastPulseCorrected_%02d",i+1);
+		snprintf(chead,100,"Energy- Time since last Pulse - Correlation with correction channel %02d;Time since last pulse [#mus];ADC Value [a.u.]",i+1);
+		fhEnergyTimeSinceLastPulseCorr[i] = new TH2D(chis,chead,200,0,200,20000,0,2000);
+			AddHistogram(fhEnergyTimeSinceLastPulseCorr[i],"EnergyTimeSinceLastPulseCorrected");
 	}
-	
-	//create histogram for energy spectrum
-	fhEnergySpectrum = new TH1D("Energy","Energy",4000,0,4000);
-		AddHistogram(fhEnergySpectrum,"Energyspectrum");
-	//create histogram for energy spectrum with a cut in the pile up time
-	fhEnergySpectrum_withCut = new TH1D("Energy_withCut","Energy_withCut",4000,0,4000);
-		AddHistogram(fhEnergySpectrum_withCut,"Energyspectrum");
-	//risetime histos
-	fhRisetime1090 = new TH1D("Risetime1090","Risetime1090",100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
-		AddHistogram(fhRisetime1090,"Risetime1090");
-	fhRisetime3090 = new TH1D("Risetime3090","Risetime3090",100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
-		AddHistogram(fhRisetime3090,"Risetime3090");
-	fhEnergyRise1090Corr = new TH2D("EnergyRise1090Corr","Energy-Risetime1090-Correlation;Rt;ADC Value [a.u.]",100,0,1000,2000,0,2000);
-		AddHistogram(fhEnergyRise1090Corr,"EnergyRise1090Corr");
-	
-	fhEnergyRise3090Corr = new TH2D("EnergyRise3090Corr","Energy-Risetime3090-Correlation;Rt;ADC Value [a.u.]",100,0,1000,2000,0,2000);
-		AddHistogram(fhEnergyRise3090Corr,"EnergyRise3090Corr");
-	
-	
-	// histogram to see the correlation of energy and the time between two pulses to examine the effect of pile up
-	fhEnergyTimeSinceLastPulse = new TH2D("EnergyTimeSinceLastPulse","Energy- Time since last Pulse - Correlation;Time since last pulse [#mus];ADC Value [a.u.]",200,0,200,20000,0,2000);
-		AddHistogram(fhEnergyTimeSinceLastPulse,"EnergyTimeSinceLastPulse");
 	for (int i = 0; i < 20; i++)
 	{
 		snprintf(chis,100,"EnergyTimeSinceLastPulse_withCut_%02d",i+1);  
@@ -122,8 +140,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 			AddHistogram(fhEnergyTimeSinceLastPulse_withCut[i],"EnergyTimeSinceLastPulse");
 		//cout << fhEnergyTimeSinceLastPulse_withCut[i] << endl;
 	}
-	fhEnergyTimeSinceLastPulseCorr = new TH2D("EnergyTimeSinceLastPulseCorrected","Energy- Time since last Pulse - Correlation with correction;Time since last pulse [#mus];ADC Value [a.u.]",200,0,200,20000,0,2000);
-		AddHistogram(fhEnergyTimeSinceLastPulseCorr,"EnergyTimeSinceLastPulseCorrected");
+
 	for (int i = 0; i < 20; i++)
 	{
 		snprintf(chis,100,"EnergyTimeSinceLastPulseCorrected_withCut_%02d",i+1);  
@@ -145,7 +162,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 
 		//cout << "\tMWDm " << fHypPar->GetMWDm() << endl;
 		// real analysis object
-	fMWDAna = new THypGeMWD(TRACE_LENGTH);
+	fMWDAna = new THypGeMWD(TRACE_LENGTH,FADC_CHAN);
 		fMWDAna->ConnectTraceHistograms(fhTrace, fhTrace_Smoothed, fhTrace_BaseCorr, fhTrace_deconv, fhTrace_MWD, fhTrace_MA, fhTrace_Direct);
 		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum,fhEnergySpectrum_withCut);
 		fMWDAna->Connect1DRisetimeHistograms(fhRisetime1090, fhRisetime3090);
