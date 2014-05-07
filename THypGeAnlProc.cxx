@@ -157,6 +157,10 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 			AddHistogram(fhTrace_deri1,"Test");
 		fhTrace_deri2 = new TH1D ("deri2","deri2",TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
 			AddHistogram(fhTrace_deri2,"Test");
+		fhTrace_deri3 = new TH1D ("deri3","deri3",TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
+			AddHistogram(fhTrace_deri3,"Test");
+		fhTrace_deri4 = new TH1D ("deri4","deri4",TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
+			AddHistogram(fhTrace_deri4,"Test");
 		// get parameters
 	fHypPar = (THypGeParameter*)  GetParameter("HypGeParameter");
 	
@@ -170,7 +174,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fMWDAna->Connect1DRisetimeHistograms(fhRisetime1090, fhRisetime3090);
 		fMWDAna->Connect2DEnergyRisetimeHistograms(fhEnergyRise1090Corr, fhEnergyRise3090Corr);
 		fMWDAna->Connect2DEnergyTimeSinceLastPulseHistograms(fhEnergyTimeSinceLastPulse, fhEnergyTimeSinceLastPulseCorr, fhEnergyTimeSinceLastPulse_withCut, fhEnergyTimeSinceLastPulseCorr_withCut, 20);
-		fMWDAna->ConnectTestHistograms(fhTrace_deri1,fhTrace_deri2);
+		fMWDAna->ConnectTestHistograms(fhTrace_deri1,fhTrace_deri2,fhTrace_deri3,fhTrace_deri4);
 		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection());
 
 	cout << "**** THypGeAnlProc: Create" << endl;

@@ -65,6 +65,8 @@ class THypGeAnlProc : public TGo4EventProcessor {
 			
 			TH1D 							*fhTrace_deri1;
 			TH1D 							*fhTrace_deri2;
+			TH1D 							*fhTrace_deri3;
+			TH1D 							*fhTrace_deri4;
 
 
 			//real analysis object

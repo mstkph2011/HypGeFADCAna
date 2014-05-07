@@ -61,8 +61,10 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext,Int_t NumberOfChannels_ext)          
 
 	Aarray = new Double_t* [NumberOfChannels];
 	MWDarray = new Double_t* [NumberOfChannels];
-	GradMWD1array = new Double_t* [NumberOfChannels];
-	GradMWD2array = new Double_t* [NumberOfChannels];
+	Derivative1array = new Double_t* [NumberOfChannels];
+	Derivative2array = new Double_t* [NumberOfChannels];
+	Derivative3array = new Double_t* [NumberOfChannels];
+	Derivative4array = new Double_t* [NumberOfChannels];
 	MWDMAarray = new Double_t* [NumberOfChannels];
 	Sarray = new Double_t* [NumberOfChannels];		// array to store the result of the direct filter
 	Parray = new Double_t* [NumberOfChannels];		// array to store an intermediate result of the direct filter
@@ -71,8 +73,10 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext,Int_t NumberOfChannels_ext)          
 	{
 		Aarray[ChanNumber] = new Double_t[TraceLength+1];
 		MWDarray[ChanNumber] = new Double_t[TraceLength+1];
-		GradMWD1array[ChanNumber] = new Double_t[TraceLength+1];
-		GradMWD2array[ChanNumber] = new Double_t[TraceLength+1];
+		Derivative1array[ChanNumber] = new Double_t[TraceLength+1];
+		Derivative2array[ChanNumber] = new Double_t[TraceLength+1];
+		Derivative3array[ChanNumber] = new Double_t[TraceLength+1];
+		Derivative4array[ChanNumber] = new Double_t[TraceLength+1];
 		MWDMAarray[ChanNumber] = new Double_t[TraceLength+1];
 		Sarray[ChanNumber] = new Double_t[TraceLength+1];		// array to store the result of the direct filter
 		Parray[ChanNumber] = new Double_t[TraceLength+1];		// array to store an intermediate result of the direct filter
@@ -846,8 +850,11 @@ void THypGeMWD::EvaluateMA()
 			CalculateDerivatives(hMWDMA[ChanNumber],ChanNumber);
 			for(Int_t i=1;i<=TraceLength;i++)
 			{
-				hTraceDeri1 ->SetBinContent(i, GradMWD1array[ChanNumber][i]);
-				hTraceDeri2 ->SetBinContent(i, GradMWD2array[ChanNumber][i]);
+				hTraceDeri1 ->SetBinContent(i, Derivative1array[ChanNumber][i]*100);
+				hTraceDeri2 ->SetBinContent(i, Derivative2array[ChanNumber][i]*1000);
+				hTraceDeri3 ->SetBinContent(i, Derivative3array[ChanNumber][i]*10000);
+				hTraceDeri4 ->SetBinContent(i, Derivative4array[ChanNumber][i]*100000);
+
 			}
 	}
 }
@@ -1103,12 +1110,14 @@ void THypGeMWD::Connect2DEnergyTimeSinceLastPulseHistograms(TH2D** hEnergyTimeSi
 		//cout << hEnergyTimeSinceLastPulse_WithCuts[i] << "\t\t" << hEnergyTimeSinceLastPulse_WithCuts_ext[i] << endl;
 	//}
 }
-void THypGeMWD::ConnectTestHistograms(TH1D* hDeri1_ext, TH1D* hDeri2_ext)
+void THypGeMWD::ConnectTestHistograms(TH1D* hDeri1_ext, TH1D* hDeri2_ext, TH1D* hDeri3_ext, TH1D* hDeri4_ext)
 {
 	hTraceDeri1 = hDeri1_ext;
 	hTraceDeri2 = hDeri2_ext;
+	hTraceDeri3 = hDeri3_ext;
+	hTraceDeri4 = hDeri4_ext;
 }
-Int_t		THypGeMWD::AnaStep_FillEnergySpectrumWithPileUpCut(Double_t CutValue)
+Int_t THypGeMWD::AnaStep_FillEnergySpectrumWithPileUpCut(Double_t CutValue)
 {
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
@@ -1124,14 +1133,27 @@ Int_t		THypGeMWD::AnaStep_FillEnergySpectrumWithPileUpCut(Double_t CutValue)
 
 void THypGeMWD::CalculateDerivatives(TH1D* hInput,Int_t ChanNumber)
 {
-	GradMWD1array[ChanNumber][0]=0;
-	GradMWD2array[ChanNumber][0]=0;
+	Derivative1array[ChanNumber][0]=0;
+	Derivative2array[ChanNumber][0]=0;
+	Derivative3array[ChanNumber][0]=0;
+	Derivative4array[ChanNumber][0]=0;
 	for(Int_t i=1;i<=TraceLength;i++)
 	{
-		GradMWD1array[ChanNumber][i] = hInput->GetBinContent(i+1) - hInput->GetBinContent(i);
+		Derivative1array[ChanNumber][i] = hInput->GetBinContent(i+1) - hInput->GetBinContent(i);
 	}
-	for(Int_t i=1;i<=TraceLength;i++)
+	for(Int_t i=1;i<=TraceLength-1;i++)
 	{
-		GradMWD2array[ChanNumber][i] = GradMWD1array[ChanNumber][i+1] - GradMWD1array[ChanNumber][i];
+		Derivative2array[ChanNumber][i] = Derivative1array[ChanNumber][i+1] - Derivative1array[ChanNumber][i];
 	}
+	Derivative2array[ChanNumber][TraceLength]=0;
+	for(Int_t i=1;i<=TraceLength-1;i++)
+	{
+		Derivative3array[ChanNumber][i] = Derivative2array[ChanNumber][i+1] - Derivative2array[ChanNumber][i];
+	}
+	Derivative3array[ChanNumber][TraceLength]=0;
+	for(Int_t i=1;i<=TraceLength-1;i++)
+	{
+		Derivative4array[ChanNumber][i] = Derivative3array[ChanNumber][i+1] - Derivative3array[ChanNumber][i];
+	}
+	Derivative4array[ChanNumber][TraceLength]=0;
 }

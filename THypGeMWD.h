@@ -52,7 +52,7 @@ class THypGeMWD
 		void 				Connect1DRisetimeHistograms(TH1D** hRisetime1090_ext, TH1D** hRisetime3090_ext);
 		void 				Connect2DEnergyRisetimeHistograms(TH2D** hEnergyRise1090Corr_ext, TH2D** hEnergyRise3090Corr_ext);
 		void 				Connect2DEnergyTimeSinceLastPulseHistograms(TH2D** hEnergyTimeSinceLastPulse_ext,TH2D** hEnergyTimeSinceLastPulseCorr_ext, TH2D** hEnergyTimeSinceLastPulse_WithCuts_ext, TH2D** hEnergyTimeSinceLastPulseCorr_WithCuts_ext, Int_t NumberOfCuts);
-		void				ConnectTestHistograms(TH1D* hDeri1_ext, TH1D* hDeri2_ext);
+		void				ConnectTestHistograms(TH1D* hDeri1_ext, TH1D* hDeri2_ext, TH1D* hDeri3_ext, TH1D* hDeri4_ext);
 		private :
 		
 		//single steps of the analysis
@@ -145,6 +145,8 @@ class THypGeMWD
 
 		TH1D			*hTraceDeri1;
 		TH1D			*hTraceDeri2;
+		TH1D			*hTraceDeri3;
+		TH1D			*hTraceDeri4;
 
 		Double_t offset_av;
 		
@@ -180,8 +182,10 @@ class THypGeMWD
 		
 		Double_t **Aarray;
 		Double_t **MWDarray;
-		Double_t **GradMWD1array;
-		Double_t **GradMWD2array;
+		Double_t **Derivative1array;
+		Double_t **Derivative2array;
+		Double_t **Derivative3array;
+		Double_t **Derivative4array;
 		Double_t **MWDMAarray;
 
 		Double_t **Sarray;		// array to store the result of the direct filter
