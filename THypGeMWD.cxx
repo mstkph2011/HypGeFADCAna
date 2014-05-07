@@ -26,6 +26,8 @@
 #include "TMath.h"
 #include "TVirtualFFT.h"
 
+#include "TGo4Analysis.h"
+
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -293,16 +295,6 @@ Int_t THypGeMWD::AnaStep_DoMovingWindowDeconvolution()
 			hAmplitude[ChanNumber]->SetBinContent(i,Aarray[ChanNumber][i]);
 			hMWD[ChanNumber]->SetBinContent(i,MWDarray[ChanNumber][i]);
 		}
-		GradMWD1array[ChanNumber][0]=0;
-		GradMWD2array[ChanNumber][0]=0;
-		for(Int_t i=1;i<=TraceLength;i++)
-		{
-			GradMWD1array[ChanNumber][i] = hMWD[ChanNumber]->GetBinContent(i+1) - hMWD[ChanNumber]->GetBinContent(i);
-		}
-		for(Int_t i=1;i<=TraceLength;i++)
-		{
-			GradMWD2array[ChanNumber][i] = GradMWD1array[ChanNumber][i+1] - GradMWD1array[ChanNumber][i];
-		}
 	}
 	return 0;
 }
@@ -365,7 +357,8 @@ Int_t THypGeMWD::AnaStep_FillEnergyspectrum()
 	{
 		EvaluateAmplitude();
 	}
-	
+	if (EnableMA)
+		EvaluateMA();
 	return 0;
 }
 	
@@ -627,6 +620,7 @@ void THypGeMWD::EvaluateAmplitude()
 
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
+		CalculateDerivatives(hAmplitude[ChanNumber],ChanNumber);
 		leftborder[ChanNumber].clear();
 		energy[ChanNumber].clear();
 		do
@@ -707,7 +701,7 @@ void THypGeMWD::EvaluateAmplitude()
 void THypGeMWD::EvaluateMWD()
 {
 	//for MWD
- 
+
 	Double_t threshold_MWD = 150;		//threshold value for energy[ChanNumber] of signals
 	Double_t grad_MWD = 2;			//gradient threshold to identify the borders of MWD-Signal
 	
@@ -723,6 +717,7 @@ void THypGeMWD::EvaluateMWD()
 
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
+		CalculateDerivatives(hMWD[ChanNumber],ChanNumber);
 		leftborder[ChanNumber].clear();
 		rightborder[ChanNumber].clear();
 		SignalTime[ChanNumber].clear();
@@ -841,6 +836,19 @@ void THypGeMWD::EvaluateMWD()
 				}
 			}
 		}
+	}
+}
+
+void THypGeMWD::EvaluateMA()
+{
+	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
+	{
+			CalculateDerivatives(hMWDMA[ChanNumber],ChanNumber);
+			for(Int_t i=1;i<=TraceLength;i++)
+			{
+				hTraceDeri1 ->SetBinContent(i, GradMWD1array[ChanNumber][i]);
+				hTraceDeri2 ->SetBinContent(i, GradMWD2array[ChanNumber][i]);
+			}
 	}
 }
 
@@ -1095,7 +1103,11 @@ void THypGeMWD::Connect2DEnergyTimeSinceLastPulseHistograms(TH2D** hEnergyTimeSi
 		//cout << hEnergyTimeSinceLastPulse_WithCuts[i] << "\t\t" << hEnergyTimeSinceLastPulse_WithCuts_ext[i] << endl;
 	//}
 }
-
+void THypGeMWD::ConnectTestHistograms(TH1D* hDeri1_ext, TH1D* hDeri2_ext)
+{
+	hTraceDeri1 = hDeri1_ext;
+	hTraceDeri2 = hDeri2_ext;
+}
 Int_t		THypGeMWD::AnaStep_FillEnergySpectrumWithPileUpCut(Double_t CutValue)
 {
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
@@ -1108,4 +1120,18 @@ Int_t		THypGeMWD::AnaStep_FillEnergySpectrumWithPileUpCut(Double_t CutValue)
 		}
 	}
 	return 0;
+}
+
+void THypGeMWD::CalculateDerivatives(TH1D* hInput,Int_t ChanNumber)
+{
+	GradMWD1array[ChanNumber][0]=0;
+	GradMWD2array[ChanNumber][0]=0;
+	for(Int_t i=1;i<=TraceLength;i++)
+	{
+		GradMWD1array[ChanNumber][i] = hInput->GetBinContent(i+1) - hInput->GetBinContent(i);
+	}
+	for(Int_t i=1;i<=TraceLength;i++)
+	{
+		GradMWD2array[ChanNumber][i] = GradMWD1array[ChanNumber][i+1] - GradMWD1array[ChanNumber][i];
+	}
 }

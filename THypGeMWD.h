@@ -52,7 +52,7 @@ class THypGeMWD
 		void 				Connect1DRisetimeHistograms(TH1D** hRisetime1090_ext, TH1D** hRisetime3090_ext);
 		void 				Connect2DEnergyRisetimeHistograms(TH2D** hEnergyRise1090Corr_ext, TH2D** hEnergyRise3090Corr_ext);
 		void 				Connect2DEnergyTimeSinceLastPulseHistograms(TH2D** hEnergyTimeSinceLastPulse_ext,TH2D** hEnergyTimeSinceLastPulseCorr_ext, TH2D** hEnergyTimeSinceLastPulse_WithCuts_ext, TH2D** hEnergyTimeSinceLastPulseCorr_WithCuts_ext, Int_t NumberOfCuts);
-		
+		void				ConnectTestHistograms(TH1D* hDeri1_ext, TH1D* hDeri2_ext);
 		private :
 		
 		//single steps of the analysis
@@ -70,6 +70,7 @@ class THypGeMWD
 		//functions used in the Energyspectrum step
 		void 		EvaluateAmplitude();
 		void		EvaluateMWD();
+		void		EvaluateMA();
 		
 		private:
 		Int_t 		FindFirstBinAbove(TH1D* fHisto,Double_t threshold,Int_t low, Int_t high);
@@ -110,7 +111,7 @@ class THypGeMWD
 		private : void 		DoBandStopFilter();
 		private : void 		DoFourierBackTransformation();
 		
-		
+		void CalculateDerivatives(TH1D* hInput,Int_t ChanNumber);
 		
 	private:
 		Int_t 		TraceLength;
@@ -141,6 +142,10 @@ class THypGeMWD
 		TH2D			**hEnergyTimeSinceLastPulse_WithCuts;
 		TH2D			**hEnergyTimeSinceLastPulseCorr;
 		TH2D			**hEnergyTimeSinceLastPulseCorr_WithCuts;
+
+		TH1D			*hTraceDeri1;
+		TH1D			*hTraceDeri2;
+
 		Double_t offset_av;
 		
 		

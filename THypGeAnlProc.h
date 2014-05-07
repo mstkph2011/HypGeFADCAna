@@ -63,6 +63,9 @@ class THypGeAnlProc : public TGo4EventProcessor {
 			
 			TH1D							*fhEnergySpectrum_withCut[FADC_CHAN];
 			
+			TH1D 							*fhTrace_deri1;
+			TH1D 							*fhTrace_deri2;
+
 
 			//real analysis object
 			THypGeMWD					*fMWDAna;
