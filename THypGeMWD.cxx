@@ -307,6 +307,7 @@ Int_t THypGeMWD::AnaStep_DoMovingWindowDeconvolution()
 	
 Int_t THypGeMWD::AnaStep_DoMovingAverageFilter()
 {
+	//cout << L << endl;
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
 		MWDMAarray[ChanNumber][0] = hMWD[ChanNumber]->GetBinContent(1);
@@ -606,7 +607,7 @@ void THypGeMWD::SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Wid
 	EnableMA = EnaMA;			// Switch for second moving average filter
 	SmoothingMethod = EnaSmo;	// Switch smoothing on or off
 	EnableBaselineCorrection = EnaBC; 	//Switch baseline correction on or off
-
+	//cout << "new parameters set"<< endl;
 }
 
 void THypGeMWD::EvaluateAmplitude()
@@ -1024,8 +1025,8 @@ void THypGeMWD::DoBilateralFilter()
 			{
 				if (j <1  || j > TraceLength)			// condition to fit the algorithm to the beginning and the end of the trace
 					continue;
-				value += g[abs(j-i)]* Gaus(hTraceBuffer->GetBinContent (i)-hTraceBuffer->GetBinContent (j)) * hTraceBuffer->GetBinContent (j);				// bilateral (2d gaussian) smoothing
-				norm += g[abs(j-i)]* Gaus(hTraceBuffer->GetBinContent (i)-hTraceBuffer->GetBinContent (j));				// here we have to recalculate the norm every time because of the non-linearity of the bilateral filter (norm is not const for position i)
+				value += g[abs(j-i)]* Gaus(hTrace[ChanNumber]->GetBinContent (i)-hTrace[ChanNumber]->GetBinContent (j)) * hTrace[ChanNumber]->GetBinContent (j);				// bilateral (2d gaussian) smoothing
+				norm += g[abs(j-i)]* Gaus(hTrace[ChanNumber]->GetBinContent (i)-hTrace[ChanNumber]->GetBinContent (j));				// here we have to recalculate the norm every time because of the non-linearity of the bilateral filter (norm is not const for position i)
 
 			}
 			

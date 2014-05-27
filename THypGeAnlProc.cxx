@@ -210,14 +210,16 @@ Bool_t THypGeAnlProc::BuildEvent(TGo4EventElement* dest)
    isValid=kTRUE;
 
 	//add ana code here
-	
+	//cout << fHypPar->GetMAl() << endl;
 	fMWDAna->SetUseMWD(1);
-	if (fHypPar->GetParametersChanged())
+	//if (fHypPar->GetParametersChanged())
+	//{
 		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection());
-
-	//if (fMWDAna->FullAnalysis(fhTrace[0],fhTrace_Smoothed[0],fhTrace_BaseCorr[0], fhTrace_deconv[0],fhTrace_MWD[0],fhEnergySpectrum,fhRisetime1090,fhRisetime3090,fhTrace_MA[0],(TH2D*) fhEnergyRise1090Corr,(TH2D*) fhEnergyRise3090Corr, fhEnergyTimeSinceLastPulse) != -1)				// some error here
-	if (fMWDAna->FullAnalysis() != -1)				// some error here
-		fhAmplBaselinegradient->Fill((fhTrace_deconv[0]->GetBinContent(1)-fhTrace_deconv[0]->GetBinContent(301))/300);
+		//fHypPar->SetParametersChanged(0);
+	//}
+	fMWDAna->FullAnalysis();
+	//if (fMWDAna->FullAnalysis() != -1)				// some error here
+		//fhAmplBaselinegradient->Fill((fhTrace_deconv[0]->GetBinContent(1)-fhTrace_deconv[0]->GetBinContent(301))/300);
 	
 	//this shows number of real events
 	

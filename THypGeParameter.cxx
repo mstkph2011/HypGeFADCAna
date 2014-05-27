@@ -3,7 +3,7 @@
 //       The GSI Online Offline Object Oriented (Go4) Project
 //         Experiment Data Processing at EE department, GSI
 //-----------------------------------------------------------------------
-// Copyright (C) 2000- GSI Helmholtzzentrum für Schwerionenforschung GmbH
+// Copyright (C) 2000- GSI Helmholtzzentrum fï¿½r Schwerionenforschung GmbH
 //                     Planckstr. 1, 64291 Darmstadt, Germany
 // Contact:            http://go4.gsi.de
 //-----------------------------------------------------------------------
@@ -25,20 +25,22 @@ THypGeParameter::THypGeParameter(const char* name) :
 void THypGeParameter::SetParameters( Int_t M, Int_t L, Int_t NOS_ext, Int_t Width_ext, Int_t Sigma, Int_t SigmaBil, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC)
 {
 	if (MWDm != M || MAl != L || NoOfSmoothing != NOS_ext || Width != Width_ext || sigmaGaus != Sigma || sigmaBil != SigmaBil || tau != tau_ext || EnableMA != EnaMA || SmoothingMethod != EnaSmo || EnableBaselineCorrection != EnaBC )
+	{
 		ParametersChanged = 1;
+		MWDm = M;			// M of MWD
+		MAl = L;				// L of MA
+		NoOfSmoothing = NOS_ext;
+		Width = Width_ext;
+		sigmaGaus = Sigma;			// sigma of gaussian shaper
+		sigmaBil = SigmaBil;			// second sigma of bil shaper
+		tau = tau_ext;
+		EnableMA = EnaMA;			// Switch for second moving average filter
+		SmoothingMethod = EnaSmo;	// Switch smoothing on or off
+		EnableBaselineCorrection = EnaBC; 	//Switch baseline correction on or off
+		//std::cout << "MWDm is \t" << MWDm << "\t" << M << std::endl;
+	}
 	else
 		ParametersChanged = 0;
-	MWDm = M;			// M of MWD
-	MAl = L;				// L of MA
-	NoOfSmoothing = NOS_ext;
-	Width = Width_ext;
-	sigmaGaus = Sigma;			// sigma of gaussian shaper
-	sigmaBil = SigmaBil;			// second sigma of bil shaper
-	tau = tau_ext;
-	EnableMA = EnaMA;			// Switch for second moving average filter
-	SmoothingMethod = EnaSmo;	// Switch smoothing on or off
-	EnableBaselineCorrection = EnaBC; 	//Switch baseline correction on or off
-	//std::cout << "MWDm is \t" << MWDm << "\t" << M << std::endl;
 }
 void THypGeParameter::PrintParameters()
 {
@@ -101,3 +103,8 @@ Bool_t THypGeParameter::GetParametersChanged()
 {
 	return ParametersChanged;
 }
+void THypGeParameter::SetParametersChanged(Bool_t ParamaterChangedValue)
+{
+	ParametersChanged = ParamaterChangedValue;
+}
+

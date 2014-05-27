@@ -3,7 +3,7 @@
 //       The GSI Online Offline Object Oriented (Go4) Project
 //         Experiment Data Processing at EE department, GSI
 //-----------------------------------------------------------------------
-// Copyright (C) 2000- GSI Helmholtzzentrum für Schwerionenforschung GmbH
+// Copyright (C) 2000- GSI Helmholtzzentrum fï¿½r Schwerionenforschung GmbH
 //                     Planckstr. 1, 64291 Darmstadt, Germany
 // Contact:            http://go4.gsi.de
 //-----------------------------------------------------------------------
@@ -22,12 +22,6 @@ class THypGeParameter : public TGo4Parameter {
    public:
       THypGeParameter(const char* name = 0);
       virtual ~THypGeParameter() {}
-#ifdef EXA_CODE
-      Float_t frP1; // Offset for calibration
-      Float_t frP2; // Factor for Calibration
-      Bool_t fbHisto; // Enable Histogramming
-#endif
-
 	Int_t MWDm;			// M of MWD
 	Int_t MAl;				// L of MA
 	Int_t NoOfSmoothing;		// Number of smoothings of mean and WA filter
@@ -53,7 +47,7 @@ class THypGeParameter : public TGo4Parameter {
 	Int_t GetSmoothingMethod();
 	Int_t GetEnableBaselineCorrection();
 	Bool_t GetParametersChanged();
-	
+	void SetParametersChanged(Bool_t ParamaterChangedValue = 1);
 
 	
    ClassDef(THypGeParameter,4)
