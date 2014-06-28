@@ -176,6 +176,9 @@ Double_t THypGeMWD::FullAnalysis ()
 		timer.Reset();
 		timer.Start();
 	}
+	if (EnableMA)
+		AnaStep_FillEnergyspectrumMA();
+		
 	AnaStep_ExtractRisetime();		//needs Energyspectrum
 	if (UseTimer)
 	{	
@@ -369,6 +372,11 @@ Int_t THypGeMWD::AnaStep_FillEnergyspectrum()
 	
 	//Risetime
 	
+Int_t THypGeMWD::AnaStep_FillEnergyspectrumMA()
+{
+	//NIY
+	return 0;
+}
 Int_t THypGeMWD::AnaStep_ExtractRisetime()
 {
 	//cout << "new Trace" << endl;
@@ -1084,9 +1092,11 @@ void THypGeMWD::ConnectTraceHistograms(TH1D** hTrace_ext, TH1D** hSmoothedTrace_
 		hMWDMA = hMWDMA_ext;
 		hTrace_Direct = hTrace_Direct_ext;
 }
-void THypGeMWD::Connect1DEnergySpectraHistograms(TH1D **hEnergySpectrum_ext,TH1D **hEnergySpectrumWithCut_ext)
+void THypGeMWD::Connect1DEnergySpectraHistograms(TH1D **hEnergySpectrum_ext,TH1D **hEnergySpectrumMA_ext ,TH1D **hEnergySpectrumWithCut_ext)
 {
 	hEnergySpectrum = hEnergySpectrum_ext;
+	hEnergySpectrumMA = hEnergySpectrumMA_ext;
+	
 	hEnergySpectrumWithCut = hEnergySpectrumWithCut_ext;
 }
 void THypGeMWD::Connect1DRisetimeHistograms(TH1D** hRisetime1090_ext, TH1D** hRisetime3090_ext)

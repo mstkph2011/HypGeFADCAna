@@ -74,7 +74,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 MAl = 100;				// L of MA
 	 NoS = 100;				// Number of smoothings of mean and WA filter
 	 Width = 3;				// Width of mean filter
-	 sigmaGaus = 11;			// sigma of gaussian shaper
+	 sigmaGaus = 3;			// sigma of gaussian shaper
 	 sigmaBil = 1500;			// sigma of gaussian shaper
 	 tau = 5383;			// tau of deconvolution
 	 EnableMA = 1;			// Switch for second moving average filter

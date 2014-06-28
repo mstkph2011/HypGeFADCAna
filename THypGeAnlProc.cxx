@@ -97,6 +97,11 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		snprintf(chead,63,"Energy spectrum channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
 		fhEnergySpectrum[i] = new TH1D(chis,chead,4000,0,4000);
 			AddHistogram(fhEnergySpectrum[i],"Energyspectrum");
+			//create histogram for energy spectrum from MA
+		snprintf(chis,15,"EnergyMA_%02d",i+1);
+		snprintf(chead,63,"Energy spectrum from MA signal channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
+		fhEnergySpectrumMA[i] = new TH1D(chis,chead,4000,0,4000);
+			AddHistogram(fhEnergySpectrumMA[i],"Energyspectrum");
 		//create histogram for energy spectrum with a cut in the pile up time
 		snprintf(chis,30,"EnergyWithCut_%02d",i+1);
 		snprintf(chead,63,"Energy spectrum with cut channel %2d; ADC channel [a.u.];Counts [a.u.]",i+1);
@@ -170,7 +175,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		// real analysis object
 	fMWDAna = new THypGeMWD(TRACE_LENGTH,FADC_CHAN);
 		fMWDAna->ConnectTraceHistograms(fhTrace, fhTrace_Smoothed, fhTrace_BaseCorr, fhTrace_deconv, fhTrace_MWD, fhTrace_MA, fhTrace_Direct);
-		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum,fhEnergySpectrum_withCut);
+		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum, fhEnergySpectrumMA, fhEnergySpectrum_withCut);
 		fMWDAna->Connect1DRisetimeHistograms(fhRisetime1090, fhRisetime3090);
 		fMWDAna->Connect2DEnergyRisetimeHistograms(fhEnergyRise1090Corr, fhEnergyRise3090Corr);
 		fMWDAna->Connect2DEnergyTimeSinceLastPulseHistograms(fhEnergyTimeSinceLastPulse, fhEnergyTimeSinceLastPulseCorr, fhEnergyTimeSinceLastPulse_withCut, fhEnergyTimeSinceLastPulseCorr_withCut, 20);

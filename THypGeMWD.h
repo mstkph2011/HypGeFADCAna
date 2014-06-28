@@ -47,12 +47,12 @@ class THypGeMWD
 		//Double_t CalculateRisetime(TH1D* hTrace_ext,Double_t* times);
 		
 		Double_t FullAnalysis ();
-		void				ConnectTraceHistograms(TH1D** hTrace_ext, TH1D** hSmoothedTrace_ext, TH1D** hTrace_bc_ext, TH1D** hAmplitude_ext,TH1D** hMWD_ext,TH1D** hMWDMA_ext,TH1D** hTrace_Direct_ext);
-		void 				Connect1DEnergySpectraHistograms(TH1D **hEnergySpectrum_ext,TH1D **hEnergySpectrumWithCut_ext);
-		void 				Connect1DRisetimeHistograms(TH1D** hRisetime1090_ext, TH1D** hRisetime3090_ext);
-		void 				Connect2DEnergyRisetimeHistograms(TH2D** hEnergyRise1090Corr_ext, TH2D** hEnergyRise3090Corr_ext);
-		void 				Connect2DEnergyTimeSinceLastPulseHistograms(TH2D** hEnergyTimeSinceLastPulse_ext,TH2D** hEnergyTimeSinceLastPulseCorr_ext, TH2D** hEnergyTimeSinceLastPulse_WithCuts_ext, TH2D** hEnergyTimeSinceLastPulseCorr_WithCuts_ext, Int_t NumberOfCuts);
-		void				ConnectTestHistograms(TH1D* hDeri1_ext, TH1D* hDeri2_ext, TH1D* hDeri3_ext, TH1D* hDeri4_ext);
+		void		ConnectTraceHistograms(TH1D** hTrace_ext, TH1D** hSmoothedTrace_ext, TH1D** hTrace_bc_ext, TH1D** hAmplitude_ext,TH1D** hMWD_ext,TH1D** hMWDMA_ext,TH1D** hTrace_Direct_ext);
+		void 		Connect1DEnergySpectraHistograms(TH1D **hEnergySpectrum_ext,TH1D **hEnergySpectrumMA_ext ,TH1D **hEnergySpectrumWithCut_ext);
+		void 		Connect1DRisetimeHistograms(TH1D** hRisetime1090_ext, TH1D** hRisetime3090_ext);
+		void 		Connect2DEnergyRisetimeHistograms(TH2D** hEnergyRise1090Corr_ext, TH2D** hEnergyRise3090Corr_ext);
+		void 		Connect2DEnergyTimeSinceLastPulseHistograms(TH2D** hEnergyTimeSinceLastPulse_ext,TH2D** hEnergyTimeSinceLastPulseCorr_ext, TH2D** hEnergyTimeSinceLastPulse_WithCuts_ext, TH2D** hEnergyTimeSinceLastPulseCorr_WithCuts_ext, Int_t NumberOfCuts);
+		void		ConnectTestHistograms(TH1D* hDeri1_ext, TH1D* hDeri2_ext, TH1D* hDeri3_ext, TH1D* hDeri4_ext);
 		private :
 		
 		//single steps of the analysis
@@ -62,9 +62,10 @@ class THypGeMWD
 		Int_t		AnaStep_DoMovingAverageFilter();
 		Int_t		AnaStep_DoDirectFilter();
 		Int_t		AnaStep_FillEnergyspectrum();
+		Int_t		AnaStep_FillEnergyspectrumMA();
 		Int_t		AnaStep_ExtractRisetime();
 		Int_t		AnaStep_DoEnergyRisetimeCorrelation();
-		Int_t 	AnaStep_EnergyTimeSinceLastPulseCorrelation();
+		Int_t 		AnaStep_EnergyTimeSinceLastPulseCorrelation();
 		Int_t		AnaStep_FillEnergySpectrumWithPileUpCut(Double_t CutValue);
 		
 		//functions used in the Energyspectrum step
@@ -130,6 +131,7 @@ class THypGeMWD
 		TH1D			**hTrace_Direct;
 		
 		TH1D			**hEnergySpectrum;
+		TH1D			**hEnergySpectrumMA;
 		TH1D			**hEnergySpectrumWithCut;
 		
 		TH1D			**hRisetime1090;

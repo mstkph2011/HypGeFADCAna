@@ -48,6 +48,7 @@ class THypGeAnlProc : public TGo4EventProcessor {
 			TH1D							*fhTrace_Direct[FADC_CHAN];
 			
 			TH1D							*fhEnergySpectrum[FADC_CHAN];
+			TH1D							*fhEnergySpectrumMA[FADC_CHAN];
 			TH1D							*fhRisetime1090[FADC_CHAN];
 			TH1D							*fhRisetime3090[FADC_CHAN];
 			TH2D							*fhEnergyRise1090Corr[FADC_CHAN];
