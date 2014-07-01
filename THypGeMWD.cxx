@@ -854,17 +854,73 @@ void THypGeMWD::EvaluateMWD()
 
 void THypGeMWD::EvaluateMA()
 {
+	EvalMATreshold = 1;
+	Int_t posMax1 = 0;
+	Int_t posMax2 = 0;
+	Int_t SignalCenter = 0;
+	Int_t SumMax = 0;
+	Int_t SumOffsetLeft, SumOffsetRight, OffsetWidth;
+	Int_t a = M-L;
+	Int_t b = M;
+	Double_t Energy;
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
-			CalculateDerivatives(hMWDMA[ChanNumber],ChanNumber);
-			for(Int_t i=1;i<=TraceLength;i++)
+		CalculateDerivatives(hMWDMA[ChanNumber],ChanNumber);
+		for(Int_t i=1;i<=TraceLength;i++)
+		{
+			hTraceDeri1 ->SetBinContent(i, Derivative1array[ChanNumber][i]*100);
+			hTraceDeri2 ->SetBinContent(i, Derivative2array[ChanNumber][i]*1000);
+			hTraceDeri3 ->SetBinContent(i, Derivative3array[ChanNumber][i]*10000);
+			hTraceDeri4 ->SetBinContent(i, Derivative4array[ChanNumber][i]*100000);
+		}
+		for(Int_t i=1;i<=TraceLength;i++)
+		{
+			if (Derivative1array[ChanNumber][i] > EvalMATreshold)
 			{
-				hTraceDeri1 ->SetBinContent(i, Derivative1array[ChanNumber][i]*100);
-				hTraceDeri2 ->SetBinContent(i, Derivative2array[ChanNumber][i]*1000);
-				hTraceDeri3 ->SetBinContent(i, Derivative3array[ChanNumber][i]*10000);
-				hTraceDeri4 ->SetBinContent(i, Derivative4array[ChanNumber][i]*100000);
+				SumMax = 0;
+				SumOffsetLeft = 0;
+				SumOffsetRight = 0;
+				OffsetWidth = 0;
+				posMax1 = FindLocalMaximumBin(Derivative2array[ChanNumber], i,i+ a/2.);
+				if (posMax1 == TraceLength)
+					continue;
+				i = i + b + a;
+				posMax2 = FindLocalMaximumBin(Derivative2array[ChanNumber], i,i+ a/2.);
+				i = posMax2 + a/2.;
+				SignalCenter = (posMax1 + posMax2)/2;
+				//cout << "PM " << posMax1 << "\t" << posMax2  << endl;
+				//cout << "SC " << SignalCenter  << endl;
+				for (Int_t nBin = SignalCenter-b/4 ; nBin <= SignalCenter + b/4 ; nBin++)
+				{
+					SumMax +=  hMWDMA[ChanNumber]->GetBinContent(nBin);
+				}
+				for (Int_t nBin = posMax1-a-20 ; nBin <= posMax1-a ; nBin++)
+				{
+					if (nBin >0)
+					{
+						SumOffsetLeft +=  hMWDMA[ChanNumber]->GetBinContent(nBin);
+						OffsetWidth++;
+					}
+				}
+				for (Int_t nBin = posMax2+a ; nBin <= posMax2+a+20 ; nBin++)
+				{
+					if (nBin <= TraceLength)
+					{
+						SumOffsetRight +=  hMWDMA[ChanNumber]->GetBinContent(nBin);
+						OffsetWidth++;
+					}
+				}
+				//cout << "SM " << SumMax << "\t" << Double_t(SumMax)/(b/2+1) << endl;
+				//cout << "OL " << SumOffsetLeft << "\t" << OffsetWidth << endl;
+				//cout << "OR " << SumOffsetRight << "\t" << Double_t(SumOffsetRight + SumOffsetLeft)/OffsetWidth << endl;
+				Energy = Double_t(SumMax)/(b/2+1) - Double_t(SumOffsetRight + SumOffsetLeft)/OffsetWidth;
+				cout << Energy << endl;
+				hEnergySpectrumMA[ChanNumber]->Fill(Energy);
+				energyMA[ChanNumber].push_back(Energy);
+				leftborderMA[ChanNumber].push_back(posMax1);
 
 			}
+		}
 	}
 }
 

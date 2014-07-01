@@ -153,6 +153,8 @@ class THypGeMWD
 		Double_t offset_av;
 		
 		
+		Double_t EvalMATreshold;
+
 		std::vector<Int_t> border_max;
 		std::vector<Int_t> border_min;
 		std::vector<Double_t> m;
@@ -164,8 +166,12 @@ class THypGeMWD
 		std::vector<Double_t> risetime1090[8];
 		std::vector<Double_t> risetime3090[8];
 		
+		std::vector<Double_t> energyMA[8];
+		std::vector<Double_t> leftborderMA[8];
+
 		std::vector<Int_t> SignalTime[8];
-	
+		std::vector<Int_t> SignalTimeMA[8];
+
 			//external parameters
 		Double_t 	M;					// window width for MWD
 		Double_t 	L;					// top width for MA
