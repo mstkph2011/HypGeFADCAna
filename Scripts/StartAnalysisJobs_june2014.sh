@@ -141,7 +141,7 @@ EOF
 			do
 				echo "Still some jobs running: waiting to start new jobs"
 				date
-				sleep 30s
+				sleep 2m #30s
 				#x=$(ls | grep -c ext)
 				x=$(qstat | grep -c ${user})
 			done			### end of while "double queue" loop
