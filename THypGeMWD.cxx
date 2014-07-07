@@ -914,7 +914,7 @@ void THypGeMWD::EvaluateMA()
 				//cout << "OL " << SumOffsetLeft << "\t" << OffsetWidth << endl;
 				//cout << "OR " << SumOffsetRight << "\t" << Double_t(SumOffsetRight + SumOffsetLeft)/OffsetWidth << endl;
 				Energy = Double_t(SumMax)/(b/2+1) - Double_t(SumOffsetRight + SumOffsetLeft)/OffsetWidth;
-				cout << Energy << endl;
+				//cout << Energy << endl;
 				hEnergySpectrumMA[ChanNumber]->Fill(Energy);
 				energyMA[ChanNumber].push_back(Energy);
 				leftborderMA[ChanNumber].push_back(posMax1);

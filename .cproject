@@ -24,6 +24,8 @@
 								<option id="gnu.cpp.compiler.option.include.paths.821306490" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/home/steinen/himsterhome/go4/include"/>
 									<listOptionValue builtIn="false" value="/home/steinen/himsterhome/root/include"/>
+									<listOptionValue builtIn="false" value="/home/rathmann/himstergo4/include"/>
+									<listOptionValue builtIn="false" value="/home/rathmann/himsterroot/include"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2079634733" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -67,4 +69,10 @@
 		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Default">
+			<resource resourceType="PROJECT" workspacePath="/HypGeFADCAna"/>
+		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>

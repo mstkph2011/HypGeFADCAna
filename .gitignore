@@ -3,6 +3,9 @@ G__HypGe.h
 *.root
 *.txt
 
+RealSpecAna
+Go4AnalysisPrefs.root
+
 # Compiled source #
 ###################
 *.com

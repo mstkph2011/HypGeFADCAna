@@ -3,7 +3,8 @@
 ### script to start jobs on himster for germanium psa using go4
 ### v1.1 not tested! 			changed walltime for high sigmaGaus
 
-SubPath=COSYnew
+SubPath=june2014						### subpath of subdirectory for analysis output
+DataSubPath=dataJune2014/1006/run1					### subpath of input data
 
 user=$USER				#### this is taken from system variable and used for job sending via the "double queue" (wait with job submissing if the internal himster queue is to full and send the jobs when there is enough space)
 
@@ -11,8 +12,8 @@ MWDmin=200
 MWDmax=200
 MWDstep=20
 #if only a fixed value for sigma gaus should be used make min = max
-sigmaGausmin=9
-sigmaGausmax=13
+sigmaGausmin=3
+sigmaGausmax=3
 sigmaGausstep=2
 #if only a fixed value for sigma bil should be used make min = max
 sigmaBilmin=2000
@@ -21,24 +22,28 @@ sigmaBilmax=2000
 #900
 sigmaBilstep=20
 
-AnaLibDir=/home/steinen/work/HypGeFADCAna
-DataInputFilePath=${COSYTESTDATADIR}/data/3110/2
-NumberOfFiles=106
-
+AnaLibDir=/home/${user}/work/HypGeFADCAna								### path to analysis library
+DataInputFilePath=${COSYTESTDATADIR}/${DataSubPath}							### input data directory
+NumberOfFiles=1																				### number of input files
+echo $DataInputFilePath
 #parameters of GO4 analysis
 ### MWDm taken from loop values, see above for values
 MAl=100
 NumberOfSmoothings=100				### only used for rectangular or weighted average filter
 FilterWidth=3
 ### sigmaGaus and Bil taken from loop values, see above for values
-tau=5383;	
-EnableMA=0		
+#tau=5383;	
+taumin=5000;	
+taumax=5500;	
+taustep=1000;	
+
+EnableMA=1		
 FilterType=3									### 0 = none, 1 = rectanglur, 2 = weighted average, 3 = gausian filter, 4 = bil filter
 EnableBaselineCorrection=1
 
 
 
-SubDir=${COSYTESTANADIR}/${SubPath}
+SubDir=${COSYTESTANADIR}/${SubPath}				### complete path of subdirectory for analysis output
 if [ ! -d $SubDir ]; then 
   mkdir -p $SubDir
 fi
@@ -63,8 +68,8 @@ if [ ! -d $RunPath ]; then
 fi
 jobcounter=1
 
-
-for ((MWDm=${MWDmin}; MWDm<=${MWDmax}; MWDm=$(($MWDm+${MWDstep}))))
+MWDm=${MWDmin}
+for ((tau=${taumin}; tau<=${taumax}; tau=$(($tau+${taustep}))))
 do
 	for ((sigmaGaus=${sigmaGausmin}; sigmaGaus<=${sigmaGausmax}; sigmaGaus=$(($sigmaGaus+${sigmaGausstep}))))
 	do
@@ -79,30 +84,13 @@ do
 					SubSubDir=COSY_Ana${MWDm},${FilterType},${sigmaGaus},${sigmaBil}
 				fi
 			fi
-			mkdir -p ${SubDir}/${SubSubDir}
+			#mkdir -p ${SubDir}/${SubSubDir}
 			for ((nFile=1; nFile<=${NumberOfFiles}; nFile=$(($nFile+1))))
 			do
 				
-				fileAdd=_${SubSubDir}_file${nFile}
+				fileAdd=_${SubSubDir}_${tau}    ##_file${nFile}
 				echo $fileAdd
-				if [ ${nFile} -lt 10 ]; then
-				DataInputFile=${DataInputFilePath}/data000${nFile}
-				else
-					if [ ${nFile} -lt 100 -a ${nFile} -gt 9 ]; 
-					then
-						DataInputFile=${DataInputFilePath}/data00${nFile}
-					else
-						if  [ ${nFile} -gt 99 -a ${nFile} -lt 1000 ];
-						then
-							DataInputFile=${DataInputFilePath}/data0${nFile}
-						else
-							if  [ ${nFile} -gt 999 ]; 
-							then
-								DataInputFile=${DataInputFilePath}/data${nFile}
-							fi
-						fi
-					fi
-				fi				
+				DataInputFile=${DataInputFilePath}/data*		
 				cat >$JobPath/job${fileAdd}.sh <<EOF
 #!/bin/bash
 #
@@ -110,17 +98,17 @@ do
 #PBS -j oe
 #PBS -o ${JobLogPath}/job${fileAdd}.log
 #PBS -V
-#PBS -l nodes=1:ppn=1,walltime=02:00:00
+#PBS -l nodes=1:ppn=1,walltime=24:00:00
 
 cd \$PBS_O_WORKDIR
 
 #echo "Start Analysis of COSY data"
-go4analysis -lib ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so -file $DataInputFile -asf ${SubDir}/${SubSubDir}/Ana${fileAdd}.root -x ${MWDm} ${MAl} ${NumberOfSmoothings} ${FilterWidth} ${sigmaGaus} ${sigmaBil} ${tau} ${EnableMA} ${FilterType} ${EnableBaselineCorrection} &> ${SimLogPath}/ana${fileAdd}.log
+go4analysis -lib ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so -file $DataInputFile -asf ${SubDir}/Ana${fileAdd}.root -x ${MWDm} ${MAl} ${NumberOfSmoothings} ${FilterWidth} ${sigmaGaus} ${sigmaBil} ${tau} ${EnableMA} ${FilterType} ${EnableBaselineCorrection} &> ${SimLogPath}/ana${fileAdd}.log
 
 
 EOF
 				
-
+echo "go4analysis -lib ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so -file $DataInputFile -asf ${SubDir}/Ana${fileAdd}.root -x ${MWDm} ${MAl} ${NumberOfSmoothings} ${FilterWidth} ${sigmaGaus} ${sigmaBil} ${tau} ${EnableMA} ${FilterType} ${EnableBaselineCorrection} &> ${SimLogPath}/ana${fileAdd}.log"
 				echo "jobcount: ${jobcounter}"
 				jobcounter=$(($jobcounter+1))
 ### submit job to batch system
