@@ -7,7 +7,7 @@ DataDir=${COSYTESTANADIR}/${Sub}
 
 SubDir=${DataDir}/CombinedData
 TxtDir=${COSYTESTANADIR}/${Sub}/txtfiles
-NumberOfFiles=106
+NumberOfFiles=20
 
 rm -f ${DataDir}/WrongFilesInFolder.txt														# removes log file for erroneous runs , uncomment to automate
 mkdir -p ${SubDir}

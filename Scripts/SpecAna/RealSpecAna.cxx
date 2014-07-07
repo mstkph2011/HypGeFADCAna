@@ -25,7 +25,8 @@ int main(int argc, char* argv[] )
   
   TString COSYTESTANADIR= getenv("COSYTESTANADIR");
   TString InputListPath = COSYTESTANADIR;
-  InputListPath +="/COSY/txtfiles/";
+  //InputListPath +="/COSY/txtfiles/";
+  InputListPath +="/june2014/txtfiles/";
   TString InputFile = InputListPath + "Filestofit.txt";
   TString CorruptedFileList = InputListPath +"CorruptedFiles.txt";
 	//ifstream InputList("files.txt");
@@ -58,10 +59,10 @@ int main(int argc, char* argv[] )
 			if (InFileName.Length() == 0)
 				continue;
 			//extract parameter values from file name
-			int M, FilterType,SigmaGaus,SigmaBil;
-			TString ComparisonString = COSYTESTANADIR + "/COSY/CombinedData/COSY_Ana%i,%i,%i,%i.root";
+			int M, FilterType,SigmaGaus,SigmaBil, tau;
+			TString ComparisonString = COSYTESTANADIR + "/june2014/CombinedData/COSY_Ana%i,%i,%i,%i,%i.root";
 			cout << "File:\t\t\t\t"<< ComparisonString << endl;
-			sscanf(InFileName.Data(),ComparisonString.Data(),&M,&FilterType,&SigmaGaus,&SigmaBil);
+			sscanf(InFileName.Data(),ComparisonString.Data(),&M,&FilterType,&SigmaGaus,&SigmaBil,&tau);
 			InFile[i] = new TFile(InFileName);								//open ROOT file
 			//InFile[i] = new TFile("COSY_Ana200,4,11,300.root");								//open ROOT file
 			cout << InFile[i]->GetSize() << endl;

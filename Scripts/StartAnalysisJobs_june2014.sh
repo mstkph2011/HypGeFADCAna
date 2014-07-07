@@ -35,7 +35,7 @@ FilterWidth=3
 #tau=5383;	
 taumin=5000;	
 taumax=5500;	
-taustep=1000;	
+taustep=10;	
 
 EnableMA=1		
 FilterType=3									### 0 = none, 1 = rectanglur, 2 = weighted average, 3 = gausian filter, 4 = bil filter
@@ -141,7 +141,7 @@ EOF
 			do
 				echo "Still some jobs running: waiting to start new jobs"
 				date
-				sleep 2m #30s
+				sleep 30s
 				#x=$(ls | grep -c ext)
 				x=$(qstat | grep -c ${user})
 			done			### end of while "double queue" loop
