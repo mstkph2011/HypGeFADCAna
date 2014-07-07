@@ -3,7 +3,7 @@
 ### script to find jobs that didn't produce any output file, new jobs are sent automatically
 
 #DataDir=/data/work/kpha1/rittgen/analysis/COSY
-SubDir=COSYnew
+SubDir=june2014
 DataDir=${COSYTESTANADIR}/${SubDir}
 DataSubDir=${DataDir}/CombinedData
 

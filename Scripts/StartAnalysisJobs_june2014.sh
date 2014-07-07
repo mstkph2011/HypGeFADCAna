@@ -24,7 +24,7 @@ sigmaBilstep=20
 
 AnaLibDir=/home/${user}/work/HypGeFADCAna								### path to analysis library
 DataInputFilePath=${COSYTESTDATADIR}/${DataSubPath}							### input data directory
-NumberOfFiles=1																				### number of input files
+NumberOfFiles=20																				### number of input files
 echo $DataInputFilePath
 #parameters of GO4 analysis
 ### MWDm taken from loop values, see above for values
@@ -77,20 +77,38 @@ do
 		do
 			if [ $FilterType -eq 3 ];
 			then
-				SubSubDir=COSY_Ana${MWDm},${FilterType},${sigmaGaus}
+				SubSubDir=COSY_Ana${MWDm},${FilterType},${sigmaGaus},${tau}
 			else
 				if [ $FilterType -eq 4 ];
 				then
-					SubSubDir=COSY_Ana${MWDm},${FilterType},${sigmaGaus},${sigmaBil}
+					SubSubDir=COSY_Ana${MWDm},${FilterType},${sigmaGaus},${sigmaBil},${tau}
 				fi
 			fi
-			#mkdir -p ${SubDir}/${SubSubDir}
+			mkdir -p ${SubDir}/${SubSubDir}
 			for ((nFile=1; nFile<=${NumberOfFiles}; nFile=$(($nFile+1))))
 			do
 				
-				fileAdd=_${SubSubDir}_${tau}    ##_file${nFile}
+				fileAdd=_${SubSubDir}_${nFile}    ##_file${nFile}
 				echo $fileAdd
-				DataInputFile=${DataInputFilePath}/data*		
+				if [ ${nFile} -lt 10 ]; then
+				DataInputFile=${DataInputFilePath}/data000${nFile}
+				else
+					if [ ${nFile} -lt 100 -a ${nFile} -gt 9 ]; 
+					then
+						DataInputFile=${DataInputFilePath}/data00${nFile}
+					else
+						if  [ ${nFile} -gt 99 -a ${nFile} -lt 1000 ];
+						then
+							DataInputFile=${DataInputFilePath}/data0${nFile}
+						else
+							if  [ ${nFile} -gt 999 ]; 
+							then
+								DataInputFile=${DataInputFilePath}/data${nFile}
+							fi
+						fi
+					fi
+				fi			
+				
 				cat >$JobPath/job${fileAdd}.sh <<EOF
 #!/bin/bash
 #
@@ -98,17 +116,16 @@ do
 #PBS -j oe
 #PBS -o ${JobLogPath}/job${fileAdd}.log
 #PBS -V
-#PBS -l nodes=1:ppn=1,walltime=24:00:00
+#PBS -l nodes=1:ppn=1,walltime=02:00:00
 
 cd \$PBS_O_WORKDIR
 
 #echo "Start Analysis of COSY data"
-go4analysis -lib ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so -file $DataInputFile -asf ${SubDir}/Ana${fileAdd}.root -x ${MWDm} ${MAl} ${NumberOfSmoothings} ${FilterWidth} ${sigmaGaus} ${sigmaBil} ${tau} ${EnableMA} ${FilterType} ${EnableBaselineCorrection} &> ${SimLogPath}/ana${fileAdd}.log
+go4analysis -lib ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so -file $DataInputFile -asf ${SubDir}/${SubSubDir}/Ana${fileAdd}.root -x ${MWDm} ${MAl} ${NumberOfSmoothings} ${FilterWidth} ${sigmaGaus} ${sigmaBil} ${tau} ${EnableMA} ${FilterType} ${EnableBaselineCorrection} &> ${SimLogPath}/ana${fileAdd}.log
 
 
 EOF
 				
-echo "go4analysis -lib ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so -file $DataInputFile -asf ${SubDir}/Ana${fileAdd}.root -x ${MWDm} ${MAl} ${NumberOfSmoothings} ${FilterWidth} ${sigmaGaus} ${sigmaBil} ${tau} ${EnableMA} ${FilterType} ${EnableBaselineCorrection} &> ${SimLogPath}/ana${fileAdd}.log"
 				echo "jobcount: ${jobcounter}"
 				jobcounter=$(($jobcounter+1))
 ### submit job to batch system

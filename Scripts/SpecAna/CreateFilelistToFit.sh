@@ -1,9 +1,9 @@
 #!/bin/bash
 
-
-DataDir=${COSYTESTANADIR}/COSY
+SubDir=june2014
+DataDir=${COSYTESTANADIR}/${SubDir}
 SubDir=${DataDir}/CombinedData
-TxtDir=${COSYTESTANADIR}/COSY/txtfiles
+TxtDir=${COSYTESTANADIR}/${SubDir}/txtfiles
 
 rm ${TxtDir}/Filestofit.txt
 

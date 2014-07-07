@@ -6,7 +6,7 @@
 
 
 user=$USER				#### this is taken from system variable and used for job sending via the "double queue" (automatic queue if the internal himster queue is to full)
-SubDir=COSYnew
+SubDir=june2014
 JobLogDir=${COSYTESTANADIR}/${SubDir}/joblogs
 JobDir=${COSYTESTANADIR}/${SubDir}/jobs
 TxtDir=${COSYTESTANADIR}/${SubDir}/txtfiles
