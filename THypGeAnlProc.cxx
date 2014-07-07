@@ -36,6 +36,7 @@ THypGeAnlProc::THypGeAnlProc() :
    TGo4EventProcessor()
 {
 }
+
 //-----------------------------------------------------------
 THypGeAnlProc::THypGeAnlProc(const char* name) :
    TGo4EventProcessor(name)
