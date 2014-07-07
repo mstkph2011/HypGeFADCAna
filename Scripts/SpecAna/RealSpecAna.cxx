@@ -73,7 +73,9 @@ int main(int argc, char* argv[] )
 				continue;
 			}
 			TH1D* hEnergy;
-			InFile[i]->GetObject("/Histograms/V1724/Energyspectrum/Energy;1",hEnergy);									// get histrogram
+			TH1D* hEnergyMA;
+			InFile[i]->GetObject("/Histograms/Energyspectrum/Energy_01;1",hEnergy);									// get histrogram
+			InFile[i]->GetObject("/Histograms/Energyspectrum/EnergyMA_01;1",hEnergyMA);									// get histrogram
 			cout <<hEnergy->GetMaximum() << endl;
 	
 			TString Path, InfileName,RootFilename, TxtFilename;
