@@ -22,6 +22,7 @@ int main(int argc, char* argv[] )
 
 	TFile *InFile[1000];
   int i = 0;
+  int UseMovingAv=1;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
   
   TString COSYTESTANADIR= getenv("COSYTESTANADIR");
   TString InputListPath = COSYTESTANADIR;
@@ -93,6 +94,10 @@ int main(int argc, char* argv[] )
 				RootFilename+= SigmaBil; 
 				RootFilename+= ",";
 				RootFilename+= tau;
+				if(UseMovingAv==1){				//Anfügen "MA" vom Dateinamen wenn Moving Average genutzt wird @Torben Rathmann
+					RootFilename+= ",";
+					RootFilename+= "MA";
+				}
 				RootFilename += ".root";
 				cout << RootFilename.Data() << endl;
 			TxtFilename = "Fitted_COSY_Ana";
@@ -104,8 +109,16 @@ int main(int argc, char* argv[] )
 				TxtFilename+= SigmaBil;
 				TxtFilename+= ",";
 				TxtFilename+= tau;
+				if(UseMovingAv==1){				//Anfügen "MA" vom Dateinamen wenn Moving Average genutzt wird @Torben Rathmann
+					TxtFilename+= ",";
+					TxtFilename+= "MA";
+				}
 				TxtFilename+= ".txt";
+
 			THypGeSpectrumAnalyser *Ana = new THypGeSpectrumAnalyser(hEnergy,"co60", 35 );
+			if(UseMovingAv==1){ 						//Überschreibt *Ana um Moving Average zu benutzen @Torben Rathmann
+				THypGeSpectrumAnalyser *Ana= new THypGeSpectrumAnalyser(hEnergyMA,"co60", 35 );
+			}
 			
 			Ana->SetSearchRange(1000,2000);
 			Ana->SetOutputPath(Path);
