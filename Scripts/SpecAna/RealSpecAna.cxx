@@ -82,7 +82,7 @@ int main(int argc, char* argv[] )
 			Int_t LengthOfPath;
 			
 			Path = COSYTESTANADIR;
-				Path += "/COSY/CombinedData/Fit/";
+				Path += "/june2014/CombinedData/Fit/";
 			RootFilename = "Fitted_COSY_Ana";
 				RootFilename+=M;
 				RootFilename+= ",";
@@ -91,6 +91,8 @@ int main(int argc, char* argv[] )
 				RootFilename += SigmaGaus; 
 				RootFilename+= ",";
 				RootFilename+= SigmaBil; 
+				RootFilename+= ",";
+				RootFilename+= tau;
 				RootFilename += ".root";
 				cout << RootFilename.Data() << endl;
 			TxtFilename = "Fitted_COSY_Ana";
@@ -99,7 +101,9 @@ int main(int argc, char* argv[] )
 				TxtFilename += ","; 
 				TxtFilename += SigmaGaus; 
 				TxtFilename+= ",";
-				TxtFilename+= SigmaBil; 
+				TxtFilename+= SigmaBil;
+				TxtFilename+= ",";
+				TxtFilename+= tau;
 				TxtFilename+= ".txt";
 			THypGeSpectrumAnalyser *Ana = new THypGeSpectrumAnalyser(hEnergy,"co60", 35 );
 			
