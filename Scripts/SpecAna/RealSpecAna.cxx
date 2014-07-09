@@ -115,10 +115,12 @@ int main(int argc, char* argv[] )
 				}
 				TxtFilename+= ".txt";
 
-			THypGeSpectrumAnalyser *Ana = new THypGeSpectrumAnalyser(hEnergy,"co60", 35 );
+				THypGeSpectrumAnalyser *Ana;
 			if(UseMovingAv==1){ 						//Überschreibt *Ana um Moving Average zu benutzen @Torben Rathmann
-				THypGeSpectrumAnalyser *Ana= new THypGeSpectrumAnalyser(hEnergyMA,"co60", 35 );
+				Ana= new THypGeSpectrumAnalyser(hEnergyMA,"co60", 35 );
 			}
+			else
+				Ana = new THypGeSpectrumAnalyser(hEnergy,"co60", 35 );
 			
 			Ana->SetSearchRange(1000,2000);
 			Ana->SetOutputPath(Path);
