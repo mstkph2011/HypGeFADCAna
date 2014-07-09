@@ -34,7 +34,7 @@ FilterWidth=3
 ### sigmaGaus and Bil taken from loop values, see above for values
 #tau=5383;	
 taumin=5420;	
-taumax=5570;	
+taumax=5470;	
 taustep=2;	
 
 EnableMA=1		
