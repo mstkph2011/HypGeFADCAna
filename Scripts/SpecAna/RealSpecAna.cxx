@@ -4,6 +4,7 @@
 #include "TSpectrum.h"
 #include "TCanvas.h"
 #include "TString.h"
+#include "TGraph.h"
 #include "TRint.h"							// starts the interactive mode of ROOT (needed for canvas etc.)
 
 #include "THypGeSpectrumAnalyser.h"
@@ -23,6 +24,8 @@ int main(int argc, char* argv[] )
 	TFile *InFile[1000];
   int i = 0;
   int UseMovingAv=1;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
+  float tauArray[1000];				//Arrays zum eintragen der tau's bzw FWHM(tau) @Torben Rathmann
+  float aufArray[1000];
   
   TString COSYTESTANADIR= getenv("COSYTESTANADIR");
   TString InputListPath = COSYTESTANADIR;
@@ -61,9 +64,9 @@ int main(int argc, char* argv[] )
 				continue;
 			//extract parameter values from file name
 			int M, FilterType,SigmaGaus,SigmaBil, tau;
-			TString ComparisonString = COSYTESTANADIR + "/june2014/CombinedData/COSY_Ana%i,%i,%i,%i,%i.root";
+			TString ComparisonString = COSYTESTANADIR + "/june2014/CombinedData/COSY_Ana%i,%i,%i,%i.root";
 			cout << "File:\t\t\t\t"<< ComparisonString << endl;
-			sscanf(InFileName.Data(),ComparisonString.Data(),&M,&FilterType,&SigmaGaus,&SigmaBil,&tau);
+			sscanf(InFileName.Data(),ComparisonString.Data(),&M,&FilterType,&SigmaGaus,&tau);
 			InFile[i] = new TFile(InFileName);								//open ROOT file
 			//InFile[i] = new TFile("COSY_Ana200,4,11,300.root");								//open ROOT file
 			cout << InFile[i]->GetSize() << endl;
@@ -128,9 +131,27 @@ int main(int argc, char* argv[] )
 			Ana->SetRootFileOutputName(RootFilename);
 			Ana->SetGaussianFitting();
 			//Ana->SetFreeSkewedFitting();
-			//Ana->SetSecondGausianFitting();
+			Ana->SetSecondGausianFitting();
 			Ana->AnalyseSpectrum();
 			cout << Ana->GetFWHMCo() << endl;
+
+
+			//@Torben Rathmann
+			/*
+			if(i+1==sizeof(tauArray)/sizeof(int)/2){						//Test ob Array voll ist  !!!Achtung bei /2 <- 2 ist die anzahl Spalten(2)
+				float tmpTauEffi[sizeof(tauArray)/sizeof(int)/2+50][2];	//tmp array erstellen, Arraygröße wird um 50 erhöht
+				for(int k=0; k<int(sizeof(tauArray)/sizeof(int)/2.);k++){		//zwischenspeichern der daten
+					tmpTauEffi[k][0]=tauArray[k][0];
+					tmpTauEffi[k][1]=tauArray[k][1];
+				}
+				tauArray=tmpTauEffi;						//altes Array wird benutzt
+			}*/
+			//cout << tau << endl << endl << endl;
+			tauArray[i]=tau;								//Daten werden in Array geschrieben
+			aufArray[i]=Ana->GetFWHMCo();
+
+
+
 			//write to maps
 			if (SigmaBil != 3)	// bil
 			{
@@ -150,6 +171,18 @@ int main(int argc, char* argv[] )
 			cout << "test2" << endl;
 		}
 	}
+	for (int j = 0; j < i; j++)
+	{
+		cout << tauArray[j][0] << "\t" << tauArray[j][1] << endl;
+	}
+	//@Torben Rathmann
+	TGraph *tauAuf = new TGraph(i,&tauArray[0],&aufArray[0]);
+	TFile *rootoutput = new TFile("test.root","RECREATE");
+	tauAuf->Write("tauAufloesung");
+	rootoutput->Close();
+	delete tauAuf;
+	//
+
 	
 	TString OutputFile = COSYTESTANADIR;
 				OutputFile += "/COSY/CombinedData/Fit/Output.txt";

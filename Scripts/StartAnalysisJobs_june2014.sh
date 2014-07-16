@@ -29,16 +29,16 @@ echo $DataInputFilePath
 #parameters of GO4 analysis
 ### MWDm taken from loop values, see above for values
 MAl=100
-NumberOfSmoothings=100				### only used for rectangular or weighted average filter
+NumberOfSmoothings=50				### only used for rectangular or weighted average filter
 FilterWidth=3
 ### sigmaGaus and Bil taken from loop values, see above for values
 #tau=5383;	
-taumin=5420;	
-taumax=5470;	
-taustep=2;	
+taumin=5300;	
+taumax=5500;	
+taustep=10;	
 
 EnableMA=1		
-FilterType=3									### 0 = none, 1 = rectanglur, 2 = weighted average, 3 = gausian filter, 4 = bil filter
+FilterType=1									### 0 = none, 1 = rectanglur, 2 = weighted average, 3 = gausian filter, 4 = bil filter
 EnableBaselineCorrection=1
 
 
@@ -75,7 +75,7 @@ do
 	do
 		for ((sigmaBil=${sigmaBilmin}; sigmaBil<=${sigmaBilmax}; sigmaBil=$(($sigmaBil+${sigmaBilstep}))))
 		do
-			if [ $FilterType -eq 3 ];
+			if [ $FilterType -ne 4 ];
 			then
 				SubSubDir=COSY_Ana${MWDm},${FilterType},${sigmaGaus},${tau}
 			else
