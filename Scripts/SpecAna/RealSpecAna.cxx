@@ -54,6 +54,7 @@ int main(int argc, char* argv[] )
 	else
 	{
 	  while (InputList.good())																//loop over all lines
+		//for(int iii= 0; iii <10 ; iii++)
 		{
 			char buffer[200] = "";
 			InputList.getline(buffer,200);												//read name of a ROOT file
@@ -80,6 +81,13 @@ int main(int argc, char* argv[] )
 			TH1D* hEnergyMA;
 			InFile[i]->GetObject("/Histograms/Energyspectrum/Energy_01;1",hEnergy);									// get histrogram
 			InFile[i]->GetObject("/Histograms/Energyspectrum/EnergyMA_01;1",hEnergyMA);									// get histrogram
+			
+			if (!UseMovingAv)
+				if (!hEnergy)
+					continue;
+			if (UseMovingAv)
+				if (!hEnergyMA)
+					continue;
 			cout <<hEnergy->GetMaximum() << endl;
 	
 			TString Path, InfileName,RootFilename, TxtFilename;
@@ -171,16 +179,15 @@ int main(int argc, char* argv[] )
 			cout << "test2" << endl;
 		}
 	}
-	for (int j = 0; j < i; j++)
-	{
-		cout << tauArray[j][0] << "\t" << tauArray[j][1] << endl;
-	}
+	//for (int j = 0; j < i; j++)
+	////	cout << tauArray[j][0] << "\t" << tauArray[j][1] << endl;
+	//}
 	//@Torben Rathmann
 	TGraph *tauAuf = new TGraph(i,&tauArray[0],&aufArray[0]);
 	TFile *rootoutput = new TFile("test.root","RECREATE");
 	tauAuf->Write("tauAufloesung");
 	rootoutput->Close();
-	delete tauAuf;
+	
 	//
 
 	
@@ -188,7 +195,7 @@ int main(int argc, char* argv[] )
 				OutputFile += "/COSY/CombinedData/Fit/Output.txt";
 	ofstream Output (OutputFile.Data(),std::fstream::trunc);
 	
-	Output << "SigmaGausRange" << endl;
+	/*Output << "SigmaGausRange" << endl;
 	for (int i = 0; i<6;i++)
 	{
 		cout << SigmaGausRange[i] << "\t";
@@ -226,7 +233,7 @@ int main(int argc, char* argv[] )
 		}
 		cout << endl;
 		Output << endl;
-	}
+	}*/
 	Output.close();
 	InputList.close();
 	CorruptedList.close();

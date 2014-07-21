@@ -33,12 +33,12 @@ NumberOfSmoothings=50				### only used for rectangular or weighted average filte
 FilterWidth=3
 ### sigmaGaus and Bil taken from loop values, see above for values
 #tau=5383;	
-taumin=5300;	
+taumin=5200;	
 taumax=5500;	
 taustep=10;	
 
 EnableMA=1		
-FilterType=1									### 0 = none, 1 = rectanglur, 2 = weighted average, 3 = gausian filter, 4 = bil filter
+FilterType=3									### 0 = none, 1 = rectanglur, 2 = weighted average, 3 = gausian filter, 4 = bil filter
 EnableBaselineCorrection=1
 
 
