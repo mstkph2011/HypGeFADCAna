@@ -823,7 +823,7 @@ void THypGeMWD::EvaluateMWD()
 					}
 				}
 
-				for(i=rightborder_low+1;i<=rightborder_low+10;i++)				// calculate average value of base after pulse
+			/*	for(i=rightborder_low+1;i<=rightborder_low+10;i++)				// calculate average value of base after pulse
 				{
 					if(hMWD[ChanNumber]->GetBinContent(i) < threshold_MWD)
 					{
@@ -831,7 +831,7 @@ void THypGeMWD::EvaluateMWD()
 						k++;
 					}
 				}
-				
+			*/
 				Noise_av = (Sumnoise_left + Sumnoise_right)/k;					// average of complete noise (left + right)/NoAllBaselinePoints
 
 				Energy_av = Energy_av - Noise_av; //+ M*mCorrection/50;			// added correction for inclined amplitude signal --> most likely not working
@@ -902,7 +902,7 @@ void THypGeMWD::EvaluateMA()
 						OffsetWidth++;
 					}
 				}
-				for (Int_t nBin = posMax2+a ; nBin <= posMax2+a+20 ; nBin++)
+				/*for (Int_t nBin = posMax2+a ; nBin <= posMax2+a+20 ; nBin++)
 				{
 					if (nBin <= TraceLength)
 					{
@@ -910,6 +910,8 @@ void THypGeMWD::EvaluateMA()
 						OffsetWidth++;
 					}
 				}
+				*/
+
 				//cout << "SM " << SumMax << "\t" << Double_t(SumMax)/(b/2+1) << endl;
 				//cout << "OL " << SumOffsetLeft << "\t" << OffsetWidth << endl;
 				//cout << "OR " << SumOffsetRight << "\t" << Double_t(SumOffsetRight + SumOffsetLeft)/OffsetWidth << endl;
