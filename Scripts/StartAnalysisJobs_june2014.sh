@@ -8,12 +8,12 @@ DataSubPath=dataJune2014/1006/run1					### subpath of input data
 
 user=$USER				#### this is taken from system variable and used for job sending via the "double queue" (wait with job submissing if the internal himster queue is to full and send the jobs when there is enough space)
 
-MWDmin=200
+MWDmin=200				###Optimum 200
 MWDmax=200
 MWDstep=20
 #if only a fixed value for sigma gaus should be used make min = max
-sigmaGausmin=3
-sigmaGausmax=3
+sigmaGausmin=2
+sigmaGausmax=2
 sigmaGausstep=2
 #if only a fixed value for sigma bil should be used make min = max
 sigmaBilmin=2000
@@ -29,13 +29,13 @@ echo $DataInputFilePath
 #parameters of GO4 analysis
 ### MWDm taken from loop values, see above for values
 MAl=100
-NumberOfSmoothings=50				### only used for rectangular or weighted average filter
+NumberOfSmoothings=100				### only used for rectangular or weighted average filter
 FilterWidth=3
 ### sigmaGaus and Bil taken from loop values, see above for values
 #tau=5383;	
-taumin=5200;	
+taumin=5100;	
 taumax=5500;	
-taustep=10;	
+taustep=2;	
 
 EnableMA=1		
 FilterType=3									### 0 = none, 1 = rectanglur, 2 = weighted average, 3 = gausian filter, 4 = bil filter

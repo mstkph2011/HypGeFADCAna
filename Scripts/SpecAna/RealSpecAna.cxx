@@ -23,7 +23,7 @@ int main(int argc, char* argv[] )
 
 	TFile *InFile[1000];
   int i = 0;
-  int UseMovingAv=1;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
+  int UseMovingAv=0;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
   float tauArray[1000];				//Arrays zum eintragen der tau's bzw FWHM(tau) @Torben Rathmann
   float aufArray[1000];
   
@@ -184,8 +184,15 @@ int main(int argc, char* argv[] )
 	//}
 	//@Torben Rathmann
 	TGraph *tauAuf = new TGraph(i,&tauArray[0],&aufArray[0]);
-	TFile *rootoutput = new TFile("test.root","RECREATE");
+	TString tauAufloesName ="tauAufloesung";
+	if(UseMovingAv==1){
+		tauAufloesName+= "MA";
+	}
+	tauAufloesName+=".root";
+	
+	TFile *rootoutput = new TFile(tauAufloesName,"RECREATE"); //zum direkten Vergleich ob tau bei MA besser oder schlechter wird
 	tauAuf->Write("tauAufloesung");
+	
 	rootoutput->Close();
 	
 	//
