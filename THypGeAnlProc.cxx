@@ -120,11 +120,18 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 			AddHistogram(fhRisetime3090[i],"Risetime3090");
 		snprintf(chis,30,"EnergyRise1090Corr_%02d",i+1);
 		snprintf(chead,63,"Energy-Risetime1090-Correlation channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
-		fhEnergyRise1090Corr[i] = new TH2D(chis,chead,100,0,1000,2000,0,2000);
+		fhEnergyRise1090Corr[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
 			AddHistogram(fhEnergyRise1090Corr[i],"EnergyRise1090Corr");
+
+			// rt, energy correlation histogram with ballistic deficit correction
+		snprintf(chis,40,"EnergyRise1090Corr_ballistic_%02d",i+1);
+		snprintf(chead,100,"Energy-Risetime1090-Correlation channel without ballistic %02d;Risetime [ns];ADC Value [a.u.]",i+1);
+		fhEnergyRise1090Corr_ballistic[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
+			AddHistogram(fhEnergyRise1090Corr_ballistic[i],"EnergyRise1090Corr");
+
 		snprintf(chis,30,"EnergyRise3090Corr_%02d",i+1);
 		snprintf(chead,63,"Energy-Risetime3090-Correlation channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
-		fhEnergyRise3090Corr[i] = new TH2D(chis,chead,100,0,1000,2000,0,2000);
+		fhEnergyRise3090Corr[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
 			AddHistogram(fhEnergyRise3090Corr[i],"EnergyRise3090Corr");
 
 
@@ -178,7 +185,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fMWDAna->ConnectTraceHistograms(fhTrace, fhTrace_Smoothed, fhTrace_BaseCorr, fhTrace_deconv, fhTrace_MWD, fhTrace_MA, fhTrace_Direct);
 		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum, fhEnergySpectrumMA, fhEnergySpectrum_withCut);
 		fMWDAna->Connect1DRisetimeHistograms(fhRisetime1090, fhRisetime3090);
-		fMWDAna->Connect2DEnergyRisetimeHistograms(fhEnergyRise1090Corr, fhEnergyRise3090Corr);
+		fMWDAna->Connect2DEnergyRisetimeHistograms(fhEnergyRise1090Corr, fhEnergyRise3090Corr,fhEnergyRise1090Corr_ballistic);
 		fMWDAna->Connect2DEnergyTimeSinceLastPulseHistograms(fhEnergyTimeSinceLastPulse, fhEnergyTimeSinceLastPulseCorr, fhEnergyTimeSinceLastPulse_withCut, fhEnergyTimeSinceLastPulseCorr_withCut, 20);
 		fMWDAna->ConnectTestHistograms(fhTrace_deri1,fhTrace_deri2,fhTrace_deri3,fhTrace_deri4);
 		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection());

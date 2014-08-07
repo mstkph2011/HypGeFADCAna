@@ -50,7 +50,7 @@ class THypGeMWD
 		void		ConnectTraceHistograms(TH1D** hTrace_ext, TH1D** hSmoothedTrace_ext, TH1D** hTrace_bc_ext, TH1D** hAmplitude_ext,TH1D** hMWD_ext,TH1D** hMWDMA_ext,TH1D** hTrace_Direct_ext);
 		void 		Connect1DEnergySpectraHistograms(TH1D **hEnergySpectrum_ext,TH1D **hEnergySpectrumMA_ext ,TH1D **hEnergySpectrumWithCut_ext);
 		void 		Connect1DRisetimeHistograms(TH1D** hRisetime1090_ext, TH1D** hRisetime3090_ext);
-		void 		Connect2DEnergyRisetimeHistograms(TH2D** hEnergyRise1090Corr_ext, TH2D** hEnergyRise3090Corr_ext);
+		void 		Connect2DEnergyRisetimeHistograms(TH2D** hEnergyRise1090Corr_ext, TH2D** hEnergyRise3090Corr_ext, TH2D** hEnergyRise1090CorrBallistic_ext);
 		void 		Connect2DEnergyTimeSinceLastPulseHistograms(TH2D** hEnergyTimeSinceLastPulse_ext,TH2D** hEnergyTimeSinceLastPulseCorr_ext, TH2D** hEnergyTimeSinceLastPulse_WithCuts_ext, TH2D** hEnergyTimeSinceLastPulseCorr_WithCuts_ext, Int_t NumberOfCuts);
 		void		ConnectTestHistograms(TH1D* hDeri1_ext, TH1D* hDeri2_ext, TH1D* hDeri3_ext, TH1D* hDeri4_ext);
 		private :
@@ -138,6 +138,7 @@ class THypGeMWD
 		TH1D			**hRisetime3090;
 		
 		TH2D			**hEnergyRise1090Corr;
+		TH2D			**hEnergyRise1090CorrBallistic;
 		TH2D			**hEnergyRise3090Corr;
 		
 		TH2D			**hEnergyTimeSinceLastPulse;

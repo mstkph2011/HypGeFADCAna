@@ -418,15 +418,27 @@ Int_t THypGeMWD::AnaStep_ExtractRisetime()
 	
 Int_t THypGeMWD::AnaStep_DoEnergyRisetimeCorrelation()
 {
+	double c;
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
-		if(Int_t(energy[ChanNumber].size()) == Int_t(risetime1090[ChanNumber].size()))
+		if(Int_t(energyMA[ChanNumber].size()) == Int_t(risetime1090[ChanNumber].size()))
 		{
-			for(Int_t n=0;n < Int_t(energy[ChanNumber].size());n++)
+			for(Int_t n=0;n < Int_t(energyMA[ChanNumber].size());n++)
 			{
-				hEnergyRise1090Corr[ChanNumber]->Fill(risetime1090[ChanNumber][n],energy[ChanNumber][n]);
+				//hEnergyRise1090Corr[ChanNumber]->Fill(risetime1090[ChanNumber][n],energy[ChanNumber][n]);
+				hEnergyRise1090Corr[ChanNumber]->Fill(risetime1090[ChanNumber][n],energyMA[ChanNumber][n]);
 			}
 		}
+
+		if(Int_t(energyMA[ChanNumber].size()) == Int_t(risetime1090[ChanNumber].size()))
+				{
+					for(Int_t n=0;n < Int_t(energyMA[ChanNumber].size());n++)
+					{
+						//c = energy[ChanNumber][n] * tau/(tau-0.2*risetime1090[ChanNumber][n]);				// simple ballistic correction of the measured amplitude value based on Lauer, added scaling factor for  risetime value
+						c = energyMA[ChanNumber][n] * tau/(tau-(0.1*risetime1090[ChanNumber][n]+0.1*risetime1090[ChanNumber][n]*risetime1090[ChanNumber][n]));
+						hEnergyRise1090CorrBallistic[ChanNumber]->Fill(risetime1090[ChanNumber][n],c);
+					}
+				}
 
 		if(Int_t(energy[ChanNumber].size()) == Int_t(risetime3090[ChanNumber].size()))
 		{
@@ -854,6 +866,9 @@ void THypGeMWD::EvaluateMWD()
 
 void THypGeMWD::EvaluateMA()
 {
+	
+	Double_t EnergyThreshold = 100;		// threshold to fill the energy histogram (get rid of low energy gammas)
+	
 	EvalMATreshold = 1;
 	Int_t posMax1 = 0;
 	Int_t posMax2 = 0;
@@ -865,6 +880,7 @@ void THypGeMWD::EvaluateMA()
 	Double_t Energy;
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
+		energyMA[ChanNumber].clear();
 		CalculateDerivatives(hMWDMA[ChanNumber],ChanNumber);
 		for(Int_t i=1;i<=TraceLength;i++)
 		{
@@ -917,9 +933,13 @@ void THypGeMWD::EvaluateMA()
 				//cout << "OR " << SumOffsetRight << "\t" << Double_t(SumOffsetRight + SumOffsetLeft)/OffsetWidth << endl;
 				Energy = Double_t(SumMax)/(b/2+1) - Double_t(SumOffsetRight + SumOffsetLeft)/OffsetWidth;
 				//cout << Energy << endl;
-				hEnergySpectrumMA[ChanNumber]->Fill(Energy);
-				energyMA[ChanNumber].push_back(Energy);
-				leftborderMA[ChanNumber].push_back(posMax1);
+				if (Energy > EnergyThreshold)
+				{
+
+					hEnergySpectrumMA[ChanNumber]->Fill(Energy);
+					energyMA[ChanNumber].push_back(Energy);
+					leftborderMA[ChanNumber].push_back(posMax1);
+				}
 
 			}
 		}
@@ -1162,10 +1182,11 @@ void THypGeMWD::Connect1DRisetimeHistograms(TH1D** hRisetime1090_ext, TH1D** hRi
 	hRisetime1090 = hRisetime1090_ext;
 	hRisetime3090 = hRisetime3090_ext;
 }
-void THypGeMWD::Connect2DEnergyRisetimeHistograms(TH2D** hEnergyRise1090Corr_ext, TH2D** hEnergyRise3090Corr_ext)
+void THypGeMWD::Connect2DEnergyRisetimeHistograms(TH2D** hEnergyRise1090Corr_ext, TH2D** hEnergyRise3090Corr_ext, TH2D** hEnergyRise1090CorrBallistic_ext)
 {
 	hEnergyRise1090Corr = hEnergyRise1090Corr_ext;
 	hEnergyRise3090Corr = hEnergyRise3090Corr_ext;
+	hEnergyRise1090CorrBallistic = hEnergyRise1090CorrBallistic_ext;
 }
 void THypGeMWD::Connect2DEnergyTimeSinceLastPulseHistograms(TH2D** hEnergyTimeSinceLastPulse_ext, TH2D** hEnergyTimeSinceLastPulseCorr_ext ,TH2D** hEnergyTimeSinceLastPulse_WithCuts_ext, TH2D** hEnergyTimeSinceLastPulseCorr_WithCuts_ext, Int_t NumberOfCuts)
 {
