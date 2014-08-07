@@ -23,7 +23,7 @@ int main(int argc, char* argv[] )
 
 	TFile *InFile[1000];
   int i = 0;
-  int UseMovingAv=1;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
+  int UseMovingAv=0;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
   float tauArray[1000];				//Arrays zum eintragen der tau's bzw FWHM(tau) @Torben Rathmann
   float aufArray[1000];
   
@@ -65,10 +65,10 @@ int main(int argc, char* argv[] )
 			if (InFileName.Length() == 0)
 				continue;
 			//extract parameter values from file name
-			int M, FilterType,SigmaGaus,SigmaBil, tau;
-			TString ComparisonString = COSYTESTANADIR + "/june2014/CombinedData/COSY_Ana%i,%i,%i,%i.root";
+			int M, FilterType,SigmaGaus,SigmaBil, tau, MAL;
+			TString ComparisonString = COSYTESTANADIR + "/june2014/CombinedData/COSY_Ana%i,%i,%i,%i,%i.root";
 			cout << "File:\t\t\t\t"<< ComparisonString << endl;
-			sscanf(InFileName.Data(),ComparisonString.Data(),&M,&FilterType,&SigmaGaus,&tau);
+			sscanf(InFileName.Data(),ComparisonString.Data(),&M,&MAL,&FilterType,&SigmaGaus,&tau);
 			InFile[i] = new TFile(InFileName);								//open ROOT file
 			//InFile[i] = new TFile("COSY_Ana200,4,11,300.root");								//open ROOT file
 			cout << InFile[i]->GetSize() << endl;
@@ -99,6 +99,8 @@ int main(int argc, char* argv[] )
 			RootFilename = "Fitted_COSY_Ana";
 				RootFilename+=M;
 				RootFilename+= ",";
+				RootFilename+=MAL;
+				RootFilename+= ",";
 				RootFilename+= FilterType;
 				RootFilename+= ","; 
 				RootFilename += SigmaGaus; 
@@ -113,6 +115,9 @@ int main(int argc, char* argv[] )
 				RootFilename += ".root";
 				cout << RootFilename.Data() << endl;
 			TxtFilename = "Fitted_COSY_Ana";
+				TxtFilename+=M;
+				TxtFilename+= ",";
+				TxtFilename+=MAL;
 				TxtFilename += ",";
 				TxtFilename += FilterType;
 				TxtFilename += ","; 

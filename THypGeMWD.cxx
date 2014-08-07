@@ -865,6 +865,7 @@ void THypGeMWD::EvaluateMA()
 	Double_t Energy;
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
+		if (a<0) break;
 		CalculateDerivatives(hMWDMA[ChanNumber],ChanNumber);
 		for(Int_t i=1;i<=TraceLength;i++)
 		{
@@ -890,7 +891,7 @@ void THypGeMWD::EvaluateMA()
 				SignalCenter = (posMax1 + posMax2)/2;
 				//cout << "PM " << posMax1 << "\t" << posMax2  << endl;
 				//cout << "SC " << SignalCenter  << endl;
-				for (Int_t nBin = SignalCenter-b/4 ; nBin <= SignalCenter + b/4 ; nBin++)
+				for (Int_t nBin = SignalCenter-a/4 ; nBin <= SignalCenter + a/4 ; nBin++)
 				{
 					SumMax +=  hMWDMA[ChanNumber]->GetBinContent(nBin);
 				}
