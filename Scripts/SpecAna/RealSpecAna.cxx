@@ -23,9 +23,10 @@ int main(int argc, char* argv[] )
 
 	TFile *InFile[1000];
   int i = 0;
-  int UseMovingAv=0;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
+  int UseMovingAv=1;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
   float tauArray[1000];				//Arrays zum eintragen der tau's bzw FWHM(tau) @Torben Rathmann
   float aufArray[1000];
+  
   
   TString COSYTESTANADIR= getenv("COSYTESTANADIR");
   TString InputListPath = COSYTESTANADIR;
@@ -177,6 +178,7 @@ int main(int argc, char* argv[] )
 			delete InFile[i];
 			i++;
 			cout << "test2" << endl;
+			
 		}
 	}
 	//for (int j = 0; j < i; j++)
@@ -189,6 +191,9 @@ int main(int argc, char* argv[] )
 		tauAufloesName+= "MA";
 	}
 	tauAufloesName+=".root";
+	for(int j=0;j<i;j++){
+		cout<<tauArray[j]<<" : "<<aufArray[j]<<endl;
+	}
 	
 	TFile *rootoutput = new TFile(tauAufloesName,"RECREATE"); //zum direkten Vergleich ob tau bei MA besser oder schlechter wird
 	tauAuf->Write("tauAufloesung");

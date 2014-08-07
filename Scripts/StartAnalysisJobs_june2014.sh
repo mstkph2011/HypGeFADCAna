@@ -12,8 +12,8 @@ MWDmin=200				###Optimum 200
 MWDmax=200
 MWDstep=20
 #if only a fixed value for sigma gaus should be used make min = max
-sigmaGausmin=2
-sigmaGausmax=2
+sigmaGausmin=3
+sigmaGausmax=3
 sigmaGausstep=2
 #if only a fixed value for sigma bil should be used make min = max
 sigmaBilmin=2000
@@ -28,13 +28,13 @@ NumberOfFiles=20																				### number of input files
 echo $DataInputFilePath
 #parameters of GO4 analysis
 ### MWDm taken from loop values, see above for values
-MAl=100
+MAl=120
 NumberOfSmoothings=100				### only used for rectangular or weighted average filter
 FilterWidth=3
 ### sigmaGaus and Bil taken from loop values, see above for values
 #tau=5383;	
-taumin=5100;	
-taumax=5500;	
+taumin=5383;	
+taumax=5383;	
 taustep=2;	
 
 EnableMA=1		
