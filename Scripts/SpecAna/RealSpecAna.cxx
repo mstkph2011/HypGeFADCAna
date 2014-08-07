@@ -27,6 +27,7 @@ int main(int argc, char* argv[] )
   float tauArray[1000];				//Arrays zum eintragen der tau's bzw FWHM(tau) @Torben Rathmann
   float aufArray[1000];
   
+  
   TString COSYTESTANADIR= getenv("COSYTESTANADIR");
   TString InputListPath = COSYTESTANADIR;
   //InputListPath +="/COSY/txtfiles/";
@@ -64,10 +65,10 @@ int main(int argc, char* argv[] )
 			if (InFileName.Length() == 0)
 				continue;
 			//extract parameter values from file name
-			int M, FilterType,SigmaGaus,SigmaBil, tau;
-			TString ComparisonString = COSYTESTANADIR + "/june2014/CombinedData/COSY_Ana%i,%i,%i,%i.root";
+			int M, FilterType,SigmaGaus,SigmaBil, tau, MAL;
+			TString ComparisonString = COSYTESTANADIR + "/june2014/CombinedData/COSY_Ana%i,%i,%i,%i,%i.root";
 			cout << "File:\t\t\t\t"<< ComparisonString << endl;
-			sscanf(InFileName.Data(),ComparisonString.Data(),&M,&FilterType,&SigmaGaus,&tau);
+			sscanf(InFileName.Data(),ComparisonString.Data(),&M,&MAL,&FilterType,&SigmaGaus,&tau);
 			InFile[i] = new TFile(InFileName);								//open ROOT file
 			//InFile[i] = new TFile("COSY_Ana200,4,11,300.root");								//open ROOT file
 			cout << InFile[i]->GetSize() << endl;
@@ -98,6 +99,8 @@ int main(int argc, char* argv[] )
 			RootFilename = "Fitted_COSY_Ana";
 				RootFilename+=M;
 				RootFilename+= ",";
+				RootFilename+=MAL;
+				RootFilename+= ",";
 				RootFilename+= FilterType;
 				RootFilename+= ","; 
 				RootFilename += SigmaGaus; 
@@ -112,6 +115,9 @@ int main(int argc, char* argv[] )
 				RootFilename += ".root";
 				cout << RootFilename.Data() << endl;
 			TxtFilename = "Fitted_COSY_Ana";
+				TxtFilename+=M;
+				TxtFilename+= ",";
+				TxtFilename+=MAL;
 				TxtFilename += ",";
 				TxtFilename += FilterType;
 				TxtFilename += ","; 
@@ -177,6 +183,7 @@ int main(int argc, char* argv[] )
 			delete InFile[i];
 			i++;
 			cout << "test2" << endl;
+			
 		}
 	}
 	//for (int j = 0; j < i; j++)
@@ -189,6 +196,9 @@ int main(int argc, char* argv[] )
 		tauAufloesName+= "MA";
 	}
 	tauAufloesName+=".root";
+	for(int j=0;j<i;j++){
+		cout<<tauArray[j]<<" : "<<aufArray[j]<<endl;
+	}
 	
 	TFile *rootoutput = new TFile(tauAufloesName,"RECREATE"); //zum direkten Vergleich ob tau bei MA besser oder schlechter wird
 	tauAuf->Write("tauAufloesung");

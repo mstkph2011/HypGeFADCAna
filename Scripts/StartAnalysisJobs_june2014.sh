@@ -12,8 +12,8 @@ MWDmin=200				###Optimum 200
 MWDmax=200
 MWDstep=20
 #if only a fixed value for sigma gaus should be used make min = max
-sigmaGausmin=2
-sigmaGausmax=2
+sigmaGausmin=3
+sigmaGausmax=3
 sigmaGausstep=2
 #if only a fixed value for sigma bil should be used make min = max
 sigmaBilmin=2000
@@ -28,13 +28,18 @@ NumberOfFiles=20																				### number of input files
 echo $DataInputFilePath
 #parameters of GO4 analysis
 ### MWDm taken from loop values, see above for values
-MAl=100
+
+#MAl=120
+MALmin=100
+MALmax=100
+MALstep=2
+
 NumberOfSmoothings=100				### only used for rectangular or weighted average filter
 FilterWidth=3
 ### sigmaGaus and Bil taken from loop values, see above for values
 #tau=5383;	
-taumin=5100;	
-taumax=5500;	
+taumin=5383;	
+taumax=5383;	
 taustep=2;	
 
 EnableMA=1		
@@ -69,46 +74,49 @@ fi
 jobcounter=1
 
 MWDm=${MWDmin}
-for ((tau=${taumin}; tau<=${taumax}; tau=$(($tau+${taustep}))))
+MALm=${MALmin}
+for ((MALm=${MALmin}; MALm<=${MALmax} ; MALm=$(($MALm+${MALstep}))))
 do
-	for ((sigmaGaus=${sigmaGausmin}; sigmaGaus<=${sigmaGausmax}; sigmaGaus=$(($sigmaGaus+${sigmaGausstep}))))
+	for ((tau=${taumin}; tau<=${taumax}; tau=$(($tau+${taustep}))))
 	do
-		for ((sigmaBil=${sigmaBilmin}; sigmaBil<=${sigmaBilmax}; sigmaBil=$(($sigmaBil+${sigmaBilstep}))))
+		for ((sigmaGaus=${sigmaGausmin}; sigmaGaus<=${sigmaGausmax}; sigmaGaus=$(($sigmaGaus+${sigmaGausstep}))))
 		do
-			if [ $FilterType -ne 4 ];
-			then
-				SubSubDir=COSY_Ana${MWDm},${FilterType},${sigmaGaus},${tau}
-			else
-				if [ $FilterType -eq 4 ];
-				then
-					SubSubDir=COSY_Ana${MWDm},${FilterType},${sigmaGaus},${sigmaBil},${tau}
-				fi
-			fi
-			mkdir -p ${SubDir}/${SubSubDir}
-			for ((nFile=1; nFile<=${NumberOfFiles}; nFile=$(($nFile+1))))
+			for ((sigmaBil=${sigmaBilmin}; sigmaBil<=${sigmaBilmax}; sigmaBil=$(($sigmaBil+${sigmaBilstep}))))
 			do
-				
-				fileAdd=_${SubSubDir}_${nFile}    ##_file${nFile}
-				echo $fileAdd
-				if [ ${nFile} -lt 10 ]; then
-				DataInputFile=${DataInputFilePath}/data000${nFile}
+				if [ $FilterType -ne 4 ];
+				then
+					SubSubDir=COSY_Ana${MWDm},${MALm},${FilterType},${sigmaGaus},${tau}
 				else
-					if [ ${nFile} -lt 100 -a ${nFile} -gt 9 ]; 
+					if [ $FilterType -eq 4 ];
 					then
-						DataInputFile=${DataInputFilePath}/data00${nFile}
+						SubSubDir=COSY_Ana${MWDm},${MALm},${FilterType},${sigmaGaus},${sigmaBil},${tau}
+					fi
+				fi
+				mkdir -p ${SubDir}/${SubSubDir}
+				for ((nFile=1; nFile<=${NumberOfFiles}; nFile=$(($nFile+1))))
+				do
+				
+					fileAdd=_${SubSubDir}_${nFile}    ##_file${nFile}
+					echo $fileAdd
+					if [ ${nFile} -lt 10 ]; then
+					DataInputFile=${DataInputFilePath}/data000${nFile}
 					else
-						if  [ ${nFile} -gt 99 -a ${nFile} -lt 1000 ];
+						if [ ${nFile} -lt 100 -a ${nFile} -gt 9 ]; 
 						then
-							DataInputFile=${DataInputFilePath}/data0${nFile}
+							DataInputFile=${DataInputFilePath}/data00${nFile}
 						else
-							if  [ ${nFile} -gt 999 ]; 
+							if  [ ${nFile} -gt 99 -a ${nFile} -lt 1000 ];
 							then
-								DataInputFile=${DataInputFilePath}/data${nFile}
+								DataInputFile=${DataInputFilePath}/data0${nFile}
+							else
+								if  [ ${nFile} -gt 999 ]; 
+								then
+									DataInputFile=${DataInputFilePath}/data${nFile}
+								fi
 							fi
 						fi
-					fi
-				fi			
-				
+					fi			
+
 				cat >$JobPath/job${fileAdd}.sh <<EOF
 #!/bin/bash
 #
@@ -147,7 +155,7 @@ EOF
 			done			### end of while "double queue" loop
 		done 		### end of sigmaBil loop
 	done		### end of sigmaGaus loop
-done		### end of MWDm loop
-
+  done		### end of MWDm loop
+done		###end of MALm loop
 
 
