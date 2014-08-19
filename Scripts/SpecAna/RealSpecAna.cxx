@@ -5,6 +5,7 @@
 #include "TCanvas.h"
 #include "TString.h"
 #include "TGraph.h"
+#include "TGraph2D.h"
 #include "TRint.h"							// starts the interactive mode of ROOT (needed for canvas etc.)
 
 #include "THypGeSpectrumAnalyser.h"
@@ -23,9 +24,12 @@ int main(int argc, char* argv[] )
 
 	TFile *InFile[1000];
   int i = 0;
-  int UseMovingAv=0;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
+  int UseMovingAv=1;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
   float tauArray[1000];				//Arrays zum eintragen der tau's bzw FWHM(tau) @Torben Rathmann
   float aufArray[1000];
+  float TaufArray[1000];			//Array für FWTM
+  float MWDArray[1000];
+  float MALArray[1000];
   
   
   TString COSYTESTANADIR= getenv("COSYTESTANADIR");
@@ -134,12 +138,12 @@ int main(int argc, char* argv[] )
 
 				THypGeSpectrumAnalyser *Ana;
 			if(UseMovingAv==1){ 						//Überschreibt *Ana um Moving Average zu benutzen @Torben Rathmann
-				Ana= new THypGeSpectrumAnalyser(hEnergyMA,"co60", 35 );
+				Ana= new THypGeSpectrumAnalyser(hEnergyMA,"jülich", 35 );
 			}
 			else
-				Ana = new THypGeSpectrumAnalyser(hEnergy,"co60", 35 );
+				Ana = new THypGeSpectrumAnalyser(hEnergy,"jülich", 35 );
 			
-			Ana->SetSearchRange(1000,2000);
+			Ana->SetSearchRange(500,4000);
 			Ana->SetOutputPath(Path);
 			Ana->SetTxtFileOutputName(TxtFilename);
 			Ana->SetRootFileOutputName(RootFilename);
@@ -148,6 +152,8 @@ int main(int argc, char* argv[] )
 			Ana->SetSecondGausianFitting();
 			Ana->AnalyseSpectrum();
 			cout << Ana->GetFWHMCo() << endl;
+			
+			
 
 
 			//@Torben Rathmann
@@ -163,6 +169,9 @@ int main(int argc, char* argv[] )
 			//cout << tau << endl << endl << endl;
 			tauArray[i]=tau;								//Daten werden in Array geschrieben
 			aufArray[i]=Ana->GetFWHMCo();
+			TaufArray[i]=Ana->GetFWTMCo();
+			MWDArray[i]=M;
+			MALArray[i]=MAL;
 
 
 
@@ -196,14 +205,41 @@ int main(int argc, char* argv[] )
 		tauAufloesName+= "MA";
 	}
 	tauAufloesName+=".root";
-	for(int j=0;j<i;j++){
-		cout<<tauArray[j]<<" : "<<aufArray[j]<<endl;
-	}
-	
 	TFile *rootoutput = new TFile(tauAufloesName,"RECREATE"); //zum direkten Vergleich ob tau bei MA besser oder schlechter wird
 	tauAuf->Write("tauAufloesung");
-	
 	rootoutput->Close();
+	
+	/*
+	TGraph2D *MLAuf = new TGraph2D(i, &MWDArray[0], &MALArray[0], &aufArray[0]);			//2dim graph für M,L,FWHM
+	TString MLAufloesName="MLAufloesung";
+	MLAuf->SetNameTitle("FWHM (M,L) [keV]","FWHM (M,L) [keV]");
+	if(UseMovingAv==1){
+		MLAufloesName+= "MA";
+	}
+	MLAufloesName+=".root";
+	TFile *outi = new TFile(MLAufloesName,"RECREATE");
+	MLAuf->Write("MLAufloesung");
+	outi->Close();
+	
+	
+	
+	TGraph2D *MLTenthAuf = new TGraph2D(i, &MWDArray[0], &MALArray[0], &TaufArray[0]);		//2dim graph für M,L,FWTM
+	TString MLTenthAufloesName="MLTenthAufloesung";
+	if(UseMovingAv==1){
+		MLTenthAufloesName+= "MA";
+	}
+	MLTenthAufloesName+=".root";
+	TFile *TenthOut = new TFile(MLTenthAufloesName,"RECREATE");
+	MLTenthAuf->Write("MLTenthAufloesung");
+	TenthOut->Close();
+	*/
+	
+	
+	/*for(int j=0;j<i;j++){					//Ausgabe diverser Werte zum identifizieren guter M,L Werte
+		if(aufArray[j]<4.3 && TaufArray[j]<7.9){
+			cout<<"tau:"<<tauArray[j]<<"; M:"<<MWDArray[j]<<"; L:"<<MALArray[j]<<"; aufloesung:"<<aufArray[j]<<"; TenthAufloesung:"<<TaufArray[j]<<endl;
+		}	
+	}*/
 	
 	//
 

@@ -932,7 +932,7 @@ void THypGeMWD::EvaluateMA()
 				//cout << "SM " << SumMax << "\t" << Double_t(SumMax)/(b/2+1) << endl;
 				//cout << "OL " << SumOffsetLeft << "\t" << OffsetWidth << endl;
 				//cout << "OR " << SumOffsetRight << "\t" << Double_t(SumOffsetRight + SumOffsetLeft)/OffsetWidth << endl;
-				Energy = Double_t(SumMax)/(b/2+1) - Double_t(SumOffsetRight + SumOffsetLeft)/OffsetWidth;
+				Energy = Double_t(SumMax)/(a/2+1) - Double_t(SumOffsetRight + SumOffsetLeft)/OffsetWidth;
 				//cout << Energy << endl;
 				if (Energy > EnergyThreshold)
 				{

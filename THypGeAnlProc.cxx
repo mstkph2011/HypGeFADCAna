@@ -96,12 +96,12 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		//create histogram for energy spectrum
 		snprintf(chis,15,"Energy_%02d",i+1);
 		snprintf(chead,63,"Energy spectrum channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
-		fhEnergySpectrum[i] = new TH1D(chis,chead,4000,0,4000);
+		fhEnergySpectrum[i] = new TH1D(chis,chead,16000,0,8000);
 			AddHistogram(fhEnergySpectrum[i],"Energyspectrum");
 			//create histogram for energy spectrum from MA
 		snprintf(chis,15,"EnergyMA_%02d",i+1);
 		snprintf(chead,63,"Energy spectrum from MA signal channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
-		fhEnergySpectrumMA[i] = new TH1D(chis,chead,4000,0,4000);
+		fhEnergySpectrumMA[i] = new TH1D(chis,chead,16000,0,8000);
 			AddHistogram(fhEnergySpectrumMA[i],"Energyspectrum");
 		//create histogram for energy spectrum with a cut in the pile up time
 		snprintf(chis,30,"EnergyWithCut_%02d",i+1);

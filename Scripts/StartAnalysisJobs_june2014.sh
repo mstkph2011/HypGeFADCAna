@@ -10,7 +10,7 @@ user=$USER				#### this is taken from system variable and used for job sending v
 
 MWDmin=200				###Optimum 200
 MWDmax=200
-MWDstep=20
+MWDstep=2
 #if only a fixed value for sigma gaus should be used make min = max
 sigmaGausmin=3
 sigmaGausmax=3
@@ -38,9 +38,9 @@ NumberOfSmoothings=100				### only used for rectangular or weighted average filt
 FilterWidth=3
 ### sigmaGaus and Bil taken from loop values, see above for values
 #tau=5383;	
-taumin=5383;	
-taumax=5383;	
-taustep=2;	
+taumin=6200;						###over 5300
+taumax=7000;	
+taustep=30;	
 
 EnableMA=1		
 FilterType=3									### 0 = none, 1 = rectanglur, 2 = weighted average, 3 = gausian filter, 4 = bil filter
@@ -73,51 +73,52 @@ if [ ! -d $RunPath ]; then
 fi
 jobcounter=1
 
-MWDm=${MWDmin}
-MALm=${MALmin}
-for ((MALm=${MALmin}; MALm<=${MALmax} ; MALm=$(($MALm+${MALstep}))))
+#MWDm=${MWDmin}
+for ((MWDm=${MWDmin}; MWDm<=${MWDmax}; MWDm=$(($MWDm+${MWDstep}))))
 do
-	for ((tau=${taumin}; tau<=${taumax}; tau=$(($tau+${taustep}))))
+	for ((MAl=${MALmin}; MAl<=${MALmax} ; MAl=$(($MAl+${MALstep}))))
 	do
-		for ((sigmaGaus=${sigmaGausmin}; sigmaGaus<=${sigmaGausmax}; sigmaGaus=$(($sigmaGaus+${sigmaGausstep}))))
+		for ((tau=${taumin}; tau<=${taumax}; tau=$(($tau+${taustep}))))
 		do
-			for ((sigmaBil=${sigmaBilmin}; sigmaBil<=${sigmaBilmax}; sigmaBil=$(($sigmaBil+${sigmaBilstep}))))
+			for ((sigmaGaus=${sigmaGausmin}; sigmaGaus<=${sigmaGausmax}; sigmaGaus=$(($sigmaGaus+${sigmaGausstep}))))
 			do
-				if [ $FilterType -ne 4 ];
-				then
-					SubSubDir=COSY_Ana${MWDm},${MALm},${FilterType},${sigmaGaus},${tau}
-				else
-					if [ $FilterType -eq 4 ];
-					then
-						SubSubDir=COSY_Ana${MWDm},${MALm},${FilterType},${sigmaGaus},${sigmaBil},${tau}
-					fi
-				fi
-				mkdir -p ${SubDir}/${SubSubDir}
-				for ((nFile=1; nFile<=${NumberOfFiles}; nFile=$(($nFile+1))))
+				for ((sigmaBil=${sigmaBilmin}; sigmaBil<=${sigmaBilmax}; sigmaBil=$(($sigmaBil+${sigmaBilstep}))))
 				do
-				
-					fileAdd=_${SubSubDir}_${nFile}    ##_file${nFile}
-					echo $fileAdd
-					if [ ${nFile} -lt 10 ]; then
-					DataInputFile=${DataInputFilePath}/data000${nFile}
+					if [ $FilterType -ne 4 ];
+					then
+						SubSubDir=COSY_Ana${MWDm},${MAl},${FilterType},${sigmaGaus},${tau}
 					else
-						if [ ${nFile} -lt 100 -a ${nFile} -gt 9 ]; 
+						if [ $FilterType -eq 4 ];
 						then
-							DataInputFile=${DataInputFilePath}/data00${nFile}
+							SubSubDir=COSY_Ana${MWDm},${MAl},${FilterType},${sigmaGaus},${sigmaBil},${tau}
+						fi
+					fi
+					mkdir -p ${SubDir}/${SubSubDir}
+					for ((nFile=1; nFile<=${NumberOfFiles}; nFile=$(($nFile+1))))
+					do
+				
+						fileAdd=_${SubSubDir}_${nFile}    ##_file${nFile}
+						echo $fileAdd
+						if [ ${nFile} -lt 10 ]; then
+						DataInputFile=${DataInputFilePath}/data000${nFile}
 						else
-							if  [ ${nFile} -gt 99 -a ${nFile} -lt 1000 ];
+							if [ ${nFile} -lt 100 -a ${nFile} -gt 9 ]; 
 							then
-								DataInputFile=${DataInputFilePath}/data0${nFile}
+								DataInputFile=${DataInputFilePath}/data00${nFile}
 							else
-								if  [ ${nFile} -gt 999 ]; 
+								if  [ ${nFile} -gt 99 -a ${nFile} -lt 1000 ];
 								then
-									DataInputFile=${DataInputFilePath}/data${nFile}
+									DataInputFile=${DataInputFilePath}/data0${nFile}
+								else
+									if  [ ${nFile} -gt 999 ]; 
+										then
+										DataInputFile=${DataInputFilePath}/data${nFile}
+									fi
 								fi
 							fi
-						fi
-					fi			
+						fi			
 
-				cat >$JobPath/job${fileAdd}.sh <<EOF
+					cat >$JobPath/job${fileAdd}.sh <<EOF
 #!/bin/bash
 #
 #PBS -N job${fileAdd}
@@ -135,6 +136,7 @@ go4analysis -lib ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so -file $DataInput
 EOF
 				
 				echo "jobcount: ${jobcounter}"
+				#echo "go4analysis -lib ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so -file $DataInputFile -asf ${SubDir}/${SubSubDir}/Ana${fileAdd}.root -x ${MWDm} ${MAl} ${NumberOfSmoothings} ${FilterWidth} ${sigmaGaus} ${sigmaBil} ${tau} ${EnableMA} ${FilterType} ${EnableBaselineCorrection} &> ${SimLogPath}/ana${fileAdd}.log"
 				jobcounter=$(($jobcounter+1))
 ### submit job to batch system
 				mkdir -p ${RunPath}/run$fileAdd
@@ -155,7 +157,7 @@ EOF
 			done			### end of while "double queue" loop
 		done 		### end of sigmaBil loop
 	done		### end of sigmaGaus loop
-  done		### end of MWDm loop
-done		###end of MALm loop
-
+  done		### end of tau loop
+ done		###end of MAL loop
+done		### end of MWDm loop
 

@@ -395,7 +395,7 @@ Int_t THypGeSpectrumAnalyser::DoEnergyCalibration()
 	fgCalibration->GetYaxis()->SetTitle("#gamma energy [keV]");
 	
 	//CalFunc = new TF1("CalFunc","pol2",0,8000);
-	CalFunc = new TF1("CalFunc","pol1",0,8000);
+	CalFunc = new TF1("CalFunc","pol2",0,8000);
 	fgCalibration->Draw("AP");
 	fgCalibration->Fit(CalFunc);
 	
@@ -531,6 +531,23 @@ Int_t THypGeSpectrumAnalyser::CompareNuclei(TString NucleiName)
 		std::cout << "Found Na22 and K40"<< endl;
 		return Energies.size();
 	}
+	if(!NucleiName.CompareTo("jülich") )
+		{
+			//npeaks = 5;
+			std::cout << "Found jülich beam time configuration"<< endl;
+			Energies.push_back(510.998928);
+			EnergyErrors.push_back(0.000011);
+			Energies.push_back(1172.23);
+			EnergyErrors.push_back(0.030);
+			Energies.push_back(1332.51);
+			EnergyErrors.push_back(0.015);
+			Energies.push_back(1778.969);
+			EnergyErrors.push_back(0.012);
+			Energies.push_back(2504.74);
+			EnergyErrors.push_back(0.1);	//0,1keV random
+			return Energies.size();
+		}
+
 	//std::cerr << "****************Nuclei not found!***************" <<endl;
 	return -1;
 }
@@ -734,7 +751,7 @@ Int_t THypGeSpectrumAnalyser::ExportToRootFile(TString RootFilename_ext )
 
 void THypGeSpectrumAnalyser::SetSearchRange(Double_t RangeMin,Double_t RangeMax)
 {
-	fhEnergySpectrum->GetXaxis()->SetRange(RangeMin,RangeMax);
+	fhEnergySpectrum->GetXaxis()->SetRangeUser(RangeMin,RangeMax);
 }
 
 void THypGeSpectrumAnalyser::SetTxtFileOutputName(TString TxtFilename_ext)
