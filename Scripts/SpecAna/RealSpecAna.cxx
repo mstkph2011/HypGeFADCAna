@@ -24,12 +24,15 @@ int main(int argc, char* argv[] )
 
 	TFile *InFile[1000];
   int i = 0;
+  int UseFreeSkewedFitting=1;			//Variable ob FreeSkewedFitting benutzt wird 1=JA, 0=Nein @Torben Rathmann
   int UseMovingAv=1;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
   float tauArray[1000];				//Arrays zum eintragen der tau's bzw FWHM(tau) @Torben Rathmann
   float aufArray[1000];
   float TaufArray[1000];			//Array für FWTM
+  float VerschlArray[1000];
   float MWDArray[1000];
   float MALArray[1000];
+  float iArray[1000];
   
   
   TString COSYTESTANADIR= getenv("COSYTESTANADIR");
@@ -69,10 +72,10 @@ int main(int argc, char* argv[] )
 			if (InFileName.Length() == 0)
 				continue;
 			//extract parameter values from file name
-			int M, FilterType,SigmaGaus,SigmaBil, tau, MAL;
-			TString ComparisonString = COSYTESTANADIR + "/june2014/CombinedData/COSY_Ana%i,%i,%i,%i,%i.root";
+			int M, FilterType,SigmaGaus,SigmaBil, tau, MAL, Date, runNo;
+			TString ComparisonString = COSYTESTANADIR + "/june2014/CombinedData/COSY_Ana_%i_run%i___%i,%i,%i,%i,%i.root"; //XXXXXXXXXXXXXXXXXXXXXXXXXHier fehlt was
 			cout << "File:\t\t\t\t"<< ComparisonString << endl;
-			sscanf(InFileName.Data(),ComparisonString.Data(),&M,&MAL,&FilterType,&SigmaGaus,&tau);
+			sscanf(InFileName.Data(),ComparisonString.Data(),&Date,&runNo,&M,&MAL,&FilterType,&SigmaGaus,&tau);
 			InFile[i] = new TFile(InFileName);								//open ROOT file
 			//InFile[i] = new TFile("COSY_Ana200,4,11,300.root");								//open ROOT file
 			cout << InFile[i]->GetSize() << endl;
@@ -100,7 +103,11 @@ int main(int argc, char* argv[] )
 			
 			Path = COSYTESTANADIR;
 				Path += "/june2014/CombinedData/Fit/";
-			RootFilename = "Fitted_COSY_Ana";
+			RootFilename = "Fitted_COSY_Ana_";
+				RootFilename+=Date;
+				RootFilename+= "_";
+				RootFilename+=runNo;
+				RootFilename+= "___";
 				RootFilename+=M;
 				RootFilename+= ",";
 				RootFilename+=MAL;
@@ -115,6 +122,10 @@ int main(int argc, char* argv[] )
 				if(UseMovingAv==1){				//Anfügen "MA" vom Dateinamen wenn Moving Average genutzt wird @Torben Rathmann
 					RootFilename+= ",";
 					RootFilename+= "MA";
+				}
+				if(UseFreeSkewedFitting==1){	//Anfügen "FSFit" vom Dateinamen wenn FreeSkewed genutzt wird @Torben Rathmann
+					RootFilename+= ",";
+					RootFilename+= "FSFit";
 				}
 				RootFilename += ".root";
 				cout << RootFilename.Data() << endl;
@@ -134,22 +145,32 @@ int main(int argc, char* argv[] )
 					TxtFilename+= ",";
 					TxtFilename+= "MA";
 				}
+				if(UseFreeSkewedFitting==1){	//Anfügen "FSFit" vom Dateinamen wenn FreeSkewed genutzt wird @Torben Rathmann
+					TxtFilename+= ",";
+					TxtFilename+= "FSFit";
+				}
 				TxtFilename+= ".txt";
 
 				THypGeSpectrumAnalyser *Ana;
 			if(UseMovingAv==1){ 						//Überschreibt *Ana um Moving Average zu benutzen @Torben Rathmann
-				Ana= new THypGeSpectrumAnalyser(hEnergyMA,"jülich", 35 );
+				Ana= new THypGeSpectrumAnalyser(hEnergyMA,"jülich2", 35 );
 			}
 			else
-				Ana = new THypGeSpectrumAnalyser(hEnergy,"jülich", 35 );
+				Ana = new THypGeSpectrumAnalyser(hEnergy,"jülich2", 35 );
 			
 			Ana->SetSearchRange(500,4000);
 			Ana->SetOutputPath(Path);
 			Ana->SetTxtFileOutputName(TxtFilename);
 			Ana->SetRootFileOutputName(RootFilename);
-			Ana->SetGaussianFitting();
+			if(UseFreeSkewedFitting==1){
+				//Ana->SetFreeSkewedFitting();
+				Ana->SetNewFunctionFitting();
+			}
+			else{
+				Ana->SetGaussianFitting();
+			}
 			//Ana->SetFreeSkewedFitting();
-			Ana->SetSecondGausianFitting();
+			//Ana->SetSecondGausianFitting();
 			Ana->AnalyseSpectrum();
 			cout << Ana->GetFWHMCo() << endl;
 			
@@ -170,8 +191,10 @@ int main(int argc, char* argv[] )
 			tauArray[i]=tau;								//Daten werden in Array geschrieben
 			aufArray[i]=Ana->GetFWHMCo();
 			TaufArray[i]=Ana->GetFWTMCo();
+			VerschlArray[i]=Ana->GetFWTMCo()/Ana->GetFWHMCo();
 			MWDArray[i]=M;
 			MALArray[i]=MAL;
+			iArray[i]=i;
 
 
 
@@ -195,11 +218,25 @@ int main(int argc, char* argv[] )
 			
 		}
 	}
+	TGraph *verschlechtFWHM = new TGraph(i,&iArray[0],&aufArray[0]);
+	TGraph *verschlechtFWTM = new TGraph(i,&iArray[0],&TaufArray[0]);
+	TGraph *verschlecht = new TGraph(i,&iArray[0],&VerschlArray[0]);
+	TString VerschName= "FWTMFWHM";
+	if(UseMovingAv==1){
+			VerschName+= "MA";
+		}
+	VerschName+=".root";
+	TFile *verhaeltout=new TFile(VerschName,"RECREATE");
+	verschlecht->Write("FWTMFWHM");
+	verschlechtFWHM->Write("FWHM");
+	verschlechtFWTM->Write("FWTM");
+	verhaeltout->Close();
+
 	//for (int j = 0; j < i; j++)
 	////	cout << tauArray[j][0] << "\t" << tauArray[j][1] << endl;
 	//}
 	//@Torben Rathmann
-	TGraph *tauAuf = new TGraph(i,&tauArray[0],&aufArray[0]);
+	/* TGraph *tauAuf = new TGraph(i,&tauArray[0],&aufArray[0]);	//Graph zur Bestimmung FWHM_min(tau)
 	TString tauAufloesName ="tauAufloesung";
 	if(UseMovingAv==1){
 		tauAufloesName+= "MA";
@@ -208,33 +245,34 @@ int main(int argc, char* argv[] )
 	TFile *rootoutput = new TFile(tauAufloesName,"RECREATE"); //zum direkten Vergleich ob tau bei MA besser oder schlechter wird
 	tauAuf->Write("tauAufloesung");
 	rootoutput->Close();
-	
+	*/
+
 	/*
 	TGraph2D *MLAuf = new TGraph2D(i, &MWDArray[0], &MALArray[0], &aufArray[0]);			//2dim graph für M,L,FWHM
-	TString MLAufloesName="MLAufloesung";
+	TString MLAufloesName="MLAufloesung_tau6210";
 	MLAuf->SetNameTitle("FWHM (M,L) [keV]","FWHM (M,L) [keV]");
 	if(UseMovingAv==1){
 		MLAufloesName+= "MA";
 	}
 	MLAufloesName+=".root";
 	TFile *outi = new TFile(MLAufloesName,"RECREATE");
-	MLAuf->Write("MLAufloesung");
+	MLAuf->Write("MLAufloesung_tau6210");
 	outi->Close();
 	
 	
 	
 	TGraph2D *MLTenthAuf = new TGraph2D(i, &MWDArray[0], &MALArray[0], &TaufArray[0]);		//2dim graph für M,L,FWTM
-	TString MLTenthAufloesName="MLTenthAufloesung";
+	TString MLTenthAufloesName="MLTenthAufloesung_tau6210";
 	if(UseMovingAv==1){
 		MLTenthAufloesName+= "MA";
 	}
 	MLTenthAufloesName+=".root";
 	TFile *TenthOut = new TFile(MLTenthAufloesName,"RECREATE");
-	MLTenthAuf->Write("MLTenthAufloesung");
+	MLTenthAuf->Write("MLTenthAufloesung_tau6210");
 	TenthOut->Close();
 	*/
 	
-	
+
 	/*for(int j=0;j<i;j++){					//Ausgabe diverser Werte zum identifizieren guter M,L Werte
 		if(aufArray[j]<4.3 && TaufArray[j]<7.9){
 			cout<<"tau:"<<tauArray[j]<<"; M:"<<MWDArray[j]<<"; L:"<<MALArray[j]<<"; aufloesung:"<<aufArray[j]<<"; TenthAufloesung:"<<TaufArray[j]<<endl;

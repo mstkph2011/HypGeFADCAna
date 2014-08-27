@@ -85,6 +85,8 @@ class THypGeSpectrumAnalyser
 		void											SetSecondGausianFitting();
 		Bool_t										IsSecondGausianFitting();
 		
+		void											SetNewFunctionFitting();
+		Bool_t										IsNewFunctionFitting();
 		void											SetNoDrawingMode(Bool_t NoDrawingMode_ext = true);	//NIY
 		Bool_t										IsNoDrawingMode();																	//NIY
 

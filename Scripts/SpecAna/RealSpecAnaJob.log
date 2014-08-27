@@ -1,0 +1,17 @@
+
+===============================================================
+JOB SUMMARY
+===============================================================
+
+Execution host: node043
+Job ID: 4516592.himster.him.uni-mainz.de
+User ID: rathmann
+Group ID: himspecf
+Job Name: RealSpeAna
+Session ID: 12908
+Resource List: mem=1800mb,neednodes=1:ppn=1,nodes=1:ppn=1,vmem=1800mb,walltime=02:00:00
+Resources Used: cput=00:01:42,mem=50888kb,vmem=205756kb,walltime=00:01:54
+Queue Name: big
+Account String: 
+Job Exit Code: 0
+

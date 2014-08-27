@@ -4,13 +4,18 @@
 ### v1.1 not tested! 			changed walltime for high sigmaGaus
 
 SubPath=june2014						### subpath of subdirectory for analysis output
-DataSubPath=dataJune2014/1006/run1					### subpath of input data
+#Date=1506
+Date=1406
+#runNo=run4
+runNo=run3
+DateMax=1406
+DateStep=100
 
 user=$USER				#### this is taken from system variable and used for job sending via the "double queue" (wait with job submissing if the internal himster queue is to full and send the jobs when there is enough space)
 
 MWDmin=200				###Optimum 200
 MWDmax=200
-MWDstep=2
+MWDstep=10
 #if only a fixed value for sigma gaus should be used make min = max
 sigmaGausmin=3
 sigmaGausmax=3
@@ -23,8 +28,10 @@ sigmaBilmax=2000
 sigmaBilstep=20
 
 AnaLibDir=/home/${user}/work/HypGeFADCAna								### path to analysis library
-DataInputFilePath=${COSYTESTDATADIR}/${DataSubPath}							### input data directory
-NumberOfFiles=20																				### number of input files
+
+StartFile=1
+NumberOfFiles=3																				### number of input files
+
 echo $DataInputFilePath
 #parameters of GO4 analysis
 ### MWDm taken from loop values, see above for values
@@ -32,50 +39,58 @@ echo $DataInputFilePath
 #MAl=120
 MALmin=100
 MALmax=100
-MALstep=2
+MALstep=10
 
 NumberOfSmoothings=100				### only used for rectangular or weighted average filter
 FilterWidth=3
 ### sigmaGaus and Bil taken from loop values, see above for values
-#tau=5383;	
-taumin=6200;						###over 5300
-taumax=7000;	
-taustep=30;	
+#tau=5383;							####z.Z. zwischen 6200 und 6230
+taumin=6210;						###6210 aus pol2 fit
+taumax=6210;	
+taustep=100;	
 
 EnableMA=1		
 FilterType=3									### 0 = none, 1 = rectanglur, 2 = weighted average, 3 = gausian filter, 4 = bil filter
 EnableBaselineCorrection=1
 
+for ((Date=${Date}; Date<=${DateMax}; Date=$(($Date+${DateStep}))))
+do
+DataSubPath=dataJune2014/${Date}/${runNo}					### subpath of input data
+DataInputFilePath=${COSYTESTDATADIR}/${DataSubPath}							### input data directory
 
 
-SubDir=${COSYTESTANADIR}/${SubPath}				### complete path of subdirectory for analysis output
-if [ ! -d $SubDir ]; then 
-  mkdir -p $SubDir
-fi
 
-JobLogPath=${COSYTESTANADIR}/${SubPath}/joblogs
-if [ ! -d $JobLogPath ]; then 
-  mkdir -p $JobLogPath
-fi
 
-SimLogPath=${COSYTESTANADIR}/${SubPath}/analogs
-if [ ! -d $SimLogPath ]; then 
-  mkdir -p $SimLogPath
-fi
+ SubDir=${COSYTESTANADIR}/${SubPath}				### complete path of subdirectory for analysis output
+ if [ ! -d $SubDir ]; then 
+   mkdir -p $SubDir
+ fi
 
-JobPath=${COSYTESTANADIR}/${SubPath}/jobs
-if [ ! -d $JobPath ]; then 
-  mkdir -p $JobPath
-fi
-RunPath=${COSYTESTANADIR}/${SubPath}/runs
-if [ ! -d $RunPath ]; then 
-  mkdir -p $RunPath
-fi
-jobcounter=1
+ JobLogPath=${COSYTESTANADIR}/${SubPath}/joblogs
+ if [ ! -d $JobLogPath ]; then 
+   mkdir -p $JobLogPath
+ fi
+
+ SimLogPath=${COSYTESTANADIR}/${SubPath}/analogs
+ if [ ! -d $SimLogPath ]; then 
+   mkdir -p $SimLogPath
+ fi
+
+ JobPath=${COSYTESTANADIR}/${SubPath}/jobs
+ if [ ! -d $JobPath ]; then 
+   mkdir -p $JobPath
+ fi
+ RunPath=${COSYTESTANADIR}/${SubPath}/runs
+ if [ ! -d $RunPath ]; then 
+   mkdir -p $RunPath
+ fi
+ jobcounter=1
 
 #MWDm=${MWDmin}
-for ((MWDm=${MWDmin}; MWDm<=${MWDmax}; MWDm=$(($MWDm+${MWDstep}))))
-do
+##for ((Date=${Date}; Date<=${DateMax}; Date=$(($Date+${DateStep}))))
+##do
+ for ((MWDm=${MWDmin}; MWDm<=${MWDmax}; MWDm=$(($MWDm+${MWDstep}))))
+ do
 	for ((MAl=${MALmin}; MAl<=${MALmax} ; MAl=$(($MAl+${MALstep}))))
 	do
 		for ((tau=${taumin}; tau<=${taumax}; tau=$(($tau+${taustep}))))
@@ -86,15 +101,15 @@ do
 				do
 					if [ $FilterType -ne 4 ];
 					then
-						SubSubDir=COSY_Ana${MWDm},${MAl},${FilterType},${sigmaGaus},${tau}
+						SubSubDir=COSY_Ana_${Date}_${runNo}___${MWDm},${MAl},${FilterType},${sigmaGaus},${tau}
 					else
 						if [ $FilterType -eq 4 ];
 						then
-							SubSubDir=COSY_Ana${MWDm},${MAl},${FilterType},${sigmaGaus},${sigmaBil},${tau}
+							SubSubDir=COSY_Ana_${Date}_${runNo}___${MWDm},${MAl},${FilterType},${sigmaGaus},${sigmaBil},${tau}
 						fi
 					fi
 					mkdir -p ${SubDir}/${SubSubDir}
-					for ((nFile=1; nFile<=${NumberOfFiles}; nFile=$(($nFile+1))))
+					for ((nFile=$StartFile; nFile<$(($StartFile+$NumberOfFiles)); nFile=$(($nFile+1))))	###nFile Startnummer
 					do
 				
 						fileAdd=_${SubSubDir}_${nFile}    ##_file${nFile}
@@ -157,7 +172,7 @@ EOF
 			done			### end of while "double queue" loop
 		done 		### end of sigmaBil loop
 	done		### end of sigmaGaus loop
-  done		### end of tau loop
- done		###end of MAL loop
-done		### end of MWDm loop
-
+   done		### end of tau loop
+  done		###end of MAL loop
+ done		### end of MWDm loop
+done		###end of datum loop

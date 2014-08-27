@@ -34,8 +34,11 @@ class THypGePeakFitFunction
 		Double_t 			PeakFunc (Double_t *x,Double_t *par);
 		Double_t 			PeakFuncGaussian (Double_t *x,Double_t *par);
 		Double_t			PeakFuncFreeSkewedPosition (Double_t *x,Double_t *par);
+		Double_t			PeakFuncFreeSkewedPositionWithoutFirstGausian (Double_t *x,Double_t *par);
 		Double_t			PeakFuncDoubleGausian (Double_t *x,Double_t *par);
 		
+		Double_t			NewFunction(Double_t *x, Double_t *par);
+
 		Double_t			GausOnly (Double_t *x,Double_t *par);
 		Double_t			SmoothedStepOnly (Double_t *x,Double_t *par);
 		Double_t			LinearOnly (Double_t *x,Double_t *par);

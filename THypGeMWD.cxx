@@ -348,7 +348,7 @@ Int_t THypGeMWD::AnaStep_DoDirectFilter()
 
 			Parray[ChanNumber][n]=Parray[ChanNumber][n-1]+d_kl;
 			Sarray[ChanNumber][n]=Sarray[ChanNumber][n-1]+Parray[ChanNumber][n]+ tau* d_kl;
-			hTrace_Direct[ChanNumber]->SetBinContent(n,Sarray[ChanNumber][n]);
+			hTrace_Direct[ChanNumber]->SetBinContent(n,Sarray[ChanNumber][n]*2/1000000);
 		}
 	}
 	return 0;

@@ -105,6 +105,11 @@ Double_t THypGePeakFitFunction::PeakFuncFreeSkewedPosition (Double_t *x,Double_t
 	
 }
 
+Double_t THypGePeakFitFunction::PeakFuncFreeSkewedPositionWithoutFirstGausian (Double_t *x,Double_t *par)
+{
+	return FreeSkewedOnly(x,par) + SmoothedStepOnly(x,par) + LinearOnly(x,par);
+}
+
 Double_t THypGePeakFitFunction::PeakFuncDoubleGausian (Double_t *x,Double_t *par)
 {
 			// Peak shape is taken from gf2 http://www.phy.anl.gov/gammasphere/doc/gf2.hlp
@@ -141,7 +146,8 @@ Double_t THypGePeakFitFunction::SmoothedStepOnly (Double_t *x,Double_t *par)
 
 Double_t THypGePeakFitFunction::LinearOnly (Double_t *x,Double_t *par)
 {
-			Double_t Constant = par[4]*x[0]+par[5]; // par[4]: gradient of lin bg, par[5]: const bg
+			//Double_t Constant = par[4]*x[0]+par[5]; // par[4]: gradient of lin bg, par[5]: const bg
+			Double_t Constant = par[5]; // par[4]: gradient of lin bg, par[5]: const bg
 	return  Constant;
 }
 Double_t THypGePeakFitFunction::SkewedOnly (Double_t *x,Double_t *par)
@@ -172,3 +178,10 @@ Double_t THypGePeakFitFunction::NewSkewedOnly(Double_t *x, Double_t *par)
 										* (1 + TMath::Erf(1/sqrt(2)*par[7]*(x[0]-par[8])/par[9]));
 	return NewSkewedGausian;
 }
+
+Double_t THypGePeakFitFunction::NewFunction(Double_t *x, Double_t *par)		// added 27.08.14 seems to fit the june 2014 dataset best, skewed gaus + gaus + constant
+{
+	Double_t value = par[3]*par[0]/2*TMath::Exp(-par[0]/2*(2*par[1]+par[0]*par[2]*par[2]-2*x[0])) * TMath::Erfc(-(par[1]+par[0]*par[2]*par[2]-x[0])/TMath::Sqrt(2)/par[2])+ par[4]*TMath::Gaus(x[0],par[5],par[6]) +par[7];
+	return value;
+}
+
