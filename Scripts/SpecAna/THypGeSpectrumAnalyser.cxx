@@ -948,6 +948,24 @@ Bool_t THypGeSpectrumAnalyser::IsNewFunctionFitting()
 	else
 		return 0;
 }
+Double_t THypGeSpectrumAnalyser::GetFWHM511()
+{
+	return FWHM_en[ 510.998928 ];
+}
+Double_t THypGeSpectrumAnalyser::GetFWTM511()
+{
+	return FWTM_en[ 510.998928 ];
+}
+
+Double_t THypGeSpectrumAnalyser::GetFWHMCo1()
+{
+	return FWHM_en[ 1172.23 ];
+}
+Double_t THypGeSpectrumAnalyser::GetFWTMCo1()
+{
+	return FWTM_en[ 1172.23 ];
+}
+
 Double_t THypGeSpectrumAnalyser::GetFWHMCo()
 {
 	return FWHM_en[ 1332.51 ];
@@ -956,7 +974,14 @@ Double_t THypGeSpectrumAnalyser::GetFWTMCo()
 {
 	return FWTM_en[ 1332.51 ];
 }
-
+Double_t THypGeSpectrumAnalyser::GetFWHMAl()
+{
+	return FWHM_en[ 1778.969 ];
+}
+Double_t THypGeSpectrumAnalyser::GetFWTMAl()
+{
+	return FWTM_en[ 1778.969 ];
+}
 void THypGeSpectrumAnalyser::SetNoDrawingMode(Bool_t NoDrawingMode_ext)
 {
 	NoDrawingMode = NoDrawingMode_ext;

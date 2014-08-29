@@ -60,8 +60,14 @@ class THypGeSpectrumAnalyser
 		Int_t											DoEnergyCalibration();
 		Int_t											CalculateFWHM();
 		Int_t											CalculateFWTM();
+		Double_t									GetFWHM511();
+		Double_t									GetFWTM511();
+		Double_t									GetFWHMCo1();
+		Double_t									GetFWTMCo1();
 		Double_t									GetFWHMCo();
 		Double_t									GetFWTMCo();
+		Double_t									GetFWHMAl();
+		Double_t									GetFWTMAl();
 		
 		Double_t									GetCountsCo();  //NIY
 		

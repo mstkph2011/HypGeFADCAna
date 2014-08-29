@@ -27,12 +27,40 @@ int main(int argc, char* argv[] )
   int UseFreeSkewedFitting=1;			//Variable ob FreeSkewedFitting benutzt wird 1=JA, 0=Nein @Torben Rathmann
   int UseMovingAv=1;					//Variable/Einstellung ob MA genutz wird 1=JA , 0=Nein  @Torben Rathmann
   float tauArray[1000];				//Arrays zum eintragen der tau's bzw FWHM(tau) @Torben Rathmann
-  float aufArray[1000];
-  float TaufArray[1000];			//Array für FWTM
-  float VerschlArray[1000];
+
+  float aufArray511[1000];				//Array für FWHM 511 annihilation
+  float aufArray511ERR[1000];
+  float TenthArray511[1000];			//Array für FWTM
+  float TenthArray511ERR[1000];
+  float VerschlArray511[1000];
+  float VerschlArray511ERR[1000];
+
+  float aufArrayCo1[1000];				//Array für FWHM 60Co peak1
+  float aufArrayCo1ERR[1000];
+  float TenthArrayCo1[1000];
+  float TenthArrayCo1ERR[1000];
+  float VerschlArrayCo1[1000];
+  float VerschlArrayCo1ERR[1000];
+
+  float aufArrayCo[1000];				//Array für FWHM 60Co Peak 2
+  float aufArrayCoERR[1000];			//Array für FWHM
+  float TenthArrayCo[1000];
+  float TenthArrayCoERR[1000];
+  float VerschlArrayCo[1000];
+  float VerschlArrayCoERR[1000];
+
+  float aufArrayAl[1000];				//Array für FWHM 27Al
+  float aufArrayAlERR[1000];
+  float TenthArrayAl[1000];
+  float TenthArrayAlERR[1000];
+  float VerschlArrayAl[1000];
+  float VerschlArrayAlERR[1000];
+
   float MWDArray[1000];
   float MALArray[1000];
   float iArray[1000];
+  float zeroArray[1000];
+  float geraten[1000];
   
   
   TString COSYTESTANADIR= getenv("COSYTESTANADIR");
@@ -188,14 +216,46 @@ int main(int argc, char* argv[] )
 				tauArray=tmpTauEffi;						//altes Array wird benutzt
 			}*/
 			//cout << tau << endl << endl << endl;
+
 			tauArray[i]=tau;								//Daten werden in Array geschrieben
-			aufArray[i]=Ana->GetFWHMCo();
-			TaufArray[i]=Ana->GetFWTMCo();
-			VerschlArray[i]=Ana->GetFWTMCo()/Ana->GetFWHMCo();
 			MWDArray[i]=M;
 			MALArray[i]=MAL;
-			iArray[i]=i;
+			iArray[i]=i*4E12;
+			zeroArray[i]=0;
+			geraten[i]=0.03;
 
+			//peak 511annihi
+			aufArray511[i]=Ana->GetFWHM511();
+			//aufArray511ERR[i]=Ana->	;
+			TenthArray511[i]=Ana->GetFWTM511();
+			//TenthArray511ERR[i]=Ana->	;
+			VerschlArray511[i]=Ana->GetFWTM511()/Ana->GetFWHM511();
+			//VerschlArray511ERR[i]= ;
+
+
+			//peak1 60Co
+			aufArrayCo1[i]=Ana->GetFWHMCo1();
+			//aufArrayCo1ERR[i]=Ana->	;
+			TenthArrayCo1[i]=Ana->GetFWTMCo1();
+			//TenthArrayCo1ERR[i]=Ana-> ;
+			VerschlArrayCo1[i]=Ana->GetFWTMCo1()/Ana->GetFWHMCo1();
+			//VerschlArrayCo1ERR[i]= ;
+
+			//peak2 60Co
+			aufArrayCo[i]=Ana->GetFWHMCo();
+			//aufArrayCoERR[i]=Ana-> ;
+			TenthArrayCo[i]=Ana->GetFWTMCo();
+			//TenthArrayCoERR[i]=Ana-> ;
+			VerschlArrayCo[i]=Ana->GetFWTMCo()/Ana->GetFWHMCo();
+			//VerschlArrayCoErr[i]=;
+
+			//peak 27Al
+			aufArrayAl[i]=Ana->GetFWHMAl();
+			//aufArrayAlERR[i]=Ana->	;
+			TenthArrayAl[i]=Ana->GetFWTMAl();
+			//TenthArrayAlERR[i]=Ana->	;
+			VerschlArrayAl[i]=Ana->GetFWTMAl()/Ana->GetFWHMAl();
+			//VerschlArrayAlERR[i]=;
 
 
 			//write to maps
@@ -218,18 +278,41 @@ int main(int argc, char* argv[] )
 			
 		}
 	}
-	TGraph *verschlechtFWHM = new TGraph(i,&iArray[0],&aufArray[0]);
-	TGraph *verschlechtFWTM = new TGraph(i,&iArray[0],&TaufArray[0]);
-	TGraph *verschlecht = new TGraph(i,&iArray[0],&VerschlArray[0]);
+
+	TGraphErrors *FWHM511= new TGraphErrors(i,&iArray[0],&aufArray511[0],&zeroArray[0],&geraten[0]);//&aufArray511ERR[0]);				//Graphen von FWHM über Protonen
+	TGraphErrors *FWHMCo1= new TGraphErrors(i,&iArray[0],&aufArrayCo1[0],&zeroArray[0],&geraten[0]);//&aufArrayCo1ERR[0]);
+	TGraphErrors *FWHMCo = new TGraphErrors(i,&iArray[0],&aufArrayCo[0] ,&zeroArray[0],&geraten[0]);//&aufArrayCoERR[0] );
+	TGraphErrors *FWHMAl = new TGraphErrors(i,&iArray[0],&aufArrayAl[0] ,&zeroArray[0],&geraten[0] );//&aufArrayAlERR[0] );
+
+	TGraphErrors *FWTMHM511= new TGraphErrors(i,&iArray[0],&VerschlArray511[0],&zeroArray[0],&geraten[0]);//&VerschlArray511ERR[0]);	//Graphen von FWTM/FWHM über Protonen
+	TGraphErrors *FWTMHMCo1= new TGraphErrors(i,&iArray[0],&VerschlArrayCo1[0],&zeroArray[0],&geraten[0]);//&VerschlArrayCo1ERR[0]);
+	TGraphErrors *FWTMHMCo = new TGraphErrors(i,&iArray[0],&VerschlArrayCo[0] ,&zeroArray[0],&geraten[0]);//&VerschlArrayCoERR[0]);
+	TGraphErrors *FWTMHMAl = new TGraphErrors(i,&iArray[0],&VerschlArrayAl[0] ,&zeroArray[0],&geraten[0]);//&VerschlArrayAlERR[0]);
+
+	/*TGraph *verschlechtFWHM = new TGraph(i,&iArray[0],&aufArrayCo[0]);
+	TGraph *verschlechtFWTM = new TGraph(i,&iArray[0],&TenthArrayCo[0]);
+	TGraph *verschlecht = new TGraph(i,&iArray[0],&VerschlArrayCo[0]);
+	*/
 	TString VerschName= "FWTMFWHM";
 	if(UseMovingAv==1){
 			VerschName+= "MA";
 		}
 	VerschName+=".root";
 	TFile *verhaeltout=new TFile(VerschName,"RECREATE");
-	verschlecht->Write("FWTMFWHM");
+	/*verschlecht->Write("FWTMFWHM");
 	verschlechtFWHM->Write("FWHM");
 	verschlechtFWTM->Write("FWTM");
+	*/
+	FWHM511->Write("FWHM511");
+	FWHMCo1->Write("FWHMCo1");
+	FWHMCo ->Write("FWHMCo2");
+	FWHMAl ->Write("FWHMAl");
+
+	FWTMHM511->Write("FWTM /FWHM 511");
+	FWTMHMCo1->Write("FWTM /FWHM Co1");
+	FWTMHMCo ->Write("FWTM /FWHM Co2");
+	FWTMHMAl ->Write("FWTM /FWHM Al");
+
 	verhaeltout->Close();
 
 	//for (int j = 0; j < i; j++)
