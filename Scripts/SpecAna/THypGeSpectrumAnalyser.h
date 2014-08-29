@@ -102,8 +102,10 @@ class THypGeSpectrumAnalyser
 		void 											PeakSort();
 		Double_t 									Calibrate(Double_t Channel);
 		
-		Double_t									CalculateLowerError(Double_t threshold, TH1D* histo, Double_t StartingValue);
-		Double_t									CalculateUpperError(Double_t threshold, TH1D* histo, Double_t StartingValue);
+		Double_t									CalculateLowerErrorLeft(Double_t threshold, TH1D* histo, Double_t StartingValue);
+		Double_t									CalculateUpperErrorLeft(Double_t threshold, TH1D* histo, Double_t StartingValue);
+		Double_t									CalculateLowerErrorRight(Double_t threshold, TH1D* histo, Double_t StartingValue);
+		Double_t									CalculateUpperErrorRight(Double_t threshold, TH1D* histo, Double_t StartingValue);
 
 
 		/* add your private declarations */
