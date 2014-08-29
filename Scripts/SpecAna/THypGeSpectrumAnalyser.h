@@ -102,6 +102,10 @@ class THypGeSpectrumAnalyser
 		void 											PeakSort();
 		Double_t 									Calibrate(Double_t Channel);
 		
+		Double_t									CalculateLowerError(Double_t threshold, TH1D* histo, Double_t StartingValue);
+		Double_t									CalculateUpperError(Double_t threshold, TH1D* histo, Double_t StartingValue);
+
+
 		/* add your private declarations */
 		TCanvas										*fEnergySpecCanvas;
 		TH1D											*fhEnergySpectrum;
@@ -126,6 +130,8 @@ class THypGeSpectrumAnalyser
 		TF1 											*FuncLinear[50];
 		TF1 											*FuncTail[50];
 		
+
+
 		Int_t 										FuncWidth;
 		vector<double> 					PeakFitX;
 		vector<double> 					PeakFitXError;
@@ -138,7 +144,15 @@ class THypGeSpectrumAnalyser
 		Double_t 									Amplitude[50];
 		Double_t									FWHMHeight[50];
 		Double_t 									FWHMlow[50];
+		Double_t 									FWHMlowLeftBorder[50];
+		Double_t 									FWHMlowRightBorder[50];
+		Double_t 									FWHMlowLeftBorderEnergy[50];
+		Double_t 									FWHMlowRightBorderEnergy[50];
 		Double_t 									FWHMhigh[50];
+		Double_t 									FWHMhighLeftBorder[50];
+		Double_t 									FWHMhighRightBorder[50];
+		Double_t 									FWHMhighLeftBorderEnergy[50];
+		Double_t 									FWHMhighRightBorderEnergy[50];
 		Double_t 									FWHMlowEnergy[50];
 		Double_t 									FWHMhighEnergy[50];
 		
@@ -148,6 +162,7 @@ class THypGeSpectrumAnalyser
 		Double_t 									FWTMlowEnergy[50];
 		Double_t									FWTMhighEnergy[50];
 		
+		TH1D 											*fhFitErrorhistogram[50];
 
 		map<double,double>			FWHM_ch;
 		map<double,double>			FWHM_en;

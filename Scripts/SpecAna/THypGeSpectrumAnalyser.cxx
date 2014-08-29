@@ -356,6 +356,11 @@ Int_t THypGeSpectrumAnalyser::FitPeaks()
 			fhEnergySpectrum->Fit(FitFunc[i],"R  E +");
 		
 		cout << npar << endl;
+
+		fhFitErrorhistogram[i] = new TH1D("h", "Fitted gaussian with .95 conf.band", 3*FuncWidth/fhEnergySpectrum->GetBinWidth(fhEnergySpectrum->FindBin(FitFunc[i]->GetMaximumX())), (Double_t) PeaksPosX[i]-2*FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth);
+		(TVirtualFitter::GetFitter())->GetConfidenceIntervals(fhFitErrorhistogram[i]);
+
+
 		//TVirtualFitter *fitter = TVirtualFitter::GetFitter();
 		//TMatrixD CovMatrix(npar,npar,fitter->GetCovarianceMatrix());
 		//TMatrixD Matrix2(npar,npar,fitter->GetCovarianceMatrix());
@@ -500,9 +505,25 @@ Int_t THypGeSpectrumAnalyser::CalculateFWHM()
 		Amplitude[i] = FitFunc[i]->GetMaximum()-FitFunc[i]->GetMinimum();				// Easy way to substract the background, only the lower part on the high energy side is substracted
 		FWHMHeight[i] = FitFunc[i]->GetMaximum()-Amplitude[i]/2;
 		FWHMlow[i] = FitFunc[i]->GetX(FWHMHeight[i],FitFunc[i]->GetXmin(),FitFunc[i]->GetMaximumX());
+
+		FWHMlowLeftBorder[i]= CalculateLowerError(FWHMHeight[i],fhFitErrorhistogram[i], FWHMlow[i]);
+		FWHMlowRightBorder[i]= CalculateUpperError(FWHMHeight[i],fhFitErrorhistogram[i], FWHMlow[i]);
+
 		FWHMhigh[i] = FitFunc[i]->GetX(FWHMHeight[i],FitFunc[i]->GetMaximumX(),FitFunc[i]->GetXmax());
+
+		FWHMhighLeftBorder[i]= CalculateLowerError(FWHMHeight[i],fhFitErrorhistogram[i], FWHMhigh[i]);
+		FWHMhighRightBorder[i]= CalculateUpperError(FWHMHeight[i],fhFitErrorhistogram[i], FWHMhigh[i]);
+
 		FWHMlowEnergy[i] = Calibrate(FWHMlow[i]);
 		FWHMhighEnergy[i] = Calibrate(FWHMhigh[i]);
+
+		FWHMlowLeftBorderEnergy[i]= Calibrate(FWHMlowLeftBorder[i]);
+		FWHMlowRightBorderEnergy[i]= Calibrate(FWHMlowRightBorder[i]);
+		FWHMhighLeftBorderEnergy[i]= Calibrate(FWHMhighLeftBorder[i]);
+		FWHMhighRightBorderEnergy[i]= Calibrate(FWHMhighRightBorder[i]);
+
+		cout << "low  " << FWHMlowEnergy[i] << "\t"<< FWHMlowLeftBorderEnergy[i] << "\t" << FWHMlowRightBorderEnergy[i]<< endl;
+		cout << "high " << FWHMhighEnergy[i] << "\t"<< FWHMhighLeftBorderEnergy[i] << "\t" << FWHMhighRightBorderEnergy[i]<< endl;
 		FWHM_ch.insert(std::pair<double,double>(Energies[i],FWHMhigh[i]-FWHMlow[i]));
 		FWHM_en.insert(std::pair<double,double>(Energies[i],FWHMhighEnergy[i]-FWHMlowEnergy[i]));
 		//std::cout << "FWHMlow" << FWHMlow << "\t\tFWHMhigh" << FWHMhigh << endl;
@@ -994,4 +1015,28 @@ Bool_t THypGeSpectrumAnalyser::IsNoDrawingMode()
 Double_t THypGeSpectrumAnalyser::GetCountsCo()
 {
 	return 0;				//NIY
+}
+
+Double_t THypGeSpectrumAnalyser::CalculateLowerError(Double_t threshold, TH1D* histo, Double_t StartingValue)
+{
+	Int_t i = 0;
+	Double_t LowerErrorValue;
+	while (threshold < histo->GetBinContent(histo->FindBin(StartingValue) - i)+ histo->GetBinErrorUp(histo->FindBin(StartingValue) - i))
+	{
+		i++;
+	}
+	LowerErrorValue= histo->GetBinCenter(histo->FindBin(StartingValue) - (i-1));
+	return LowerErrorValue;
+}
+
+Double_t THypGeSpectrumAnalyser::CalculateUpperError(Double_t threshold, TH1D* histo, Double_t StartingValue)
+{
+	Int_t i = 0;
+	Double_t UpperErrorValue;
+	while (threshold < histo->GetBinContent(histo->FindBin(StartingValue) + i)+ histo->GetBinErrorUp(histo->FindBin(StartingValue) + i))
+	{
+		i++;
+	}
+	UpperErrorValue= histo->GetBinCenter(histo->FindBin(StartingValue) + (i-1));
+	return UpperErrorValue;
 }
