@@ -355,12 +355,23 @@ Int_t THypGeSpectrumAnalyser::FitPeaks()
 		else
 			fhEnergySpectrum->Fit(FitFunc[i],"R  E +");
 		
-		cout << npar << endl;
+		//cout << npar << endl;
 
 		fhFitErrorhistogram[i] = new TH1D("h", "Fitted gaussian with .95 conf.band", 3*FuncWidth/fhEnergySpectrum->GetBinWidth(fhEnergySpectrum->FindBin(FitFunc[i]->GetMaximumX())), (Double_t) PeaksPosX[i]-2*FuncWidth,(Double_t) PeaksPosX[i]+FuncWidth);
 		(TVirtualFitter::GetFitter())->GetConfidenceIntervals(fhFitErrorhistogram[i]);
-
-
+		if (i == 0)
+		{
+			TFile *bla = new TFile("bla.root","RECREATE");
+				TCanvas *c123 = new TCanvas("c123","",800,600);
+				fhEnergySpectrum->Draw();
+				fhFitErrorhistogram[i]->SetLineColor(kGreen);
+				fhFitErrorhistogram[i]->Draw("e3 same");
+				c123->Write();
+				fhEnergySpectrum->Write();
+				fhFitErrorhistogram[i]->Write();
+				bla->Close();
+		}
+					//TCanvas *c1233 = new TCanvas("c1233","",800,600);
 		//TVirtualFitter *fitter = TVirtualFitter::GetFitter();
 		//TMatrixD CovMatrix(npar,npar,fitter->GetCovarianceMatrix());
 		//TMatrixD Matrix2(npar,npar,fitter->GetCovarianceMatrix());
@@ -505,7 +516,7 @@ Int_t THypGeSpectrumAnalyser::CalculateFWHM()
 		Amplitude[i] = FitFunc[i]->GetMaximum()-FitFunc[i]->GetMinimum();				// Easy way to substract the background, only the lower part on the high energy side is substracted
 		FWHMHeight[i] = FitFunc[i]->GetMaximum()-Amplitude[i]/2;
 		FWHMlow[i] = FitFunc[i]->GetX(FWHMHeight[i],FitFunc[i]->GetXmin(),FitFunc[i]->GetMaximumX());
-
+		cout << FitFunc[i]->Eval(FWHMlow[i]) << "t" << fhFitErrorhistogram[i]->GetBinContent(fhFitErrorhistogram[i]->FindBin(FWHMlow[i])) << endl;
 		FWHMlowLeftBorder[i]= CalculateLowerErrorLeft(FWHMHeight[i],fhFitErrorhistogram[i], FWHMlow[i]);
 		FWHMlowRightBorder[i]= CalculateUpperErrorLeft(FWHMHeight[i],fhFitErrorhistogram[i], FWHMlow[i]);
 
@@ -1023,8 +1034,12 @@ Double_t THypGeSpectrumAnalyser::CalculateLowerErrorLeft(Double_t threshold, TH1
 	Double_t LowerErrorValue;
 	while (threshold < histo->GetBinContent(histo->FindBin(StartingValue) - i)+ histo->GetBinErrorUp(histo->FindBin(StartingValue) - i))
 	{
+		cout << "t" << threshold << endl;
+		cout <<  histo->GetBinContent(histo->FindBin(StartingValue)) << endl;
 		i++;
 		if (i == 100) break;
+		LowerErrorValue= histo->GetBinCenter(histo->FindBin(StartingValue) - (i-1));
+		cout <<"bla " << LowerErrorValue << endl;
 	}
 	LowerErrorValue= histo->GetBinCenter(histo->FindBin(StartingValue) - (i-1));
 	return LowerErrorValue;
@@ -1034,10 +1049,11 @@ Double_t THypGeSpectrumAnalyser::CalculateUpperErrorLeft(Double_t threshold, TH1
 {
 	Int_t i = 0;
 	Double_t UpperErrorValue;
-	while (threshold > histo->GetBinContent(histo->FindBin(StartingValue) + i)+ histo->GetBinErrorUp(histo->FindBin(StartingValue) + i))
+	while (threshold > histo->GetBinContent(histo->FindBin(StartingValue) + i)- histo->GetBinErrorLow(histo->FindBin(StartingValue) + i))
 	{
 		i++;
 		if (i == 100) break;
+		//cout << "i" << i << endl;
 	}
 	UpperErrorValue= histo->GetBinCenter(histo->FindBin(StartingValue) + (i-1));
 	return UpperErrorValue;
@@ -1046,7 +1062,7 @@ Double_t THypGeSpectrumAnalyser::CalculateLowerErrorRight(Double_t threshold, TH
 {
 	Int_t i = 0;
 	Double_t LowerErrorValue;
-	while (threshold > histo->GetBinContent(histo->FindBin(StartingValue) - i)+ histo->GetBinErrorUp(histo->FindBin(StartingValue) - i))
+	while (threshold > histo->GetBinContent(histo->FindBin(StartingValue) - i)- histo->GetBinErrorLow(histo->FindBin(StartingValue) - i))
 	{
 		i++;
 		if (i == 100) break;

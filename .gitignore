@@ -3,7 +3,7 @@ G__HypGe.h
 *.root
 *.txt
 
-RealSpecAna
+*RealSpecAna
 Go4AnalysisPrefs.root
 
 
