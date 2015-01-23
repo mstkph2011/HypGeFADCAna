@@ -24,6 +24,11 @@
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1366893343" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.1117598628" name="GNU C++" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1748557182" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/home/steinen/himsterROOTgo4/include"/>
+									<listOptionValue builtIn="false" value="/home/steinen/go4/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/4.8.2"/>
+								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.215171256" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.1899109128" name="GNU C" superClass="org.eclipse.cdt.build.core.settings.holder">
@@ -64,4 +69,5 @@
 		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope"/>
 </cproject>

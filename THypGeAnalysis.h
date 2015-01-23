@@ -3,7 +3,7 @@
 //       The GSI Online Offline Object Oriented (Go4) Project
 //         Experiment Data Processing at EE department, GSI
 //-----------------------------------------------------------------------
-// Copyright (C) 2000- GSI Helmholtzzentrum für Schwerionenforschung GmbH
+// Copyright (C) 2000- GSI Helmholtzzentrum fï¿½r Schwerionenforschung GmbH
 //                     Planckstr. 1, 64291 Darmstadt, Germany
 // Contact:            http://go4.gsi.de
 //-----------------------------------------------------------------------
@@ -16,7 +16,7 @@
 
 #include "TGo4Analysis.h"
 #include "defines.h"						// defines (~globals) are in this file, add this line to every file
-
+#include "TString.h"
 #include "THypGeMWD.h"
 
 class TH1D;
@@ -64,8 +64,9 @@ class THypGeAnalysis : public TGo4Analysis  {
 			int 								EnableMA ;			// Switch for second moving average filter
 			int 								SmoothingMethod ;	// Switch smoothing on or off
 			int 								EnableBaselineCorrection ; 	//Switch baseline correction on or off
-			
-   ClassDef(THypGeAnalysis,1)
+			int									SecondAnalysisRound;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
+			TString							ParameterFileName;		// name and path of parameters file
+			ClassDef(THypGeAnalysis,1)
 };
 
 #endif //THypGeANALYSIS_H

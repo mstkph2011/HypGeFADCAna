@@ -117,7 +117,7 @@ int main(int argc, char* argv[] )
 			TH1D* hEnergyMA;
 			InFile[i]->GetObject("/Histograms/Energyspectrum/Energy_01;1",hEnergy);									// get histrogram
 			InFile[i]->GetObject("/Histograms/Energyspectrum/EnergyMA_01;1",hEnergyMA);									// get histrogram
-			
+
 			if (!UseMovingAv)
 				if (!hEnergy)
 					continue;

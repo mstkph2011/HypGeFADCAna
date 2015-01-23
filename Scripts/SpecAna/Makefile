@@ -10,6 +10,8 @@ LDLIBS     = $(shell root-config --glibs) \
 #LDLIBS     = $(shell root-config --glibs)
 # -lMinuit
 
+#MAINFILE = RealSpecAna.cxx
+MAINFILE = main_ExtractRisetimeCorrParametersAndRisetimePlots.cxx
 
 SOURCES = $(wildcard *.cxx)
 HEADERS = $(wildcard *.h)
@@ -21,9 +23,8 @@ CFLAGS = -O2 -DNDEBUG -Wall
 
 
 all:                    RealSpecAna
-
-RealSpecAna: RealSpecAna.cxx THypGeSpectrumAnalyser.o THypGePeakFitFunction.o
-	$(CC) $(CFLAGS) $(INCLFLAGS) $(LDLIBS) RealSpecAna.cxx THypGeSpectrumAnalyser.o THypGePeakFitFunction.o $(LDLIBS) -o RealSpecAna
+RealSpecAna: $(MAINFILE) THypGeSpectrumAnalyser.o THypGePeakFitFunction.o
+	$(CC) $(CFLAGS) $(INCLFLAGS) $(LDLIBS) $(MAINFILE) THypGeSpectrumAnalyser.o THypGePeakFitFunction.o $(LDLIBS) -o RealSpecAna
 
 THypGeSpectrumAnalyser.o: THypGeSpectrumAnalyser.cxx THypGeSpectrumAnalyser.h
 	$(CC) $(CFLAGS) $(INCLFLAGS) -c THypGeSpectrumAnalyser.cxx

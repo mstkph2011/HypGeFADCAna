@@ -3,13 +3,17 @@
 ### script to start jobs on himster for germanium psa using go4
 ### v1.1 not tested! 			changed walltime for high sigmaGaus
 
+SecondRun=1
+
 SubPath=june2014						### subpath of subdirectory for analysis output
 #Date=1506
-Date=1406
+Date=1606
+run=1
 #runNo=run4
-runNo=run3
-DateMax=1406
+runNo=run${run}
+DateMax=1606
 DateStep=100
+
 
 user=$USER				#### this is taken from system variable and used for job sending via the "double queue" (wait with job submissing if the internal himster queue is to full and send the jobs when there is enough space)
 
@@ -21,16 +25,16 @@ sigmaGausmin=3
 sigmaGausmax=3
 sigmaGausstep=2
 #if only a fixed value for sigma bil should be used make min = max
-sigmaBilmin=2000
+sigmaBilmin=0
 #100
-sigmaBilmax=2000
+sigmaBilmax=0
 #900
 sigmaBilstep=20
 
 AnaLibDir=/home/${user}/work/HypGeFADCAna								### path to analysis library
 
 StartFile=1
-NumberOfFiles=3																				### number of input files
+NumberOfFiles=6																				### number of input files
 
 echo $DataInputFilePath
 #parameters of GO4 analysis
@@ -55,10 +59,10 @@ EnableBaselineCorrection=1
 
 for ((Date=${Date}; Date<=${DateMax}; Date=$(($Date+${DateStep}))))
 do
-DataSubPath=dataJune2014/${Date}/${runNo}					### subpath of input data
-DataInputFilePath=${COSYTESTDATADIR}/${DataSubPath}							### input data directory
+	DataSubPath=dataJune2014/${Date}/${runNo}					### subpath of input data
+	DataInputFilePath=${COSYTESTDATADIR}/${DataSubPath}							### input data directory
 
-
+	
 
 
  SubDir=${COSYTESTANADIR}/${SubPath}				### complete path of subdirectory for analysis output
@@ -108,11 +112,15 @@ DataInputFilePath=${COSYTESTDATADIR}/${DataSubPath}							### input data directo
 							SubSubDir=COSY_Ana_${Date}_${runNo}___${MWDm},${MAl},${FilterType},${sigmaGaus},${sigmaBil},${tau}
 						fi
 					fi
+					ParameterFile=${COSYTESTANADIR}/june2014/DatabaseFirstAnalysisStep/ParametersFirstAnaStepCOSY_Ana_${Date}_${run}___${MWDm},${MAl},${FilterType},${sigmaGaus},${sigmaBil},${tau},MA.root
 					mkdir -p ${SubDir}/${SubSubDir}
 					for ((nFile=$StartFile; nFile<$(($StartFile+$NumberOfFiles)); nFile=$(($nFile+1))))	###nFile Startnummer
 					do
 				
 						fileAdd=_${SubSubDir}_${nFile}    ##_file${nFile}
+						if [ ${SecondRun} -gt 0 ]; then
+							fileAdd=${fileAdd}_SR
+						fi
 						echo $fileAdd
 						if [ ${nFile} -lt 10 ]; then
 						DataInputFile=${DataInputFilePath}/data000${nFile}
@@ -132,7 +140,7 @@ DataInputFilePath=${COSYTESTDATADIR}/${DataSubPath}							### input data directo
 								fi
 							fi
 						fi			
-
+					go4Command="go4analysis -number 0 -lib ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so -file $DataInputFile -asf ${SubDir}/${SubSubDir}/Ana${fileAdd}.root -x ${MWDm} ${MAl} ${NumberOfSmoothings} ${FilterWidth} ${sigmaGaus} ${sigmaBil} ${tau} ${EnableMA} ${FilterType} ${EnableBaselineCorrection} ${SecondRun} ${ParameterFile} &> ${SimLogPath}/ana${fileAdd}.log"
 					cat >$JobPath/job${fileAdd}.sh <<EOF
 #!/bin/bash
 #
@@ -145,13 +153,13 @@ DataInputFilePath=${COSYTESTDATADIR}/${DataSubPath}							### input data directo
 cd \$PBS_O_WORKDIR
 
 #echo "Start Analysis of COSY data"
-go4analysis -lib ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so -file $DataInputFile -asf ${SubDir}/${SubSubDir}/Ana${fileAdd}.root -x ${MWDm} ${MAl} ${NumberOfSmoothings} ${FilterWidth} ${sigmaGaus} ${sigmaBil} ${tau} ${EnableMA} ${FilterType} ${EnableBaselineCorrection} &> ${SimLogPath}/ana${fileAdd}.log
+${go4Command}
 
 
 EOF
 				
 				echo "jobcount: ${jobcounter}"
-				#echo "go4analysis -lib ${RunPath}/run${fileAdd}/libGo4UserAnalysis.so -file $DataInputFile -asf ${SubDir}/${SubSubDir}/Ana${fileAdd}.root -x ${MWDm} ${MAl} ${NumberOfSmoothings} ${FilterWidth} ${sigmaGaus} ${sigmaBil} ${tau} ${EnableMA} ${FilterType} ${EnableBaselineCorrection} &> ${SimLogPath}/ana${fileAdd}.log"
+				echo ${go4Command}
 				jobcounter=$(($jobcounter+1))
 ### submit job to batch system
 				mkdir -p ${RunPath}/run$fileAdd
@@ -176,3 +184,4 @@ EOF
   done		###end of MAL loop
  done		### end of MWDm loop
 done		###end of datum loop
+#${go4Command}

@@ -42,6 +42,12 @@ void THypGeParameter::SetParameters( Int_t M, Int_t L, Int_t NOS_ext, Int_t Widt
 	else
 		ParametersChanged = 0;
 }
+void THypGeParameter::SetSecondAnaRoundParameters(Int_t SecondAnalysisRound_ext, TString ParameterFileName_ext)
+{
+	SecondAnalysisRound = SecondAnalysisRound_ext;
+	ParameterFileName = ParameterFileName_ext;
+}
+
 void THypGeParameter::PrintParameters()
 {
 	std::cout << "MWDm is \t" << MWDm << endl;
@@ -99,6 +105,14 @@ Int_t THypGeParameter::GetEnableBaselineCorrection()
 	return EnableBaselineCorrection;
 }
 
+Int_t THypGeParameter::GetSecondAnalysisRound()
+{
+	return SecondAnalysisRound;
+}
+TString THypGeParameter::GetParameterFileName()
+{
+	return ParameterFileName;
+}
 Bool_t THypGeParameter::GetParametersChanged()
 {
 	return ParametersChanged;

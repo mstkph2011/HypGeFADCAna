@@ -75,13 +75,14 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 MAl = 100;				// L of MA
 	 NoS = 100;				// Number of smoothings of mean and WA filter
 	 Width = 3;				// Width of mean filter
-	 sigmaGaus = 11;			// sigma of gaussian shaper
+	 sigmaGaus = 3;			// sigma of gaussian shaper
 	 sigmaBil = 1500;			// sigma of gaussian shaper
-	 tau = 5383;			// tau of deconvolution
+	 tau = 6210;			// tau of deconvolution
 	 EnableMA = 1;			// Switch for second moving average filter
-	 SmoothingMethod = 3;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
+	 SmoothingMethod = 0;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
 	 EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
-	 
+	 SecondAnalysisRound = 1;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
+	 ParameterFileName = "/data/work/kpha1/steinen/COSYBeamtestAna/june2014/DatabaseFirstAnalysisStep/ParametersFirstAnaStepCOSY_Ana_1606_1___200,100,3,3,0,6210,MA.root";		// name and path of parameters file
 	 if (argc>1)
 	 {
 		MWDm = atoi(argv[1]);
@@ -132,6 +133,16 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 		EnableBaselineCorrection = atoi(argv[10]);
 		cout << "EnableBaselineCorrection\t" << argv[10] << endl;
 	}
+	if (argc>11)
+	{
+		SecondAnalysisRound = atoi(argv[11]);
+		cout << "SecondAnalysisRound\t" << argv[10] << endl;
+	}
+	if (argc>12)
+	{
+		ParameterFileName = argv[12];
+		cout << "ParameterFileName\t" << argv[12] << endl;
+	}
 		//TGo4MbsFileParameter* input = new TGo4MbsFileParameter(userinput);
 	 TString kind, input, out1, out2;
 
@@ -164,7 +175,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	fPar = new THypGeParameter("HypGeParameter");
 	 cout << "ParAdded " << AddParameter(fPar)  << endl;
 	 fPar->SetParameters( MWDm, MAl,NoS, Width ,sigmaGaus,sigmaBil, tau, EnableMA, SmoothingMethod, EnableBaselineCorrection);
-
+	 fPar->SetSecondAnaRoundParameters(SecondAnalysisRound,ParameterFileName);
 	
 	char chis[100], chead[100];
 	for(Int_t i=0;i<FADC_CHAN;i++)

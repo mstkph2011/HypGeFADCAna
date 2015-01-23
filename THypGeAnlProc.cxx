@@ -50,7 +50,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fhTrace[i] = (TH1D*) GetHistogram(chis);
 		
 		// create histograms for smoothed traces
-		snprintf(chis,15,"Trace_smoothed_%02d",i+1);  
+		snprintf(chis,30,"Trace_smoothed_%02d",i+1);
 		snprintf(chead,63,"Trace channel %2d after smooting; time [#mus];Amplitude [a.u.]",i+1);
 		fhTrace_Smoothed[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
 		fhTrace_Smoothed[i]->GetXaxis()->CenterTitle();
@@ -65,44 +65,44 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fhTrace_BaseCorr[i]->GetYaxis()->CenterTitle();
 			AddHistogram(fhTrace_BaseCorr[i],"Traces");
 		
-		snprintf(chis,15,"Trace_deconv_%02d",i+1);  
+		snprintf(chis,30,"Trace_deconv_%02d",i+1);
 		snprintf(chead,63,"Trace channel %2d after deconvolution; time [#mus];Amplitude [a.u.]",i+1);
 		fhTrace_deconv[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
 		fhTrace_deconv[i]->GetXaxis()->CenterTitle();
 		fhTrace_deconv[i]->GetYaxis()->CenterTitle();
 			AddHistogram(fhTrace_deconv[i],"Traces");
 		
-		snprintf(chis,15,"Trace_MWD_%02d",i+1);  
+		snprintf(chis,30,"Trace_MWD_%02d",i+1);
 		snprintf(chead,63,"Trace channel %2d after MWD filter; time [#mus];Amplitude [a.u.]",i+1);
 		fhTrace_MWD[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
 		fhTrace_MWD[i]->GetXaxis()->CenterTitle();
 		fhTrace_MWD[i]->GetYaxis()->CenterTitle();
 			AddHistogram(fhTrace_MWD[i],"Traces");
 		
-		snprintf(chis,15,"Trace_MA_%02d",i+1);  
+		snprintf(chis,30,"Trace_MA_%02d",i+1);
 		snprintf(chead,63,"Trace channel %2d after MA filter; time [#mus];Amplitude [a.u.] ",i+1);
 		fhTrace_MA[i] = new TH1D(chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
 		fhTrace_MA[i]->GetXaxis()->CenterTitle();
 		fhTrace_MA[i]->GetYaxis()->CenterTitle();
 			AddHistogram(fhTrace_MA[i],"Traces");
 			
-		snprintf(chis,15,"Trace_Direct_%02d",i+1);  
+		snprintf(chis,30,"Trace_Direct_%02d",i+1);
 		snprintf(chead,63,"Trace channel %2d after Direct filter; time [#mus];Amplitude [a.u.] ",i+1);
 		fhTrace_Direct[i] = new TH1D(chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
 		fhTrace_Direct[i]->GetXaxis()->CenterTitle();
 		fhTrace_Direct[i]->GetYaxis()->CenterTitle();
 			AddHistogram(fhTrace_Direct[i],"Traces");
 
-		//create histogram for energy spectrum
-		snprintf(chis,15,"Energy_%02d",i+1);
-		snprintf(chead,63,"Energy spectrum channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
+			//create histogram for energy spectrum from MA
+		snprintf(chis,30,"Energy_%02d",i+1);
+		snprintf(chead,63,"Energy spectrum from MA signal channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
 		fhEnergySpectrum[i] = new TH1D(chis,chead,16000,0,8000);
 			AddHistogram(fhEnergySpectrum[i],"Energyspectrum");
-			//create histogram for energy spectrum from MA
-		snprintf(chis,15,"EnergyMA_%02d",i+1);
-		snprintf(chead,63,"Energy spectrum from MA signal channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
-		fhEnergySpectrumMA[i] = new TH1D(chis,chead,16000,0,8000);
-			AddHistogram(fhEnergySpectrumMA[i],"Energyspectrum");
+		//create histogram for energy spectrum
+		snprintf(chis,30,"EnergyCorr_%02d",i+1);
+		snprintf(chead,63,"Energy spectrum from MA signal channel with risetime correction %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
+		fhEnergySpectrumCorr[i] = new TH1D(chis,chead,16000,0,8000);
+			AddHistogram(fhEnergySpectrumCorr[i],"Energyspectrum");
 		//create histogram for energy spectrum with a cut in the pile up time
 		snprintf(chis,30,"EnergyWithCut_%02d",i+1);
 		snprintf(chead,63,"Energy spectrum with cut channel %2d; ADC channel [a.u.];Counts [a.u.]",i+1);
@@ -118,21 +118,36 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		snprintf(chead,63,"Risetime3090 %2d; Risetime 1090 [ns];Counts [a.u.]",i+1);
 		fhRisetime3090[i] = new TH1D(chis,chead,100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
 			AddHistogram(fhRisetime3090[i],"Risetime3090");
-		snprintf(chis,30,"EnergyRise1090Corr_%02d",i+1);
+		snprintf(chis,30,"Risetime1090Co1332Only_%02d",i+1);
+		snprintf(chead,63,"Risetime1090Co1332Only %2d; Risetime 1090 [ns];Counts [a.u.]",i+1);
+		fhRisetime1090Co1332Only[i] = new TH1D(chis,chead,100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
+			AddHistogram(fhRisetime1090Co1332Only[i],"Risetime1090Co1332Only");
+
+		// risetime, energy correlation histograms
+		snprintf(chis,30,"EnergyRt1090_%02d",i+1);
 		snprintf(chead,63,"Energy-Risetime1090-Correlation channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
-		fhEnergyRise1090Corr[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
-			AddHistogram(fhEnergyRise1090Corr[i],"EnergyRise1090Corr");
+		fhEnergyRt1090[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
+			AddHistogram(fhEnergyRt1090[i],"EnergyRt1090");
+		snprintf(chis,30,"EnergyRt1090CorrectionRt_%02d",i+1);
+		snprintf(chead,63,"Energy-Risetime1090-Correlation with Rt correction channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
+		fhEnergyRt1090CorrectionRt[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
+			AddHistogram(fhEnergyRt1090CorrectionRt[i],"EnergyRt1090");
+			snprintf(chis,30,"EnergyRt1090Co1332Only_%02d",i+1);
+			snprintf(chead,63,"Energy-Risetime1090-Correlation of Co 1332 keV line of channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
+			fhEnergyRt1090Co1332Only[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
+				AddHistogram(fhEnergyRt1090Co1332Only[i],"EnergyRt1090");
+
 
 			// rt, energy correlation histogram with ballistic deficit correction
-		snprintf(chis,40,"EnergyRise1090Corr_ballistic_%02d",i+1);
+		snprintf(chis,40,"EnergyRt1090_ballistic_%02d",i+1);
 		snprintf(chead,100,"Energy-Risetime1090-Correlation channel without ballistic %02d;Risetime [ns];ADC Value [a.u.]",i+1);
-		fhEnergyRise1090Corr_ballistic[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
-			AddHistogram(fhEnergyRise1090Corr_ballistic[i],"EnergyRise1090Corr");
+		fhEnergyRt1090_ballistic[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
+			AddHistogram(fhEnergyRt1090_ballistic[i],"EnergyRt1090");
 
-		snprintf(chis,30,"EnergyRise3090Corr_%02d",i+1);
+		snprintf(chis,30,"EnergyRt3090_%02d",i+1);
 		snprintf(chead,63,"Energy-Risetime3090-Correlation channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
-		fhEnergyRise3090Corr[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
-			AddHistogram(fhEnergyRise3090Corr[i],"EnergyRise3090Corr");
+		fhEnergyRt3090[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
+			AddHistogram(fhEnergyRt3090[i],"EnergyRt3090");
 
 
 		// histogram to see the correlation of energy and the time between two pulses to examine the effect of pile up
@@ -183,13 +198,18 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		// real analysis object
 	fMWDAna = new THypGeMWD(TRACE_LENGTH,FADC_CHAN);
 		fMWDAna->ConnectTraceHistograms(fhTrace, fhTrace_Smoothed, fhTrace_BaseCorr, fhTrace_deconv, fhTrace_MWD, fhTrace_MA, fhTrace_Direct);
-		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum, fhEnergySpectrumMA, fhEnergySpectrum_withCut);
-		fMWDAna->Connect1DRisetimeHistograms(fhRisetime1090, fhRisetime3090);
-		fMWDAna->Connect2DEnergyRisetimeHistograms(fhEnergyRise1090Corr, fhEnergyRise3090Corr,fhEnergyRise1090Corr_ballistic);
+		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum, fhEnergySpectrumCorr, fhEnergySpectrum_withCut);
+		fMWDAna->Connect1DRisetimeHistograms(fhRisetime1090, fhRisetime3090,fhRisetime1090Co1332Only);
+		fMWDAna->Connect2DEnergyRisetimeHistograms(fhEnergyRt1090,fhEnergyRt1090CorrectionRt, fhEnergyRt1090Co1332Only, fhEnergyRt3090,fhEnergyRt1090_ballistic);
 		fMWDAna->Connect2DEnergyTimeSinceLastPulseHistograms(fhEnergyTimeSinceLastPulse, fhEnergyTimeSinceLastPulseCorr, fhEnergyTimeSinceLastPulse_withCut, fhEnergyTimeSinceLastPulseCorr_withCut, 20);
 		fMWDAna->ConnectTestHistograms(fhTrace_deri1,fhTrace_deri2,fhTrace_deri3,fhTrace_deri4);
 		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection());
-
+		if (fHypPar->GetSecondAnalysisRound())
+		{
+			fMWDAna->IsSecondRun();
+			fMWDAna->SetSecondRunParametersFileName(fHypPar->GetParameterFileName());
+		}
+		fMWDAna->Init();
 	cout << "**** THypGeAnlProc: Create" << endl;
 }
 //-----------------------------------------------------------

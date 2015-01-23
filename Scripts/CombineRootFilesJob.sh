@@ -26,7 +26,8 @@ fi
 
 rm -f ${DataDir}/WrongFilesInFolder.txt														# removes log file for erroneous runs , uncomment to automate
 mkdir -p ${SubDir}
-ls -d ${DataDir}/COSY_Ana*/ &> ${TxtDir}/AnaFolderList.txt				# write all folders with runs (parameter configs) to file
+#ls -d ${DataDir}/COSY_Ana*/ &> ${TxtDir}/AnaFolderList.txt				# write all folders with runs (parameter configs) to file
+ls -d /data/work/kpha1/steinen/COSYBeamtestAna/june2014/COSY_Ana_1006_run1___200,100,3,3,6210 &> ${TxtDir}/AnaFolderList.txt				# write all folders with runs (parameter configs) to file
 errors=0
 while read line
 do
