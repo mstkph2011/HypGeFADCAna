@@ -49,7 +49,7 @@ THypGeNaIAnalysisProc::THypGeNaIAnalysisProc(const char* name) :
    TGo4EventProcessor(name)
 {
 	
-  fhNaISpectrum = new TH1D("fhNaISpectrum","fhNaISpectrum",1000,0,1000);
+  fhNaISpectrum = new TH1D("fhNaISpectrum","fhNaISpectrum",5000,0,5000);
   AddHistogram(fhNaISpectrum,"NaI");
 
   fhNaITrace = (TH1D*) GetHistogram("Traces/Trace_02");
@@ -64,8 +64,12 @@ THypGeNaIAnalysisProc::~THypGeNaIAnalysisProc()
 //-----------------------------------------------------------
 Bool_t THypGeNaIAnalysisProc::BuildEvent(TGo4EventElement* dest)
 {
-	double Max = fhNaITrace->GetMaximum();
+	
+	//peak is inverted!!!
 	double Min = fhNaITrace->GetMinimum();
+	int MinBin = fhNaITrace->GetMinimumBin();
+	double Max = fhNaITrace->GetBinContent(MinBin-30);
+	
 	fhNaISpectrum->Fill(TMath::Abs(Max-Min));
 	return 1;
 }

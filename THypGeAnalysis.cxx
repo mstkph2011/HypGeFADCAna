@@ -82,7 +82,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 EnableMA = 1;			// Switch for second moving average filter
 	 SmoothingMethod = 0;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
 	 EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
-	 SecondAnalysisRound = 1;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
+	 SecondAnalysisRound = 0;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
 	 ParameterFileName = "/data/work/kpha1/steinen/COSYBeamtestAna/june2014/DatabaseFirstAnalysisStep/ParametersFirstAnaStepCOSY_Ana_1306_run1_1_20___200,100,0,3,0,6210,MA.root";		// name and path of parameters file
 	 if (argc>1)
 	 {
