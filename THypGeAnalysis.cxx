@@ -35,6 +35,7 @@ extern "C" {
 #include "THypGeParameter.h"
 #include "THypGeUnpackEvent.h"
 #include "THypGeAnlEvent.h"
+#include "THypGeNaIAnalysisEvent.h"
 #include "TGo4Version.h"
 
 #include "Go4EventServer.h"
@@ -82,7 +83,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 SmoothingMethod = 0;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
 	 EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
 	 SecondAnalysisRound = 1;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
-	 ParameterFileName = "/data/work/kpha1/steinen/COSYBeamtestAna/june2014/DatabaseFirstAnalysisStep/ParametersFirstAnaStepCOSY_Ana_1606_1___200,100,3,3,0,6210,MA.root";		// name and path of parameters file
+	 ParameterFileName = "/data/work/kpha1/steinen/COSYBeamtestAna/june2014/DatabaseFirstAnalysisStep/ParametersFirstAnaStepCOSY_Ana_1306_run1_1_20___200,100,0,3,0,6210,MA.root";		// name and path of parameters file
 	 if (argc>1)
 	 {
 		MWDm = atoi(argv[1]);
@@ -170,7 +171,20 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 step2->SetSourceEnabled(kFALSE);
 	 step2->SetStoreEnabled(kFALSE);
 	 step2->SetProcessEnabled(kTRUE);
-	
+	cout << "step3"<<endl;
+ // Create step 3 Analysis.
+	 TGo4StepFactory* factory3 = new TGo4StepFactory("NaIAnalysisFactory");
+	 factory3->DefInputEvent("UnpackEvent", "THypGeUnpackEvent"); // object name, class name
+	 factory3->DefEventProcessor("NaIAnalysisProc", "THypGeNaIAnalysisProc"); // object name, class name
+	 factory3->DefOutputEvent("NaIAnalysisEvent", "THypGeNaIAnalysisEvent"); // object name, class name
+	 TGo4AnalysisStep* step3		= new TGo4AnalysisStep("NaIAnalysis",factory3,0,0,0);
+	 step3->SetErrorStopEnabled(kTRUE);
+	 AddAnalysisStep(step3);
+ // These settings will be overwritten by setup.C
+	 step3->SetSourceEnabled(kFALSE);
+	 step3->SetStoreEnabled(kFALSE);
+	 step3->SetProcessEnabled(kTRUE);
+	 cout << "step32"<<endl;
 	// Parameters of the analysis
 	fPar = new THypGeParameter("HypGeParameter");
 	 cout << "ParAdded " << AddParameter(fPar)  << endl;

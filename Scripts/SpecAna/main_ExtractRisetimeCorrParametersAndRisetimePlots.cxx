@@ -11,8 +11,10 @@
 #include "TGraph2D.h"
 #include "TNtupleD.h"
 #include "TRint.h"							// starts the interactive mode of ROOT (needed for canvas etc.)
+#include "TGraphErrors.h"
 
 #include "THypGeSpectrumAnalyser.h"
+#include "THypGePeakFitFunction.h"
 
 #include <iostream>
 #include <vector>
@@ -20,6 +22,9 @@
 #include <map>
 
 using namespace std;
+
+
+
 
 int main(int argc, char* argv[] )
 {
@@ -32,14 +37,17 @@ int main(int argc, char* argv[] )
 	{
 		WriteEnabled = 1;		// Default is first run
 	}
+	bool SR = 1;// second run? corrected histograms will be used if true
 	//return 0;
 	TRint *App = new TRint("ROOT",0,0,0,0,kTRUE); //&argc,argv);
 	int ArrayNumber=100;
+	int PeakNumber =4;
+	int PolOrder = 5;		//Order of Polynom for energy-rt-corr fitting
 	TFile *InFile[ArrayNumber];
-	TH1D* hRiseTimePeak1332[ArrayNumber];
-	TProfile* hXProfileRiseTimePeak1332[ArrayNumber];
-	TF1* fProfileFitFuncPol[ArrayNumber];
-	TF1* fProfileFitFuncConstant[ArrayNumber];
+	TH1D* hRiseTimePeak[ArrayNumber][PeakNumber];
+	TProfile* hXProfileRiseTimePeak[ArrayNumber][PeakNumber];
+	TF1* fProfileFitFuncPol[ArrayNumber][PeakNumber];
+	TF1* fProfileFitFuncConstant[ArrayNumber][PeakNumber];
 	TFile *OutputParametersFile[ArrayNumber];
   int i = 0;
   int UseFreeSkewedFitting=1;			//Variable ob FreeSkewedFitting benutzt wird 1=JA, 0=Nein @Torben Rathmann
@@ -107,7 +115,9 @@ int main(int argc, char* argv[] )
 	{
 	  while (InputList.good())																//loop over all lines
 		{
+	  	cout << "blaaaaaa" << endl;
 			char buffer[200] = "";
+			char buf2[10] = "";
 			InputList.getline(buffer,200);												//read name of a ROOT file
 			cout << "File:\t\t\t\t"<<buffer << endl;
 			TString InFileName = buffer; 
@@ -116,9 +126,18 @@ int main(int argc, char* argv[] )
 				continue;
 			//extract parameter values from file name
 			int M, FilterType,SigmaGaus,SigmaBil, tau, MAL, Date, runNo;
-			TString ComparisonString = COSYTESTANADIR + "/june2014/CombinedData/COSY_Ana_%i_run%i___%i,%i,%i,%i,%i.root";
-			cout << "File:\t\t\t\t"<< ComparisonString << endl;
-			sscanf(InFileName.Data(),ComparisonString.Data(),&Date,&runNo,&M,&MAL,&FilterType,&SigmaGaus,&tau);
+			int StartFile, EndFile;
+
+
+			TString ComparisonString = COSYTESTANADIR + "/june2014/COSY_Ana_%*i_run%*i_%*i_%*i___%*i,%*i,%*i,%*i,%*i,%*i/Ana_COSY_Ana_%i_run%i_%i_%i___%i,%i,%i,%i,%i,%i.root";
+
+			//cout << InFileName.Data() << endl;
+			//cout << "File:\t\t\t\t"<< ComparisonString << endl;
+
+			sscanf(InFileName.Data(),ComparisonString.Data(),&Date,&runNo,&StartFile, &EndFile,&M,&MAL,&FilterType,&SigmaGaus,&SigmaBil,&tau);
+			cout <<Date<< "\t"<<runNo<< "\t"<<StartFile<< "\t" <<EndFile<< "\t"<<M<< "\t"<<MAL<< "\t"<<FilterType<< "\t"<<SigmaGaus<< "\t"<<tau << endl;
+
+
 			InFile[i] = new TFile(InFileName);								//open ROOT file
 			if (InFile[i]->GetSize() < 600)
 			{
@@ -129,9 +148,17 @@ int main(int argc, char* argv[] )
 
 			TH1D* hEnergyMA;
 			TH2D* hEnergyRt1090;
+			if (!SR)
+			{
+				InFile[i]->GetObject("/Histograms/Energyspectrum/Energy_01;1",hEnergyMA);									// get histrogram
+				InFile[i]->GetObject("/Histograms/EnergyRt1090/EnergyRt1090_01;1",hEnergyRt1090);									// get histrogram
+			}
+			else
+			{
+				InFile[i]->GetObject("/Histograms/Energyspectrum/EnergyCorr_01;1",hEnergyMA);									// get corrected histrogram
+				InFile[i]->GetObject("/Histograms/EnergyRt1090/EnergyRt1090CorrectionRt_01;1",hEnergyRt1090);									// get corrected histrogram
 
-			InFile[i]->GetObject("/Histograms/Energyspectrum/Energy_01;1",hEnergyMA);									// get histrogram
-			InFile[i]->GetObject("/Histograms/EnergyRise1090Corr/EnergyRise1090Corr_01;1",hEnergyRt1090);									// get histrogram
+			}
 
 			if (UseMovingAv)
 				if (!hEnergyMA)
@@ -143,7 +170,10 @@ int main(int argc, char* argv[] )
 			Path = COSYTESTANADIR;
 				Path += "/june2014/CombinedData/Fit/";
 			char buf[100];
-				sprintf(buf,"Fitted_COSY_Ana_%i_%i___%i,%i,%i,%i,%i,%i,MA",Date,runNo,M,MAL,FilterType,SigmaGaus,SigmaBil,tau);
+			if (!SR)
+				sprintf(buf,"Fitted_COSY_Ana_%i_run%i_%i_%i___%i,%i,%i,%i,%i.root",Date,runNo,StartFile, EndFile,M,MAL,FilterType,SigmaGaus,SigmaBil,tau);
+			else
+				sprintf(buf,"Fitted_COSY_Ana_%i_run%i_%i_%i___%i,%i,%i,%i,%iSR.root",Date,runNo,StartFile, EndFile,M,MAL,FilterType,SigmaGaus,SigmaBil,tau);
 			RootFilename = buf;
 				if(UseFreeSkewedFitting==1){	//Anfügen "FSFit" vom Dateinamen wenn FreeSkewed genutzt wird @Torben Rathmann
 					RootFilename+= ",";
@@ -174,38 +204,160 @@ int main(int argc, char* argv[] )
 			Ana->AnalyseSpectrum();
 			cout << "FWHM 1332 kEv:\t\t"<< Ana->GetFWHMCo() << endl;
 
-			Double_t* PeakRange1332 = Ana->GetPeakRangeChannels(2);
-			TNtupleD *tNtupleD = new TNtupleD("tNtupleD","Tree with vectors","RangeMin:RangeMax");
-				tNtupleD->Fill(PeakRange1332);
-									//cout << "PeakLow "<< PeakRange1332[0] << "\t\t" << "PeakHigh" << PeakRange1332[1] << endl;
-			sprintf(buf,"hRiseTimePeak1332_run%i",i);
-			// extract risetime histogram of only 1332 keV Peak range from 2d histogram
-			hRiseTimePeak1332[i]= hEnergyRt1090->ProjectionX(buf,PeakRange1332[0],PeakRange1332[1],"");
+			double PeakRange[PeakNumber][3];
+			double* PeakRangeBuffer;
+			double PeakPositionX[PeakNumber][2];
+			double* PeakPositionXBuffer;
+			TNtupleD *tNtupleD = new TNtupleD("tNtupleD","Tree with vectors","Energy:RangeMin:RangeMax");
+			for (int j = 0; j < PeakNumber; j++)
+			{
+				PeakRangeBuffer= Ana->GetPeakRangeChannels(j);
+				PeakRange[j][0] = PeakRangeBuffer[0];
+				PeakRange[j][1] = PeakRangeBuffer[1];
+				PeakRange[j][2] = PeakRangeBuffer[2];
+				tNtupleD->Fill(PeakRange[j]);
+				PeakPositionXBuffer = Ana->GetPeakMaximumX(j);
+				PeakPositionX[j][0] = PeakPositionXBuffer[0];
+				PeakPositionX[j][1] = PeakPositionXBuffer[1];
+									//cout << "PeakLow "<< PeakRange[0] << "\t\t" << "PeakHigh" << PeakRange[1] << endl;
+				sprintf(buf,"hRiseTimePeak%i_run%i",j,i);
+				// extract risetime histogram of only the 4 Peaks from 2d histogram
+				hRiseTimePeak[i][j]= hEnergyRt1090->ProjectionX(buf,PeakRange[j][1],PeakRange[j][2],"");
 
-			// do XProfile of Correlation histogram to get correction functions
-			sprintf(buf,"hXProfileRiseTimePeak1332_run%i",i);
-			hXProfileRiseTimePeak1332[i] = hEnergyRt1090->ProfileX(buf,PeakRange1332[0],PeakRange1332[1],"");
-			sprintf(buf,"fProfileFitFuncPol_run%i",i);
-			fProfileFitFuncPol[i] = new TF1(buf, "pol9", 0,400);
-			hXProfileRiseTimePeak1332[i]->Fit(fProfileFitFuncPol[i],"R");
-			sprintf(buf,"fProfileFitFuncConstant_run%i",i);
-			fProfileFitFuncConstant[i]= new TF1(buf, "pol0", 0,400);
-			fProfileFitFuncConstant[i]->SetLineColor(kBlue);
-			hXProfileRiseTimePeak1332[i]->Fit(fProfileFitFuncConstant[i],"R+");
+				// do XProfile of Correlation histogram to get correction functions
+				sprintf(buf,"hXProfileRiseTimePeak%i_run%i",j,i);
+				hXProfileRiseTimePeak[i][j] = hEnergyRt1090->ProfileX(buf,PeakRange[j][1],PeakRange[j][2],"");
+				sprintf(buf,"fProfileFitFuncPolPeak%i_run%i",j,i);
+				sprintf(buf2,"pol%i",PolOrder);
+				fProfileFitFuncPol[i][j] = new TF1(buf, buf2, 80,220);
+				hXProfileRiseTimePeak[i][j]->Fit(fProfileFitFuncPol[i][j],"R");
+				sprintf(buf,"fProfileFitFuncConstantPeak%i_run%i",j,i);
+				fProfileFitFuncConstant[i][j]= new TF1(buf, "pol0", 80,220);
+				fProfileFitFuncConstant[i][j]->SetLineColor(kBlue);
+				hXProfileRiseTimePeak[i][j]->Fit(fProfileFitFuncConstant[i][j],"R+");
 
+				//normalization of pol fit by division of each parameter by the value of the constant fit
+//				for(Int_t iPara =0; iPara <= PolOrder; iPara++)
+//				{
+//					cout << fProfileFitFuncPol[i][j]->GetParameter(iPara) << "\t";
+//					fProfileFitFuncPol[i][j]->SetParameter(iPara,fProfileFitFuncPol[i][j]->GetParameter(iPara)/fProfileFitFuncConstant[i][j]->GetParameter(0));
+//					cout << fProfileFitFuncPol[i][j]->GetParameter(iPara) << endl;
+//				}
+
+
+			}	// end of loop over Peaks (j)
+
+			cout << "starting the slice fitting"<< endl;
+			Int_t XBinStart =14;
+			Int_t XBinEnd = 28;
+			Int_t nXBins = XBinEnd - XBinStart;
+			Double_t *X= new Double_t[nXBins];
+			Double_t *YSimple= new Double_t[nXBins];
+			Double_t *Y= new Double_t[nXBins];
+			Double_t *Yerror= new Double_t[nXBins];
+			Int_t YRangeMin = PeakRange[2][1];
+			Int_t YRangeMax = PeakRange[2][2];
+
+			Double_t NormalizationFactor = PeakPositionX[2][2];
+			TH1D *hBinScan[nXBins];
+			TF1 *fFit[nXBins];
+			//cout << YRangeMin <<"\t"<< YRangeMax<<endl;
+
+			// loop over Xbins to create slices and fit them
+			for (int iXBin = XBinStart; iXBin < XBinEnd; iXBin ++)
+			{
+				sprintf(buf,"nBinScan%i",iXBin);
+
+				hBinScan[iXBin] = new TH1D(buf,"Scan", YRangeMax-YRangeMin+1, YRangeMin, YRangeMax);
+				for (int iYBin = YRangeMin; iYBin <= YRangeMax; iYBin++)
+				{
+					hBinScan[iXBin]->SetBinContent(hBinScan[iXBin]->FindBin(iYBin),hEnergyRt1090->GetBinContent(iXBin, iYBin));
+					//cout << hEnergyRt1090->GetBinContent(iXBin, iYBin)<< endl;
+				}
+
+				sprintf(buf,"fFit%i",iXBin);
+				fFit[iXBin] = new TF1(buf,"gaus(0)+pol2(3)", hBinScan[iXBin]->GetBinCenter(hBinScan[iXBin]->GetMaximumBin()-2), hBinScan[iXBin]->GetBinCenter(hBinScan[iXBin]->GetMaximumBin()+15));
+//				fFit[iXBin]->SetParameter(0, 10);
+//				fFit[iXBin]->SetParameter(1, hBinScan[iXBin]->GetBinCenter(hBinScan[iXBin]->GetMaximumBin()));
+//				fFit[iXBin]->SetParLimits(1,fFit[iXBin]->GetParameter(1)-3,fFit[iXBin]->GetParameter(1)+3);
+//
+				THypGePeakFitFunction *func = new THypGePeakFitFunction();
+
+	//			fFit[iXBin] = new TF1(buf,func,&THypGePeakFitFunction::NewFunction, hBinScan[iXBin]->GetBinCenter(hBinScan[iXBin]->GetMaximumBin()-5), hBinScan[iXBin]->GetBinCenter(hBinScan[iXBin]->GetMaximumBin()+5),8,"THypGePeakFitFunction","NewFunction");
+				fFit[iXBin]->SetParameter(0, 10);
+				fFit[iXBin]->SetParameter(1, hBinScan[iXBin]->GetBinCenter(hBinScan[iXBin]->GetMaximumBin()));
+				fFit[iXBin]->SetParLimits(1,fFit[iXBin]->GetParameter(1)-1,fFit[iXBin]->GetParameter(1)+5);
+
+				cout <<hBinScan[iXBin]->GetBinCenter(hBinScan[iXBin]->GetMaximumBin()) << endl;
+				fFit[iXBin]->SetParameter(2, 3);
+				//hBinScan->Draw();
+				hBinScan[iXBin]->Fit(fFit[iXBin],"0");
+				X[iXBin-XBinStart]= iXBin*10;
+				YSimple[iXBin-XBinStart]= hBinScan[iXBin]->GetBinCenter(hBinScan[iXBin]->GetMaximumBin());
+				Y[iXBin-XBinStart]= fFit[iXBin]->GetParameter(1);///2 +hBinScan[iXBin]->GetBinCenter(hBinScan[iXBin]->GetMaximumBin())/2;
+				Yerror[iXBin-XBinStart]=fFit[iXBin]->GetParError(1);
+				cout <<X[iXBin-XBinStart]<<" " << Y[iXBin-XBinStart] << " " << Yerror[iXBin-XBinStart]<< endl;
+				//hBinScan[iXBin]->Delete();
+				//fFit[iXBin]->Delete();
+			}
+			for (int iXBin = XBinStart; iXBin < XBinEnd; iXBin ++)
+				cout <<X[iXBin-XBinStart]<<" " << Y[iXBin-XBinStart] << " " << Yerror[iXBin-XBinStart]<< endl;
+
+			TGraphErrors *gBinScanSimple = new TGraphErrors(nXBins,X,YSimple,0,0);
+			TGraphErrors *gBinScan = new TGraphErrors(nXBins,X,Y,0,Yerror);
+			//TGraphErrors *gBinScan = new TGraphErrors(nXBins,X,Y,0,0);
+			TCanvas *cCan = new TCanvas("cCan","cCan",800,600);
+			cCan->cd();
+
+			//gBinScan->Draw("same");
+			TF1 *fFitBinScanConst = new TF1("fFitBinScanConst","pol0", XBinStart*10, XBinEnd*10);
+			TF1 *fFitBinScan = new TF1("fFitBinScan","pol3", XBinStart*10, XBinEnd*10);
+			//gBinScan->Fit(fFitBinScanConst,"r");
+
+			gBinScan->Fit(fFitBinScan,"r");
+			TF1 *fFitBinScanNorm = new TF1("fFitBinScanNorm","pol4", XBinStart*10, XBinEnd*10);
+			for(Int_t iPara =0; iPara <= 4; iPara++)
+			{
+				//fFitBinScanNorm->SetParameter(iPara,fFitBinScan->GetParameter(iPara)/fFitBinScanConst->GetParameter(0));
+				fFitBinScanNorm->SetParameter(iPara,fFitBinScan->GetParameter(iPara)/NormalizationFactor);
+			}
+			gBinScan->Draw();
+			gBinScanSimple->SetLineColor(kRed);
+			//gBinScanSimple->Draw("same");
+			fFitBinScan->Draw("same");
 
 
 				if (WriteEnabled)
 				{
 				// write extracted parameters to file
-				sprintf(buf,"ParametersFirstAnaStepCOSY_Ana_%i_%i___%i,%i,%i,%i,%i,%i,MA.root",Date,runNo,M,MAL,FilterType,SigmaGaus,SigmaBil,tau);
+				sprintf(buf,"ParametersFirstAnaStepCOSY_Ana_%i_run%i_%i_%i___%i,%i,%i,%i,%i,%i,MA.root",Date,runNo,StartFile, EndFile,M,MAL,FilterType,SigmaGaus,SigmaBil,tau);
+
+
 				TString OutputParametersFileName = COSYTESTANADIR + "/june2014/DatabaseFirstAnalysisStep/" +buf;
+
 				OutputParametersFile[i] = new TFile(OutputParametersFileName,"RECREATE");
+				for (int iXBin = XBinStart; iXBin < XBinEnd; iXBin ++)
+				{
+					hBinScan[iXBin]->Write();
+					fFit[iXBin]->Write();
+				}
+				gBinScan->Write();
 					hEnergyRt1090->Write();
-					hRiseTimePeak1332[i]->Write("hRiseTimePeak1332");
-					hXProfileRiseTimePeak1332[i]->Write("hXProfileRiseTimePeak1332");
-					fProfileFitFuncPol[i]->Write("fProfileFitFuncPol");
-					fProfileFitFuncConstant[i]->Write("fProfileFitFuncConstant");
+					fFitBinScan->Write();
+					fFitBinScanConst->Write();
+					fFitBinScanNorm->Write();
+					for (int j = 0; j < PeakNumber; j ++)
+					{
+						sprintf(buf,"hRiseTimePeak%i",j);
+						hRiseTimePeak[i][j]->Write(buf);
+						sprintf(buf,"hXProfileRiseTimePeak%i",j);
+						hXProfileRiseTimePeak[i][j]->Write(buf);
+						sprintf(buf,"fProfileFitFuncPolPeak%i",j);
+						fProfileFitFuncPol[i][j]->Write(buf);
+						sprintf(buf,"fProfileFitFuncConstantPeak%i",j);
+						fProfileFitFuncConstant[i][j]->Write(buf);
+
+					}
 					tNtupleD->Write();
 				OutputParametersFile[i]->Close();
 				}
@@ -251,7 +403,7 @@ int main(int argc, char* argv[] )
 			//RatioArrayAlERR[i]=;
 
 			//write to maps
-
+			cout << SigmaBil << endl;
 			if (SigmaBil != 3)	// bil
 			{
 				ResultMapBil[(M /20 -3 )*10 + ((SigmaBil -100)/200 )-1][SigmaGaus] = Ana->GetFWHMCo();
@@ -260,11 +412,15 @@ int main(int argc, char* argv[] )
 			{
 				ResultMapGaus[M /20 -3][SigmaGaus] = Ana->GetFWHMCo();
 			}
+			cout << "blaaaarrrr" << endl;
 			delete Ana;
+
 			delete hEnergyMA;
+			cout << "blaaaa" << endl;
 			InFile[i]->Close();
 			delete InFile[i];
 			i++;
+			cout << "blaaaa" << endl;
 		}
 	}
 
@@ -298,7 +454,7 @@ int main(int argc, char* argv[] )
 	FWHMAl ->Write("FWHMAl");
 	cout << i << endl;
 	for (int ii=0; ii < i; ii++)
-		hRiseTimePeak1332[ii]->Write();
+		hRiseTimePeak[ii][2]->Write();
 
 	FWTMHM511->Write("FWTM /FWHM 511");
 	FWTMHMCo1->Write("FWTM /FWHM Co1");

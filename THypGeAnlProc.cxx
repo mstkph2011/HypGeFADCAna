@@ -31,6 +31,9 @@
 #include "THypGeUnpackEvent.h"
 #include "THypGeParameter.h"
 
+#define FADC_CHAN 1
+// value from defines.h overwritten !!!!!
+
 //-----------------------------------------------------------
 THypGeAnlProc::THypGeAnlProc() :
    TGo4EventProcessor()
@@ -49,6 +52,14 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		snprintf(chis,63,"Traces/Trace_%02d",i+1);
 		fhTrace[i] = (TH1D*) GetHistogram(chis);
 		
+		// create histograms for smoothed traces
+		snprintf(chis,30,"Trace_Deri_%02d",i+1);
+		snprintf(chead,63,"Derivative of trace channel %2d ; time [#mus];Amplitude [a.u.]",i+1);
+		fhTrace_Deri[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
+		fhTrace_Deri[i]->GetXaxis()->CenterTitle();
+		fhTrace_Deri[i]->GetYaxis()->CenterTitle();
+			AddHistogram(fhTrace_Deri[i],"Traces");
+
 		// create histograms for smoothed traces
 		snprintf(chis,30,"Trace_smoothed_%02d",i+1);
 		snprintf(chead,63,"Trace channel %2d after smooting; time [#mus];Amplitude [a.u.]",i+1);
@@ -103,6 +114,15 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		snprintf(chead,63,"Energy spectrum from MA signal channel with risetime correction %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
 		fhEnergySpectrumCorr[i] = new TH1D(chis,chead,16000,0,8000);
 			AddHistogram(fhEnergySpectrumCorr[i],"Energyspectrum");
+		//create histograms for energy spectrum filtering on first or other pulses in the trace
+		snprintf(chis,30,"EnergyFirstPulse_%02d",i+1);
+		snprintf(chead,63,"Energy spectrum from MA signal of first pulse in trace channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
+		fhEnergySpectrumFirstPulse[i] = new TH1D(chis,chead,16000,0,8000);
+			AddHistogram(fhEnergySpectrumFirstPulse[i],"Energyspectrum");
+		snprintf(chis,30,"EnergyOtherPulses_%02d",i+1);
+		snprintf(chead,63,"Energy spectrum from MA signal of all but first pulses in trace channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
+		fhEnergySpectrumOtherPulses[i] = new TH1D(chis,chead,16000,0,8000);
+			AddHistogram(fhEnergySpectrumOtherPulses[i],"Energyspectrum");
 		//create histogram for energy spectrum with a cut in the pile up time
 		snprintf(chis,30,"EnergyWithCut_%02d",i+1);
 		snprintf(chead,63,"Energy spectrum with cut channel %2d; ADC channel [a.u.];Counts [a.u.]",i+1);
@@ -114,6 +134,14 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		snprintf(chead,63,"Risetime1090 %2d; Risetime 1090 [ns];Counts [a.u.]",i+1);
 		fhRisetime1090[i] = new TH1D(chis,chead,100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
 			AddHistogram(fhRisetime1090[i],"Risetime1090");
+		snprintf(chis,30,"Risetime1090FirstPulse_%02d",i+1);
+		snprintf(chead,63,"Risetime1090 of first pulse in trace %2d; Risetime 1090 [ns];Counts [a.u.]",i+1);
+		fhRisetime1090Co1332FirstPulse[i] = new TH1D(chis,chead,100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
+			AddHistogram(fhRisetime1090Co1332FirstPulse[i],"Risetime1090Co1332Only");
+		snprintf(chis,30,"Risetime1090OtherPulses_%02d",i+1);
+		snprintf(chead,63,"Risetime1090 of all but first pulse in trace %2d; Risetime 1090 [ns];Counts [a.u.]",i+1);
+		fhRisetime1090Co1332OtherPulses[i] = new TH1D(chis,chead,100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
+			AddHistogram(fhRisetime1090Co1332OtherPulses[i],"Risetime1090Co1332Only");
 		snprintf(chis,30,"Risetime3090_%02d",i+1);
 		snprintf(chead,63,"Risetime3090 %2d; Risetime 1090 [ns];Counts [a.u.]",i+1);
 		fhRisetime3090[i] = new TH1D(chis,chead,100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
@@ -122,6 +150,8 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		snprintf(chead,63,"Risetime1090Co1332Only %2d; Risetime 1090 [ns];Counts [a.u.]",i+1);
 		fhRisetime1090Co1332Only[i] = new TH1D(chis,chead,100,0,1000);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
 			AddHistogram(fhRisetime1090Co1332Only[i],"Risetime1090Co1332Only");
+
+
 
 		// risetime, energy correlation histograms
 		snprintf(chis,30,"EnergyRt1090_%02d",i+1);
@@ -132,21 +162,50 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		snprintf(chead,63,"Energy-Risetime1090-Correlation with Rt correction channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
 		fhEnergyRt1090CorrectionRt[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
 			AddHistogram(fhEnergyRt1090CorrectionRt[i],"EnergyRt1090");
-			snprintf(chis,30,"EnergyRt1090Co1332Only_%02d",i+1);
-			snprintf(chead,63,"Energy-Risetime1090-Correlation of Co 1332 keV line of channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
-			fhEnergyRt1090Co1332Only[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
-				AddHistogram(fhEnergyRt1090Co1332Only[i],"EnergyRt1090");
+		snprintf(chis,30,"EnergyRt1090Co1332Only_%02d",i+1);
+		snprintf(chead,63,"Energy-Risetime1090-Correlation of Co 1332 keV line of channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
+		fhEnergyRt1090Co1332Only[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
+			AddHistogram(fhEnergyRt1090Co1332Only[i],"EnergyRt1090");
+
+
+		// histograms using the Rratio
+		snprintf(chis,30,"RratioCo1332Only_%02d",i+1);
+		snprintf(chead,63,"RratioCo1332Only %2d; Rratio;Counts [a.u.]",i+1);
+		fhRratioCo1332Only[i] = new TH1D(chis,chead,50,0,1);		// risetime is multiplied by 10 (10 ns/bin)	--> 1 bin covers 10 ns intervall
+			AddHistogram(fhRratioCo1332Only[i],"RratioHistograms");
+		snprintf(chis,30,"EnergyRratio_%02d",i+1);
+		snprintf(chead,63,"Energy-Rratio-Correlation channel %02d;Rratio;ADC Value [a.u.]",i+1);
+		fhEnergyRratio[i] = new TH2D(chis,chead,50,0,1,4000,0,4000);
+			AddHistogram(fhEnergyRratio[i],"RratioHistograms");
+		snprintf(chis,30,"EnergyRratioCorrectionRratio_%02d",i+1);
+		snprintf(chead,63,"Energy-Rratio-Correlation with Rratio correction channel %02d;Rratio;ADC Value [a.u.]",i+1);
+		fhEnergyRratioCorrectionR[i] = new TH2D(chis,chead,50,0,1,4000,0,4000);
+			AddHistogram(fhEnergyRratioCorrectionR[i],"RratioHistograms");
+		snprintf(chis,30,"EnergyRratioCo1332Only_%02d",i+1);
+		snprintf(chead,63,"Energy-Risetime1090-Correlation of Co 1332 keV line of channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
+		fhEnergyRratioCo1332Only[i] = new TH2D(chis,chead,50,0,1,4000,0,4000);
+			AddHistogram(fhEnergyRratioCo1332Only[i],"RratioHistograms");
+
+
+		snprintf(chis,30,"Rt1030Rt1090Co1332Only_%02d",i+1);
+		snprintf(chead,100,"Risetime1030-Risetime1090-Correlation of Co 1332 keV line of channel %02d;Risetime 1030 [ns];Risetime 1090 [ns]",i+1);
+		fhRt1030Rt1090Co1332Only[i] = new TH2D(chis,chead,100,0,1000,100,0,1000);
+			AddHistogram(fhRt1030Rt1090Co1332Only[i],"RtRtCorrelation");
+		snprintf(chis,30,"Rt1030Rt80100Co1332Only_%02d",i+1);
+		snprintf(chead,100,"Risetime1030-Risetime80100-Correlation of Co 1332 keV line of channel %02d;Risetime 1030 [ns];Risetime 80100 [ns]",i+1);
+		fhRt1030Rt80100Co1332Only[i] = new TH2D(chis,chead,100,0,1000,100,0,1000);
+			AddHistogram(fhRt1030Rt80100Co1332Only[i],"RtRtCorrelation");
 
 
 			// rt, energy correlation histogram with ballistic deficit correction
 		snprintf(chis,40,"EnergyRt1090_ballistic_%02d",i+1);
 		snprintf(chead,100,"Energy-Risetime1090-Correlation channel without ballistic %02d;Risetime [ns];ADC Value [a.u.]",i+1);
-		fhEnergyRt1090_ballistic[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
+		fhEnergyRt1090_ballistic[i] = new TH2D(chis,chead,1001,0,1000,4000,0,4000);
 			AddHistogram(fhEnergyRt1090_ballistic[i],"EnergyRt1090");
 
 		snprintf(chis,30,"EnergyRt3090_%02d",i+1);
-		snprintf(chead,63,"Energy-Risetime3090-Correlation channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
-		fhEnergyRt3090[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
+		snprintf(chead,100,"Energy-Risetime3090-Correlation channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
+		fhEnergyRt3090[i] = new TH2D(chis,chead,1001,0,1000,4000,0,4000);
 			AddHistogram(fhEnergyRt3090[i],"EnergyRt3090");
 
 
@@ -159,6 +218,14 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		snprintf(chead,100,"Energy- Time since last Pulse - Correlation with correction channel %02d;Time since last pulse [#mus];ADC Value [a.u.]",i+1);
 		fhEnergyTimeSinceLastPulseCorr[i] = new TH2D(chis,chead,200,0,200,20000,0,2000);
 			AddHistogram(fhEnergyTimeSinceLastPulseCorr[i],"EnergyTimeSinceLastPulseCorrected");
+
+
+		snprintf(chis,50,"TraceDeriMaximumPosition_%02d",i+1);
+		snprintf(chead,100,"TraceDeriMaximumPosition %02d;TraceDeriMaximumPosition [#mus];counts [a.u.]",i+1);
+		fhTraceDeriMaximumPosition[i]  =new TH1D (chis,chead,100,0,100);
+			AddHistogram(fhTraceDeriMaximumPosition[i],"TraceDeriMaxPos");
+
+
 	}
 	for (int i = 0; i < 20; i++)
 	{
@@ -178,9 +245,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		//cout << fhEnergyTimeSinceLastPulse_withCut[i] << endl;
 	}
 		
-	fhAmplBaselinegradient= new TH1D ("Baselinegrad","Gradient of the start of the baseline in amplitude signal",1000,0,10);
-		AddHistogram(fhAmplBaselinegradient,"BaseGrad");
-		
+
 		fhTrace_deri1 = new TH1D ("deri1","deri1",TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
 			AddHistogram(fhTrace_deri1,"Test");
 		fhTrace_deri2 = new TH1D ("deri2","deri2",TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
@@ -189,6 +254,15 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 			AddHistogram(fhTrace_deri3,"Test");
 		fhTrace_deri4 = new TH1D ("deri4","deri4",TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
 			AddHistogram(fhTrace_deri4,"Test");
+
+	for (Int_t i =0;i < 1000; i++)
+	{
+		snprintf(chis,40,"OutPutTrace_%i",i);
+		snprintf(chead,100,"Trace %i;Samples [a.u.];ADC Value [a.u.]",i);
+		hTraceOutput[i] = new TH1D(chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
+			AddHistogram(hTraceOutput[i],"OutputTraces");
+	}
+
 		// get parameters
 	fHypPar = (THypGeParameter*)  GetParameter("HypGeParameter");
 	
@@ -197,12 +271,18 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		//cout << "\tMWDm " << fHypPar->GetMWDm() << endl;
 		// real analysis object
 	fMWDAna = new THypGeMWD(TRACE_LENGTH,FADC_CHAN);
-		fMWDAna->ConnectTraceHistograms(fhTrace, fhTrace_Smoothed, fhTrace_BaseCorr, fhTrace_deconv, fhTrace_MWD, fhTrace_MA, fhTrace_Direct);
+		fMWDAna->ConnectTraceHistograms(fhTrace, fhTrace_Deri, fhTrace_Smoothed, fhTrace_BaseCorr, fhTrace_deconv, fhTrace_MWD, fhTrace_MA, fhTrace_Direct);
 		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum, fhEnergySpectrumCorr, fhEnergySpectrum_withCut);
 		fMWDAna->Connect1DRisetimeHistograms(fhRisetime1090, fhRisetime3090,fhRisetime1090Co1332Only);
 		fMWDAna->Connect2DEnergyRisetimeHistograms(fhEnergyRt1090,fhEnergyRt1090CorrectionRt, fhEnergyRt1090Co1332Only, fhEnergyRt3090,fhEnergyRt1090_ballistic);
+		fMWDAna->ConnectRratioHistograms(fhRratioCo1332Only, fhEnergyRratio, fhEnergyRratioCorrectionR, fhEnergyRratioCo1332Only);
 		fMWDAna->Connect2DEnergyTimeSinceLastPulseHistograms(fhEnergyTimeSinceLastPulse, fhEnergyTimeSinceLastPulseCorr, fhEnergyTimeSinceLastPulse_withCut, fhEnergyTimeSinceLastPulseCorr_withCut, 20);
 		fMWDAna->ConnectTestHistograms(fhTrace_deri1,fhTrace_deri2,fhTrace_deri3,fhTrace_deri4);
+		fMWDAna->ConnectOutputTraces(hTraceOutput);
+		fMWDAna->ConnectPulseFilteredHistograms(fhEnergySpectrumFirstPulse, fhEnergySpectrumOtherPulses, fhRisetime1090Co1332FirstPulse, fhRisetime1090Co1332OtherPulses);
+		fMWDAna->ConnectRtCorrelationHistograms(fhRt1030Rt1090Co1332Only,fhRt1030Rt80100Co1332Only);
+		fMWDAna->ConnectTraceDeriMaximumHistograms(fhTraceDeriMaximumPosition);
+
 		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection());
 		if (fHypPar->GetSecondAnalysisRound())
 		{
@@ -221,7 +301,7 @@ THypGeAnlProc::~THypGeAnlProc()						// 25.3.14 something here gives an error wh
 	//delete[] fhTrace_MWD;
 	//delete[] fhTrace_MA;
 	
-	//delete fhAmplBaselinegradient;
+	//delete fhTraceDeriMaximumPosition;
 	//delete fMWDAna;
    cout << "**** THypGeAnlProc: Delete" << endl;
 
@@ -252,7 +332,7 @@ Bool_t THypGeAnlProc::BuildEvent(TGo4EventElement* dest)
 	//}
 	fMWDAna->FullAnalysis();
 	//if (fMWDAna->FullAnalysis() != -1)				// some error here
-		//fhAmplBaselinegradient->Fill((fhTrace_deconv[0]->GetBinContent(1)-fhTrace_deconv[0]->GetBinContent(301))/300);
+		//fhTraceDeriMaximumPosition->Fill((fhTrace_deconv[0]->GetBinContent(1)-fhTrace_deconv[0]->GetBinContent(301))/300);
 	
 	//this shows number of real events
 	

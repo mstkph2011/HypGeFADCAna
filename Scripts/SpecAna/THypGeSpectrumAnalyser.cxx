@@ -572,11 +572,22 @@ Int_t THypGeSpectrumAnalyser::CalculateFWTM()
 
 Double_t* THypGeSpectrumAnalyser::GetPeakRangeChannels(Int_t PeakNumber)
 {
-	Double_t* Range= new Double_t[2];
-	Range[0]=FWTMlow[PeakNumber];
-	Range[1]=FWTMhigh[PeakNumber];
+	Double_t* Range= new Double_t[3];
+	Range[0]=Energies[PeakNumber];
+	Range[1]=FWTMlow[PeakNumber];
+	Range[2]=FWTMhigh[PeakNumber];
 	return Range;
 }
+
+Double_t* THypGeSpectrumAnalyser::GetPeakMaximumX(Int_t PeakNumber)
+{
+	Double_t* Maximum= new Double_t[2];		// 0 = corresponding Energy; 1 = Position
+	Maximum[0]=Energies[PeakNumber];
+	Maximum[1]=FitFunc[PeakNumber]->GetMaximumX();
+
+	return Maximum;
+}
+
 Int_t THypGeSpectrumAnalyser::CompareNuclei(TString NucleiName)
 {
 	NucleiName.ToLower();

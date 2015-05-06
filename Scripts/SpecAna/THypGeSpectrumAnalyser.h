@@ -61,6 +61,7 @@ class THypGeSpectrumAnalyser
 		Int_t											CalculateFWHM();
 		Int_t											CalculateFWTM();
 		Double_t* 								GetPeakRangeChannels(Int_t PeakNumber);
+		Double_t* 								GetPeakMaximumX(Int_t PeakNumber);
 
 		Double_t									GetFWHM511();
 		Double_t									GetFWTM511();
@@ -166,6 +167,8 @@ class THypGeSpectrumAnalyser
 		Double_t 									FWTMlowEnergy[50];
 		Double_t									FWTMhighEnergy[50];
 		
+		//Double_t 									PeakMaxChannels[50];
+
 		TH1D 											*fhFitErrorhistogram[50];
 
 		map<double,double>			FWHM_ch;

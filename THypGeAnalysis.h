@@ -54,6 +54,7 @@ class THypGeAnalysis : public TGo4Analysis  {
 
 
 
+
 			int 								MWDm ;			// M of MWD
 			int 								MAl ;				// L of MA
 			int 								NoS;				// Number of smoothings of mean and WA filter
