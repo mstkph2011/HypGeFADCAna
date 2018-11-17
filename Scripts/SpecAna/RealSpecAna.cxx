@@ -21,7 +21,12 @@ int main(int argc, char* argv[] )
 {
 	
 	//TRint *App = new TRint("ROOT",0,0); //&argc,argv);
-
+	TString BeamTimeMonth = "july2014";
+	if (argc == 1)
+		BeamTimeMonth=argv[0];
+		
+	cout <<BeamTimeMonth.Data() << endl;
+	return 0;
 	TFile *InFile[1000];
   int i = 0;
   int UseFreeSkewedFitting=1;			//Variable ob FreeSkewedFitting benutzt wird 1=JA, 0=Nein @Torben Rathmann
@@ -66,7 +71,9 @@ int main(int argc, char* argv[] )
   TString COSYTESTANADIR= getenv("COSYTESTANADIR");
   TString InputListPath = COSYTESTANADIR;
   //InputListPath +="/COSY/txtfiles/";
-  InputListPath +="/june2014/txtfiles/";
+  InputListPath +="/";
+  InputListPath +=BeamTimeMonth;
+  InputListPath +="/txtfiles/";
   TString InputFile = InputListPath + "Filestofit.txt";
   TString CorruptedFileList = InputListPath +"CorruptedFiles.txt";
 	//ifstream InputList("files.txt");
@@ -101,7 +108,7 @@ int main(int argc, char* argv[] )
 				continue;
 			//extract parameter values from file name
 			int M, FilterType,SigmaGaus,SigmaBil, tau, MAL, Date, runNo;
-			TString ComparisonString = COSYTESTANADIR + "/june2014/CombinedData/COSY_Ana_%i_run%i___%i,%i,%i,%i,%i.root"; //XXXXXXXXXXXXXXXXXXXXXXXXXHier fehlt was
+			TString ComparisonString = COSYTESTANADIR +"/" + BeamTimeMonth "/CombinedData/COSY_Ana_%i_run%i___%i,%i,%i,%i,%i.root"; //XXXXXXXXXXXXXXXXXXXXXXXXXHier fehlt was
 			cout << "File:\t\t\t\t"<< ComparisonString << endl;
 			sscanf(InFileName.Data(),ComparisonString.Data(),&Date,&runNo,&M,&MAL,&FilterType,&SigmaGaus,&tau);
 			InFile[i] = new TFile(InFileName);								//open ROOT file
@@ -130,7 +137,9 @@ int main(int argc, char* argv[] )
 			Int_t LengthOfPath;
 			
 			Path = COSYTESTANADIR;
-				Path += "/june2014/CombinedData/Fit/";
+				Path += "/";
+				Path += BeamTimeMonth;
+				Path +="/CombinedData/Fit/";
 			RootFilename = "Fitted_COSY_Ana_";
 				RootFilename+=Date;
 				RootFilename+= "_";

@@ -62,6 +62,7 @@ class THypGeMWD
 		void							ConnectPulseFilteredHistograms(TH1D **hEnergyFirst_ext, TH1D **hEnergyOther_ext, TH1D **hRt1090First_ext, TH1D **hRt1090Other_ext);
 		void							ConnectRtCorrelationHistograms(TH2D **hRt1030Rt1090Co1332Only_ext, TH2D **hRt1030Rt80100Co1332Only_ext);
 		void							ConnectTraceDeriMaximumHistograms(TH1D **hTraceDeriMaximum_ext);
+		void							ConnectPreAmpTauFit(TH1D ** hPreAmpTauFit_ext);
 
 	private :
 		
@@ -77,6 +78,8 @@ class THypGeMWD
 		Int_t							AnaStep_ExtractRisetime();
 		Int_t							AnaStep_ExtractRisetimeDeconv();
 		Int_t							AnaStep_FillHistograms();
+		
+		Int_t							AnaStep_PreAmpTauFit();
 		
 		//functions used in the Energyspectrum step
 		void							EvaluateMWD();
@@ -190,6 +193,9 @@ class THypGeMWD
 		TH1D							**hTraceOutput;
 
 		TH1D 							**hTraceDeriMaximum;
+		
+		TH1D 							**hPreAmpTauFit;
+		
 		Int_t							OutputTraceNumber;
 		ofstream					TxtOutputFile;
 

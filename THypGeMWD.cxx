@@ -60,7 +60,7 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext,Int_t NumberOfChannels_ext)          
 	SmoothingMethod = 3;	// Switch for smoothing methods
 	EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
 	PileUpTimeThreshold = 20;	// in µs, no ext parameter yet (28.03.14)
-
+	isSR=0;
 	Aarray = new Double_t* [NumberOfChannels];
 	MWDarray = new Double_t* [NumberOfChannels];
 	Derivative1array = new Double_t* [NumberOfChannels];
@@ -113,6 +113,7 @@ Double_t THypGeMWD::FullAnalysis ()
 		return -1;
 	}
 
+	//AnaStep_PreAmpTauFit();
 	AnaStep_Derivative();
 	if ( SmoothingMethod)
 	{
@@ -201,22 +202,23 @@ Int_t THypGeMWD::AnaStep_BaselineCorrection()
 {
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
-//		if (hSmoothedTrace[ChanNumber]->GetMaximum() == 0)  	// changed in Jülich, trace must be positive to avoid a strong negative drift of the deconvoluted signal!, remaining offset is corrected after deconvolution
-//			return -1;
-//		Double_t sumoffset = 0;
-//		Int_t BaseLineCorrectionBins = 20;//100;		//building average of first <value> bins
-//
-//		for(Int_t i=1;i<=BaseLineCorrectionBins;i++)
-//		{
-//			sumoffset = sumoffset + hSmoothedTrace[ChanNumber]->GetBinContent(i);
-//		}
-//		offset_av= sumoffset/BaseLineCorrectionBins;
+		if (hSmoothedTrace[ChanNumber]->GetMaximum() == 0)  	// changed in Jülich, trace must be positive to avoid a strong negative drift of the deconvoluted signal!, remaining offset is corrected after deconvolution
+			return -1;
+		Double_t sumoffset = 0;
+		Int_t BaseLineCorrectionBins = 20;//100;		//building average of first <value> bins
 
-		offset_av=hSmoothedTrace[ChanNumber]->GetMinimum();			// changed in Jülich, trace must be positive to avoid a strong negative drift of the deconvoluted signal!, remaining offset is corrected after deconvolution
+		for(Int_t i=1;i<=BaseLineCorrectionBins;i++)
+		{
+			sumoffset = sumoffset + hSmoothedTrace[ChanNumber]->GetBinContent(i);
+		}
+		offset_av= sumoffset/BaseLineCorrectionBins;
+
+		//offset_av=hSmoothedTrace[ChanNumber]->GetMinimum();			// changed in Jülich, trace must be positive to avoid a strong negative drift of the deconvoluted signal!, remaining offset is corrected after deconvolution
 		
 		for(Int_t i=1;i<=TraceLength;i++)
 		{
-			hTrace_bc[ChanNumber]->SetBinContent(i,hSmoothedTrace[ChanNumber]->GetBinContent(i) );//- offset_av);
+			hTrace_bc[ChanNumber]->SetBinContent(i,hSmoothedTrace[ChanNumber]->GetBinContent(i) - offset_av);
+			//hTrace_bc[ChanNumber]->SetBinContent(i,hSmoothedTrace[ChanNumber]->GetBinContent(i) );
 		}
 	}
 	return 0;
@@ -235,6 +237,7 @@ Int_t THypGeMWD::AnaStep_DoMovingWindowDeconvolution()
 		//	if (i == 1)
 		//		Aarray[ChanNumber][i] = hTrace_bc[ChanNumber]->GetBinContent(i) ; //- hTrace_bc[ChanNumber]->GetBinContent(i-1) * (1.-(1./tau)) + Aarray[ChanNumber][i-1];
 			Aarray[ChanNumber][i] = hTrace_bc[ChanNumber]->GetBinContent(i) - hTrace_bc[ChanNumber]->GetBinContent(i-1) * (1.-(1./tau)) + Aarray[ChanNumber][i-1] -OffsetValue/tau;
+			//Aarray[ChanNumber][i] = hTrace_bc[ChanNumber]->GetBinContent(i) - hTrace_bc[ChanNumber]->GetBinContent(i-1) * (1.-(0.6914718/tau)) + Aarray[ChanNumber][i-1] -OffsetValue/tau;
 		}
 		//bc correction of amp signal
 		// the idea here is, that after the deconvolution, the lowest point is right at the beginning and this is than corrected to 0
@@ -255,13 +258,14 @@ Int_t THypGeMWD::AnaStep_DoMovingWindowDeconvolution()
 										SumY += Aarray[ChanNumber][i];
 										SumXY += i * Aarray[ChanNumber][i];
 									}
-									mCorrection =(RegressionLength * SumXY - SumX * SumY)/(RegressionLength * SumXX - SumX * SumX);					// linear regression, slope
+								//	mCorrection =(RegressionLength * SumXY - SumX * SumY)/(RegressionLength * SumXX - SumX * SumX);					// linear regression, slope
 								//	mCorrection = (Aarray[ChanNumber][1]-Aarray[ChanNumber][200])/Double_t(200);					// average of slope
 								//	cout << mCorrection << endl;
 
 		for(Int_t i=1;i<=TraceLength;i++)
 		{
-			Aarray[ChanNumber][i]= Aarray[ChanNumber][i]-SumAmpOffset - mCorrection*i;						// bc correction of amplitude signal
+			Aarray[ChanNumber][i]= Aarray[ChanNumber][i]-SumAmpOffset;						// bc correction of amplitude signal
+			//Aarray[ChanNumber][i]= Aarray[ChanNumber][i]-SumAmpOffset - mCorrection*i;						// bc correction of amplitude signal
 			if (i > Int_t(M))
 				MWDarray[ChanNumber][i] = Aarray[ChanNumber][i] - Aarray[ChanNumber][i-Int_t(M)];
 			else
@@ -796,6 +800,7 @@ Int_t THypGeMWD::FindLocalMinimumBin(TH1D* fHisto2,Int_t low2, Int_t high2)				/
 
 void THypGeMWD::SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Width_ext, Int_t Sigma_ext, Int_t SigmaBil_ext, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC)
 {
+	//cout << "Setting parameters of MWD" << endl;
 	M = M_ext;					// window width for MWD
 	L = L_ext;					// top width for MA
 	if (Sigma != Sigma_ext)
@@ -829,11 +834,11 @@ void THypGeMWD::Init()
 	OutputTraceNumber=0;
 
 	TxtOutputFile.open("TraceOutput.txt",std::ofstream::out | std::ofstream::trunc);
-
+	cout << "SR: " << isSR << endl;
 	if (isSR)
 	{
 		TFile *InParameterFile = new TFile(SecondRunParametersFileName);
-
+		cout << "second run mode" << endl;
 
 		//EnergyRtCorrFuncPol = (TF1*) InParameterFile->Get("fProfileFitFuncPolPeak2");
 		//EnergyRtCorrFuncConst= (TF1*) InParameterFile->Get("fProfileFitFuncConstantPeak2");
@@ -1368,6 +1373,11 @@ void  THypGeMWD::ConnectTraceDeriMaximumHistograms(TH1D **hTraceDeriMaximum_ext)
 {
 	hTraceDeriMaximum = hTraceDeriMaximum_ext;
 }
+
+void  THypGeMWD::ConnectPreAmpTauFit(TH1D **hPreAmpTauFit_ext)
+{
+	hPreAmpTauFit = hPreAmpTauFit_ext;
+}
 void THypGeMWD::PossiblePrintTimer(const char *text )
 {
 	if (UseTimer)
@@ -1456,3 +1466,32 @@ void THypGeMWD::WriteTestTraces(Int_t IntervalBetweenOutputs,Int_t MaxTraces)
 	else
 		TxtOutputFile.close();
 }
+
+Int_t THypGeMWD::AnaStep_PreAmpTauFit()
+{
+	// check tau of exp decay
+	//double RangeMin =15;
+	double RangeMin =6;
+	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
+	{
+		
+		TF1 *fOffsetFit=new TF1("fOffsetFit","[0]",RangeMin-2.5,RangeMin-2);
+		hTrace[ChanNumber]->Fit(fOffsetFit,"RQ");
+		cout << "OFFFit: " <<fOffsetFit->GetParameter(0)<<" " ;
+		
+		TF1 *fTauFit=new TF1("fTauFit","[0]*exp(-x/[1])+[2]",RangeMin,20);
+		fTauFit->SetParameters(hTrace[ChanNumber]->GetBinContent(hTrace[ChanNumber]->FindBin(RangeMin))-hTrace[ChanNumber]->GetBinContent(hTrace[ChanNumber]->FindBin(RangeMin)-1),
+								50,
+								(hTrace[ChanNumber]->GetBinContent(hTrace[ChanNumber]->FindBin(RangeMin-2)-1)+hTrace[ChanNumber]->GetBinContent(hTrace[ChanNumber]->FindBin(RangeMin-2))+hTrace[ChanNumber]->GetBinContent(hTrace[ChanNumber]->FindBin(RangeMin-2)+1))/3);
+		cout << "Offset: "<<fTauFit->GetParameter(2)<<endl;
+		fTauFit->SetParLimits(1,20,60);
+		//fTauFit->SetParLimits(2,fTauFit->GetParameter(2)*0.8,fTauFit->GetParameter(2)*1.2);
+		fTauFit->FixParameter(2,fOffsetFit->GetParameter(0));
+		hTrace[ChanNumber]->Fit(fTauFit,"RQB");
+		double tau = fTauFit->GetParameter(1);
+		cout << tau << endl;
+		hPreAmpTauFit[ChanNumber]->Fill(tau);
+		fTauFit->Delete();
+	}
+	return 0;
+}	

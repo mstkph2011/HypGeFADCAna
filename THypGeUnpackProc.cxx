@@ -60,6 +60,8 @@ THypGeUnpackProc::THypGeUnpackProc(const char* name) :
 	}
 	if (!fhTrace[0])
 		cout << "fhTrace[0] not found"<< endl;
+		else
+		cout << "fhTrace[0] found"<< endl;
 }
 //-----------------------------------------------------------
 THypGeUnpackProc::~THypGeUnpackProc()
@@ -255,7 +257,7 @@ Bool_t THypGeUnpackProc::BuildEvent(TGo4EventElement* dest)
    out_evt->SetValid(isValid); // to store or not to store
    // default calling Fill method will set validity of out_evt to return value!
 
-
+	//cout << "unpacked" <<endl; /////debug
    return isValid; // this will overwrite out_evt->SetValid
    // except one would have a Fill method implemented in the output event class!
    // In this case the return value can be handled differently there.

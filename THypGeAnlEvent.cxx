@@ -19,5 +19,5 @@ using namespace std;
 void THypGeAnlEvent::Clear(Option_t *t)
 {
    for (int i=0;i<HypGe_NUM_CHAN;i++)
-      frData[i] = 0.;
+      frData[i] = i;
 }

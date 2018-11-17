@@ -37,7 +37,7 @@ extern "C" {
 #include "THypGeAnlEvent.h"
 #include "THypGeNaIAnalysisEvent.h"
 #include "TGo4Version.h"
-
+#include "TGo4FileStoreParameter.h"
 #include "Go4EventServer.h"
 
 #include "THypGeSpectrumAnalyser.h"
@@ -65,6 +65,11 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 fEvents(0),
 	 fLastEvent(0)
 {
+	
+	
+	//char* Outfile = "test.root";
+	char* Outfile = "/lustre/miifs05/scratch/him-specf/hyp/steinen/COSYBeamtestAna/july2014/jobs/testtree.root";
+	
 	 if (!TGo4Version::CheckVersion(__GO4BUILDVERSION__)) {
 			cout << "****	Go4 version mismatch" << endl;
 			exit(-1);
@@ -79,6 +84,9 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 sigmaGaus = 3;			// sigma of gaussian shaper
 	 sigmaBil = 1500;			// sigma of gaussian shaper
 	 tau = 6210;			// tau of deconvolution
+	 //tau = 7647;			// tau of deconvolution
+	 //tau = 2500;			// tau of deconvolution
+	 //tau = 6816;			// tau of deconvolution
 	 EnableMA = 1;			// Switch for second moving average filter
 	 SmoothingMethod = 0;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
 	 EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
@@ -137,7 +145,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	if (argc>11)
 	{
 		SecondAnalysisRound = atoi(argv[11]);
-		cout << "SecondAnalysisRound\t" << argv[10] << endl;
+		cout << "SecondAnalysisRound\t" << argv[11] << endl;
 	}
 	if (argc>12)
 	{
@@ -169,7 +177,10 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 AddAnalysisStep(step2);
 // These settings will be overwritten by setup.C
 	 step2->SetSourceEnabled(kFALSE);
-	 step2->SetStoreEnabled(kFALSE);
+	 TGo4FileStoreParameter* store = new TGo4FileStoreParameter(Outfile);
+   
+	 step2->SetEventStore(store);
+	 step2->SetStoreEnabled(kTRUE);
 	 step2->SetProcessEnabled(kTRUE);
 	cout << "step3"<<endl;
  // Create step 3 Analysis.
@@ -179,7 +190,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 factory3->DefOutputEvent("NaIAnalysisEvent", "THypGeNaIAnalysisEvent"); // object name, class name
 	 TGo4AnalysisStep* step3		= new TGo4AnalysisStep("NaIAnalysis",factory3,0,0,0);
 	 step3->SetErrorStopEnabled(kTRUE);
-	 AddAnalysisStep(step3);
+//AddAnalysisStep(step3);
  // These settings will be overwritten by setup.C
 	 step3->SetSourceEnabled(kFALSE);
 	 step3->SetStoreEnabled(kFALSE);
@@ -190,7 +201,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 cout << "ParAdded " << AddParameter(fPar)  << endl;
 	 fPar->SetParameters( MWDm, MAl,NoS, Width ,sigmaGaus,sigmaBil, tau, EnableMA, SmoothingMethod, EnableBaselineCorrection);
 	 fPar->SetSecondAnaRoundParameters(SecondAnalysisRound,ParameterFileName);
-	
+		cout <<"Second run??? "<< fPar->GetSecondAnalysisRound()<< endl;
 	char chis[100], chead[100];
 	for(Int_t i=0;i<FADC_CHAN;i++)
 		{

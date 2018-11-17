@@ -107,7 +107,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 			//create histogram for energy spectrum from MA
 		snprintf(chis,30,"Energy_%02d",i+1);
 		snprintf(chead,63,"Energy spectrum from MA signal channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
-		fhEnergySpectrum[i] = new TH1D(chis,chead,16000,0,8000);
+		fhEnergySpectrum[i] = new TH1D(chis,chead,32000,0,16000);
 			AddHistogram(fhEnergySpectrum[i],"Energyspectrum");
 		//create histogram for energy spectrum
 		snprintf(chis,30,"EnergyCorr_%02d",i+1);
@@ -129,6 +129,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fhEnergySpectrum_withCut[i] = new TH1D(chis,chead,4000,0,4000);
 			AddHistogram(fhEnergySpectrum_withCut[i],"Energyspectrum");
 
+		
 		//risetime histos
 		snprintf(chis,30,"Risetime1090_%02d",i+1);
 		snprintf(chead,63,"Risetime1090 %2d; Risetime 1090 [ns];Counts [a.u.]",i+1);
@@ -225,7 +226,10 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fhTraceDeriMaximumPosition[i]  =new TH1D (chis,chead,100,0,100);
 			AddHistogram(fhTraceDeriMaximumPosition[i],"TraceDeriMaxPos");
 
-
+		snprintf(chis,50,"PreAmpTauFit_%02d",i+1);
+		snprintf(chead,100,"PreAmpTauFit_%02d;PreAmp Tau [#mus];counts [a.u.]",i+1);
+		fhPreAmpTauFit[i] =new TH1D (chis,chead,1000,0,100);
+			AddHistogram(fhPreAmpTauFit[i],"PreAmpTauFit");		
 	}
 	for (int i = 0; i < 20; i++)
 	{
@@ -282,8 +286,11 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fMWDAna->ConnectPulseFilteredHistograms(fhEnergySpectrumFirstPulse, fhEnergySpectrumOtherPulses, fhRisetime1090Co1332FirstPulse, fhRisetime1090Co1332OtherPulses);
 		fMWDAna->ConnectRtCorrelationHistograms(fhRt1030Rt1090Co1332Only,fhRt1030Rt80100Co1332Only);
 		fMWDAna->ConnectTraceDeriMaximumHistograms(fhTraceDeriMaximumPosition);
-
+		fMWDAna->ConnectPreAmpTauFit(fhPreAmpTauFit);
+		
 		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection());
+		
+		cout << "Sr in AnaProc: " << fHypPar->GetSecondAnalysisRound() << endl;
 		if (fHypPar->GetSecondAnalysisRound())
 		{
 			fMWDAna->IsSecondRun();

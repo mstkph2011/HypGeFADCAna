@@ -103,6 +103,7 @@ Int_t THypGeSpectrumAnalyser::AnalyseSpectrum()
 	DrawCalibratedSpectrum();		// after FWHM and FWTM for TArrow s
 	ExportToTextFile();
 	ExportToRootFile();
+	cout << "Analysis finished!" << endl;
 	return 0;
 }
 
@@ -848,6 +849,7 @@ Int_t THypGeSpectrumAnalyser::DrawCalibratedSpectrum()
 		it++;
 		it2++;
 	}
+	cout << "Calibrated Spectrum drawn!" << endl;
 	return 0;
 }
 
@@ -883,6 +885,7 @@ Int_t THypGeSpectrumAnalyser::ExportToTextFile(TString TxtFilename_ext )
 		j++;
 	}
 	TxtFile.close();
+	cout << "Export to text file finished"<<endl;
 	return 0;
 }
 Int_t THypGeSpectrumAnalyser::ExportToRootFile(TString RootFilename_ext )
@@ -917,11 +920,18 @@ Int_t THypGeSpectrumAnalyser::ExportToRootFile(TString RootFilename_ext )
 		it2++;
 	}
 	DataNTuple->Write();
-	FitFunc[2]->Write();
+
+	if (nPeaksFound==2)
+		FitFunc[1]->Write();
+	else if (nPeaksFound>2)
+		FitFunc[2]->Write();
+
 	fhEnergySpectrum->Write();
 	fCalCanvas->Write();
 	fCalSpecCanvas->Write();
 	RootFile->Close();
+	cout << "Export to root file finished"<<endl;
+	cout << "Written to: " << RootFilenameWithPath.Data()<<endl;
 	return 0;
 }
 

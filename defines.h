@@ -8,7 +8,7 @@
 //#define TRACE_LENGTH 4096
 //#define TRACE_LENGTH 16384
 //#define TRACE_LENGTH 32768
-#define FADC_CHAN 2
+#define FADC_CHAN 1
 // second one is actuaclly NaI!!!!!! taken care of in AnlProc files, changed to 1 there. Change for Jülich 2015 (steinen, 06.05.2015)
 // FADC_CHAN max 8 !!	
 
