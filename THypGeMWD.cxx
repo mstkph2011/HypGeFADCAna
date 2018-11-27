@@ -60,6 +60,7 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext,Int_t NumberOfChannels_ext)          
 	SmoothingMethod = 3;	// Switch for smoothing methods
 	EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
 	PileUpTimeThreshold = 20;	// in µs, no ext parameter yet (28.03.14)
+	BaselineValue=1400;
 	isSR=0;
 	Aarray = new Double_t* [NumberOfChannels];
 	MWDarray = new Double_t* [NumberOfChannels];
@@ -68,6 +69,7 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext,Int_t NumberOfChannels_ext)          
 	Derivative3array = new Double_t* [NumberOfChannels];
 	Derivative4array = new Double_t* [NumberOfChannels];
 	MWDMAarray = new Double_t* [NumberOfChannels];
+	MWDMA2array = new Double_t* [NumberOfChannels];
 	Sarray = new Double_t* [NumberOfChannels];		// array to store the result of the direct filter
 	Parray = new Double_t* [NumberOfChannels];		// array to store an intermediate result of the direct filter
 
@@ -80,6 +82,7 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext,Int_t NumberOfChannels_ext)          
 		Derivative3array[ChanNumber] = new Double_t[TraceLength+1];
 		Derivative4array[ChanNumber] = new Double_t[TraceLength+1];
 		MWDMAarray[ChanNumber] = new Double_t[TraceLength+1];
+		MWDMA2array[ChanNumber] = new Double_t[TraceLength+1];
 		Sarray[ChanNumber] = new Double_t[TraceLength+1];		// array to store the result of the direct filter
 		Parray[ChanNumber] = new Double_t[TraceLength+1];		// array to store an intermediate result of the direct filter
 	}
@@ -148,12 +151,12 @@ Double_t THypGeMWD::FullAnalysis ()
 	AnaStep_FillEnergyspectrum();				//needs MWD and (if EnableMA) MA too
 	PossiblePrintTimer("Energyspectrum step used");
 	
-	//AnaStep_ExtractRisetime();		//needs Energyspectrum
-	AnaStep_ExtractRisetimeDeconv();		//needs Energyspectrum
+	AnaStep_ExtractRisetime();		//needs Energyspectrum
+	//AnaStep_ExtractRisetimeDeconv();		//needs Energyspectrum
 	PossiblePrintTimer("Risetime step used ");
 
-	AnaStep_DoDirectFilter();
-	PossiblePrintTimer("Direct filter step used ");
+	//AnaStep_DoDirectFilter();
+	//PossiblePrintTimer("Direct filter step used ");
 
 	//cout << "finished direct filter"<< endl;
 	AnaStep_FillHistograms();
@@ -211,10 +214,12 @@ Int_t THypGeMWD::AnaStep_BaselineCorrection()
 		{
 			sumoffset = sumoffset + hSmoothedTrace[ChanNumber]->GetBinContent(i);
 		}
-		offset_av= sumoffset/BaseLineCorrectionBins;
+		//offset_av= sumoffset/BaseLineCorrectionBins;
 
 		//offset_av=hSmoothedTrace[ChanNumber]->GetMinimum();			// changed in Jülich, trace must be positive to avoid a strong negative drift of the deconvoluted signal!, remaining offset is corrected after deconvolution
-		
+		offset_av=BaselineValue;			// changed in Jülich, trace must be positive to avoid a strong negative drift of the deconvoluted signal!, remaining offset is corrected after deconvolution
+					
+
 		for(Int_t i=1;i<=TraceLength;i++)
 		{
 			hTrace_bc[ChanNumber]->SetBinContent(i,hSmoothedTrace[ChanNumber]->GetBinContent(i) - offset_av);
@@ -230,13 +235,23 @@ Int_t THypGeMWD::AnaStep_DoMovingWindowDeconvolution()
 {
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
-		Double_t OffsetValue = 0;//hTrace_bc[ChanNumber]->GetMinimum();
-		Aarray[ChanNumber][0] = hTrace_bc[ChanNumber]->GetBinContent(0);			// first value of baseline corrected trace
-		for(Int_t i=1;i<=TraceLength;i++)
+		Double_t sumfirst = 0;
+		Int_t FirstBins = 20;//100;		//building average of first <value> bins
+		for(Int_t i=1;i<=FirstBins;i++)
+		{
+			//sumfirst += hSmoothedTrace[ChanNumber]->GetBinContent(i);
+			sumfirst += hTrace_bc[ChanNumber]->GetBinContent(i);
+		}
+		Double_t OffsetValue= 0;//sumfirst/FirstBins;
+		//Double_t OffsetValue = 0;//hTrace_bc[ChanNumber]->GetMinimum();
+		//Aarray[ChanNumber][0] = hTrace_bc[ChanNumber]->GetBinContent(1);			// first value of baseline corrected trace
+		Aarray[ChanNumber][0] = OffsetValue;			// first value of baseline corrected trace
+		Aarray[ChanNumber][1] = hTrace_bc[ChanNumber]->GetBinContent(1);			// first value of baseline corrected trace
+		for(Int_t i=2;i<=TraceLength;i++)
 		{
 		//	if (i == 1)
 		//		Aarray[ChanNumber][i] = hTrace_bc[ChanNumber]->GetBinContent(i) ; //- hTrace_bc[ChanNumber]->GetBinContent(i-1) * (1.-(1./tau)) + Aarray[ChanNumber][i-1];
-			Aarray[ChanNumber][i] = hTrace_bc[ChanNumber]->GetBinContent(i) - hTrace_bc[ChanNumber]->GetBinContent(i-1) * (1.-(1./tau)) + Aarray[ChanNumber][i-1] -OffsetValue/tau;
+			Aarray[ChanNumber][i] = hTrace_bc[ChanNumber]->GetBinContent(i) - hTrace_bc[ChanNumber]->GetBinContent(i-1) * (1.-(1./tau)) + Aarray[ChanNumber][i-1];// -OffsetValue/tau;
 			//Aarray[ChanNumber][i] = hTrace_bc[ChanNumber]->GetBinContent(i) - hTrace_bc[ChanNumber]->GetBinContent(i-1) * (1.-(0.6914718/tau)) + Aarray[ChanNumber][i-1] -OffsetValue/tau;
 		}
 		//bc correction of amp signal
@@ -262,7 +277,7 @@ Int_t THypGeMWD::AnaStep_DoMovingWindowDeconvolution()
 								//	mCorrection = (Aarray[ChanNumber][1]-Aarray[ChanNumber][200])/Double_t(200);					// average of slope
 								//	cout << mCorrection << endl;
 
-		for(Int_t i=1;i<=TraceLength;i++)
+		for(Int_t i=2;i<=TraceLength;i++)
 		{
 			Aarray[ChanNumber][i]= Aarray[ChanNumber][i]-SumAmpOffset;						// bc correction of amplitude signal
 			//Aarray[ChanNumber][i]= Aarray[ChanNumber][i]-SumAmpOffset - mCorrection*i;						// bc correction of amplitude signal
@@ -293,6 +308,17 @@ Int_t THypGeMWD::AnaStep_DoMovingAverageFilter()
 				MWDMAarray[ChanNumber][n] = MWDMAarray[ChanNumber][n-1] + 1./L * (hMWD[ChanNumber]->GetBinContent(n) - hMWD[ChanNumber]->GetBinContent(1));
 
 			hMWDMA[ChanNumber]->SetBinContent(n,MWDMAarray[ChanNumber][n]);
+		}
+		//second MA
+		MWDMA2array[ChanNumber][0] = hMWDMA[ChanNumber]->GetBinContent(1);
+		for(Int_t n=1;n<=TraceLength;n++)
+		{
+			if (n > Int_t(L))
+				MWDMA2array[ChanNumber][n] = MWDMA2array[ChanNumber][n-1] + 1./L * (hMWDMA[ChanNumber]->GetBinContent(n) - hMWDMA[ChanNumber]->GetBinContent(n-Int_t(L)));
+			else
+				MWDMA2array[ChanNumber][n] = MWDMA2array[ChanNumber][n-1] + 1./L * (hMWDMA[ChanNumber]->GetBinContent(n) - hMWDMA[ChanNumber]->GetBinContent(1));
+
+			hMWDMA2[ChanNumber]->SetBinContent(n,MWDMA2array[ChanNumber][n]);
 		}
 	}
 
@@ -366,36 +392,49 @@ Int_t THypGeMWD::AnaStep_ExtractRisetime()
 {
 	//cout << "new Trace" << endl;
 		
-	Double_t RiseX10, RiseX30,RiseX80, RiseX90;
-	Double_t RiseX1090, RiseX3090, RiseT1090, RiseT3090;
+	Double_t RiseX10, RiseX30,RiseX80, RiseX90,DeriMaxX;
+	Double_t RiseX1090, RiseX3090, RiseT1090, RiseT3090,DeriMaxT90T,DeriMaxT90TRel;
 	Double_t threshold_Risetime = 50;		//threshold for signals to be identified as useful for Risetime calculation
-
+	double MinAvg=0;
+	double MaxAvg=0;
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
 
 		mTraceposRt10[ChanNumber].clear();
 		mTraceposRt30[ChanNumber].clear();
 		mTraceposRt90[ChanNumber].clear();
+		mTraceposDeriMaxT90T[ChanNumber].clear();
+		mTraceposDeriMaxT90TRel[ChanNumber].clear();
 		for (std::map<Int_t,Double_t>::iterator it=mTraceposEnergy[ChanNumber].begin(); it!=mTraceposEnergy[ChanNumber].end(); ++it)
 		{
 			//it->first is bin number of the beginning of the rising edge
-
-			Int_t MinimumPosition = FindLocalMinimumBin(hTrace[ChanNumber], it->first-10,it->first+10);
-			Int_t MaximumPosition = FindLocalMaximumBin(hTrace[ChanNumber],it->first,it->first+60);
+			
+			Int_t MinimumPosition = FindLocalMinimumBin(hTrace[ChanNumber], it->first-10,it->first+40);
+			Int_t MaximumPosition = FindLocalMaximumBin(hTrace[ChanNumber],it->first,it->first+80);
 			//cout << "lb "<< it->first<<endl;
-			if(hTrace[ChanNumber]->GetBinContent(MaximumPosition) > threshold_Risetime+hTrace[ChanNumber]->GetBinContent(MinimumPosition))
+			for(int i =-2;i<3;i++)
 			{
-				Double_t Amp10Threshold = (    hTrace[ChanNumber]->GetBinContent(MaximumPosition)+ 9 * hTrace[ChanNumber]->GetBinContent(MinimumPosition))/10;		//Calculates 10% threshold of pulse
-				Double_t Amp30Threshold = (3 * hTrace[ChanNumber]->GetBinContent(MaximumPosition)+ 7 * hTrace[ChanNumber]->GetBinContent(MinimumPosition))/10;		//Calculates 30% threshold of pulse
-				Double_t Amp80Threshold = (8 * hTrace[ChanNumber]->GetBinContent(MaximumPosition)+ 2 * hTrace[ChanNumber]->GetBinContent(MinimumPosition))/10;		//Calculates 90% threshold of pulse
-				Double_t Amp90Threshold = (9 * hTrace[ChanNumber]->GetBinContent(MaximumPosition)+     hTrace[ChanNumber]->GetBinContent(MinimumPosition))/10;		//Calculates 90% threshold of pulse
-				//cout << "Max " << hTrace[ChanNumber]->GetBinContent(MaximumPosition) << ", Min " << hTrace[ChanNumber]->GetBinContent(MinimumPosition) << ", Amp10Threshold " << Amp10Threshold << endl;
+				MinAvg+=hTrace[ChanNumber]->GetBinContent(MinimumPosition+i)/5.;
+				MaxAvg+=hTrace[ChanNumber]->GetBinContent(MaximumPosition+i)/5.;		//hier stimmt was nicht
+			}
+				//cout << MaxAvg << endl;				
+				//cout << MinAvg << endl;				
+			if(MaxAvg > threshold_Risetime+MinAvg)
+			{
+			
+				Double_t Amp10Threshold = (    MaxAvg+ 9 * MinAvg)/10.;		//Calculates 10% threshold of pulse
+				Double_t Amp30Threshold = (3 * MaxAvg+ 7 * MinAvg)/10.;		//Calculates 30% threshold of pulse
+				Double_t Amp80Threshold = (8 * MaxAvg+ 2 * MinAvg)/10.;		//Calculates 90% threshold of pulse
+				Double_t Amp90Threshold = (9 * MaxAvg+     MinAvg)/10.;		//Calculates 90% threshold of pulse
+				//cout << "Max " << MaxAvg << ", Min " << MinAvg << ", Amp10Threshold " << Amp10Threshold << endl;
 				//cout << "10t "<< Amp10Threshold << endl;
 				RiseX10 = Double_t(FindFirstBinAboveInterpolated(hTrace[ChanNumber],Amp10Threshold,MinimumPosition,MaximumPosition,3));
 				RiseX30 = Double_t(FindFirstBinAboveInterpolated(hTrace[ChanNumber],Amp30Threshold,MinimumPosition,MaximumPosition,3));
 				RiseX80 = Double_t(FindFirstBinAboveInterpolated(hTrace[ChanNumber],Amp80Threshold,MinimumPosition,MaximumPosition,3));
 				RiseX90 = Double_t(FindFirstBinAboveInterpolated(hTrace[ChanNumber],Amp90Threshold,MinimumPosition,MaximumPosition,3));
 
+				DeriMaxX = Double_t(FindLocalMaximumBin(hTraceDeri[ChanNumber],MinimumPosition,MaximumPosition));
+	
 				//cout << "R10" << RiseX10 << endl;
 				//cout << "R30" << RiseX30 << endl;
 				//cout << "R90" << RiseX90 << endl;
@@ -403,8 +442,11 @@ Int_t THypGeMWD::AnaStep_ExtractRisetime()
 				RiseX1090 = RiseX90 - RiseX10;
 				RiseX3090 = RiseX90 - RiseX30;
 				
+				
 				RiseT1090 = RiseX1090 * 10;		//Conversion into nanoseconds (FADC 100 MS/s)
 				RiseT3090 = RiseX3090 * 10;
+				DeriMaxT90T=(RiseX90-DeriMaxX)*10;
+				DeriMaxT90TRel=DeriMaxT90T/RiseT1090;
 				//cout << RiseT1090 << endl;
 
 				mTraceposRt10[ChanNumber][it->first] = RiseX10*10;
@@ -412,8 +454,15 @@ Int_t THypGeMWD::AnaStep_ExtractRisetime()
 				mTraceposRt80[ChanNumber][it->first] = RiseX80*10;
 				mTraceposRt90[ChanNumber][it->first] = RiseX90*10;
 				mTraceposRratio[ChanNumber][it->first] = (RiseX90-RiseX30)/(RiseX90+RiseX30 - 2* RiseX10);
+				mTraceposDeriMaxT90T[ChanNumber][it->first] = DeriMaxT90T;
+				mTraceposDeriMaxT90TRel[ChanNumber][it->first] = DeriMaxT90TRel;
 				mTraceposMinPositionBin[ChanNumber][it->first] = MinimumPosition;
 				mTraceposMaxPositionBin[ChanNumber][it->first] = MaximumPosition;
+				
+				//if (RiseT1090 <10)
+				//{
+				//	cout << "1090 "<<RiseT1090 << " 3090 " << RiseT3090 << " Amp " << MaxAvg-MinAvg << endl;
+				//}
 			}
 		}
 	}
@@ -485,6 +534,17 @@ Int_t		THypGeMWD::AnaStep_FillHistograms()
 	{
 		Int_t PulseNumber = 0;
 
+
+		for (std::map<Int_t,Double_t>::iterator it=mTraceposEnergyMA2[ChanNumber].begin(); it!=mTraceposEnergyMA2[ChanNumber].end(); ++it)
+		{
+			std::map<Int_t,Double_t>::iterator it2 = mTraceposRt10[ChanNumber].find(it->first);		// check if a risetime was calculated for a found pulse with calculated energy, only pulses where both is found should be considered
+			std::map<Int_t,Int_t>::iterator it3 = mPulseNumber[ChanNumber].find(it->first);		// get the number of the pulse in the trace (
+
+			if (it2->first)
+			{
+				hEnergySpectrumMA2[ChanNumber]->Fill(PulseEnergy);
+			}
+		}	
 		for (std::map<Int_t,Double_t>::iterator it=mTraceposEnergy[ChanNumber].begin(); it!=mTraceposEnergy[ChanNumber].end(); ++it)
 		{
 			std::map<Int_t,Double_t>::iterator it2 = mTraceposRt10[ChanNumber].find(it->first);		// check if a risetime was calculated for a found pulse with calculated energy, only pulses where both is found should be considered
@@ -492,6 +552,7 @@ Int_t		THypGeMWD::AnaStep_FillHistograms()
 
 			if (it2->first)
 			{
+				//cout <<it2->first<<endl;
 				PulseStartingTime = it->first;
 				PulseEnergy = it->second;
 				//1D histos
@@ -521,6 +582,14 @@ Int_t		THypGeMWD::AnaStep_FillHistograms()
 					if (PulseEnergy > Co60PeakRangeMin && PulseEnergy < Co60PeakRangeMax )
 						fhRisetime1090OtherPulses[ChanNumber]->Fill(mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime]);
 				}
+				//DeriMaxT90 histograms
+				fhDeriMaxT90[ChanNumber]->Fill(mTraceposDeriMaxT90T[ChanNumber][PulseStartingTime]);
+				fhDeriMaxT90Rel[ChanNumber]->Fill(mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]);
+				fhEnergy_DeriMaxT90[ChanNumber]->Fill(mTraceposDeriMaxT90T[ChanNumber][PulseStartingTime],PulseEnergy);
+				fhEnergy_DeriMaxT90Rel[ChanNumber]->Fill(mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime],PulseEnergy);
+				fhDerimaxT90Rel_T1090[ChanNumber]->Fill(mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime],mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime]);
+				fhDerimaxT90_T1090[ChanNumber]->Fill(mTraceposDeriMaxT90T[ChanNumber][PulseStartingTime],mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime]);
+				fhDerimaxT90_DerimaxT90Rel[ChanNumber]->Fill(mTraceposDeriMaxT90T[ChanNumber][PulseStartingTime],mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]);
 
 				//2D histos
 				//fill rt1090 - energy correlation
@@ -798,7 +867,7 @@ Int_t THypGeMWD::FindLocalMinimumBin(TH1D* fHisto2,Int_t low2, Int_t high2)				/
 }
 
 
-void THypGeMWD::SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Width_ext, Int_t Sigma_ext, Int_t SigmaBil_ext, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC)
+void THypGeMWD::SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Width_ext, Int_t Sigma_ext, Int_t SigmaBil_ext, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC,double BaselineValue_ext)
 {
 	//cout << "Setting parameters of MWD" << endl;
 	M = M_ext;					// window width for MWD
@@ -815,6 +884,7 @@ void THypGeMWD::SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Wid
 	EnableMA = EnaMA;			// Switch for second moving average filter
 	SmoothingMethod = EnaSmo;	// Switch smoothing on or off
 	EnableBaselineCorrection = EnaBC; 	//Switch baseline correction on or off
+	BaselineValue= BaselineValue_ext;
 	//cout << "new parameters set"<< endl;
 }
 
@@ -1019,10 +1089,13 @@ void THypGeMWD::EvaluateMA()
 	Int_t posMax2 = 0;
 	Int_t SignalCenter = 0;
 	Int_t SumMax = 0;
+	Int_t SumMaxMultiMA = 0;
 	Int_t SumOffsetLeft, SumOffsetRight, OffsetWidth;
+	Int_t SumOffsetLeftMultiMA, SumOffsetRightMultiMA;
 	Int_t a = M-L;				// width of top of trapezoid, feet width is M+L
 	Int_t b = M;
 	Double_t Energy;
+	Double_t EnergyMultiMA;
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
 		mTraceposEnergy[ChanNumber].clear();
@@ -1055,12 +1128,14 @@ void THypGeMWD::EvaluateMA()
 				for (Int_t nBin = SignalCenter-a/4 ; nBin <= SignalCenter + a/4 ; nBin++)
 				{
 					SumMax +=  hMWDMA[ChanNumber]->GetBinContent(nBin);
+					SumMaxMultiMA +=  hMWDMA2[ChanNumber]->GetBinContent(nBin);
 				}
 				for (Int_t nBin = posMax1-a-20 ; nBin <= posMax1-a ; nBin++)
 				{
 					if (nBin >0)
 					{
 						SumOffsetLeft +=  hMWDMA[ChanNumber]->GetBinContent(nBin);
+						SumOffsetLeftMultiMA +=  hMWDMA2[ChanNumber]->GetBinContent(nBin);
 						OffsetWidth++;
 					}
 				}
@@ -1075,13 +1150,17 @@ void THypGeMWD::EvaluateMA()
 				*/
 
 				Energy = Double_t(SumMax)/(a/2+1) - Double_t(SumOffsetRight + SumOffsetLeft)/OffsetWidth;
+				
+				EnergyMultiMA = Double_t(SumMaxMultiMA)/(a/2+1) - Double_t(SumOffsetRightMultiMA + SumOffsetLeftMultiMA)/OffsetWidth;
 				if (Energy > EnergyThreshold)
 				{
 					//int leftborder_low = hMWDMA[ChanNumber]->GetBin(SignalCenter-1.2*(M+L)/2);			// start of MA signal
 					int leftborder_low = hMWDMA[ChanNumber]->GetBin(SignalCenter-(M+L)/2-30);			// start of MA signal
 					mTraceposEnergy[ChanNumber][leftborder_low]=Energy;
+					mTraceposEnergyMA2[ChanNumber][leftborder_low]=EnergyMultiMA;
 					mSignalTime[ChanNumber][leftborder_low]= SignalCenter;
 					mPulseNumber[ChanNumber][leftborder_low]= PulseCounter;
+					//cout << Energy << endl;
 					PulseCounter++;
 				}
 			}
@@ -1290,7 +1369,7 @@ void THypGeMWD::DoFourierBackTransformation()
 	
 }
 
-void THypGeMWD::ConnectTraceHistograms(TH1D** hTrace_ext,TH1D** hTraceDeri_ext, TH1D** hSmoothedTrace_ext, TH1D** hTrace_bc_ext, TH1D** hAmplitude_ext,TH1D** hMWD_ext,TH1D** hMWDMA_ext,TH1D** hTrace_Direct_ext)
+void THypGeMWD::ConnectTraceHistograms(TH1D** hTrace_ext,TH1D** hTraceDeri_ext, TH1D** hSmoothedTrace_ext, TH1D** hTrace_bc_ext, TH1D** hAmplitude_ext,TH1D** hMWD_ext,TH1D** hMWDMA_ext,TH1D** hTrace_Direct_ext,TH1D** hMWDMA2_ext)
 {
 	
 		hTrace = hTrace_ext; 
@@ -1300,12 +1379,14 @@ void THypGeMWD::ConnectTraceHistograms(TH1D** hTrace_ext,TH1D** hTraceDeri_ext, 
 		hAmplitude = hAmplitude_ext;
 		hMWD = hMWD_ext;
 		hMWDMA = hMWDMA_ext;
+		hMWDMA2 = hMWDMA2_ext;
 		hTrace_Direct = hTrace_Direct_ext;
 }
-void THypGeMWD::Connect1DEnergySpectraHistograms(TH1D **hEnergySpectrumMA_ext, TH1D **hEnergySpectrumMACorr_ext ,TH1D **hEnergySpectrumWithCut_ext)
+void THypGeMWD::Connect1DEnergySpectraHistograms(TH1D **hEnergySpectrumMA_ext, TH1D **hEnergySpectrumMACorr_ext ,TH1D **hEnergySpectrumWithCut_ext,TH1D **hEnergySpectrumMA2_ext)
 {
 
 	hEnergySpectrumMA = hEnergySpectrumMA_ext;
+	hEnergySpectrumMA2 = hEnergySpectrumMA2_ext;
 	hEnergySpectrumMACorr = hEnergySpectrumMACorr_ext;
 	hEnergySpectrumWithCut = hEnergySpectrumWithCut_ext;
 }
@@ -1495,3 +1576,15 @@ Int_t THypGeMWD::AnaStep_PreAmpTauFit()
 	}
 	return 0;
 }	
+
+void THypGeMWD::ConnectDeriMaxHistograms(TH1D ** fhDeriMaxT90_ext,TH1D **fhDeriMaxT90Rel_ext, TH2D **fhEnergy_DeriMaxT90_ext,TH2D **fhEnergy_DeriMaxT90Rel_ext,TH2D **fDerimaxT90_T1090_ext,TH2D **fDerimaxT90Rel_T1090_ext,TH2D **fDerimaxT90_DerimaxT90Rel_ext)	
+{
+	fhDeriMaxT90=fhDeriMaxT90_ext;
+	fhDeriMaxT90Rel=fhDeriMaxT90Rel_ext;
+	fhEnergy_DeriMaxT90=fhEnergy_DeriMaxT90_ext;
+	fhEnergy_DeriMaxT90Rel=fhEnergy_DeriMaxT90Rel_ext;
+	fhDerimaxT90Rel_T1090=fDerimaxT90Rel_T1090_ext;
+	fhDerimaxT90_T1090=fDerimaxT90_T1090_ext;
+	fhDerimaxT90_DerimaxT90Rel=fDerimaxT90_DerimaxT90Rel_ext;
+}
+

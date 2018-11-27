@@ -21,6 +21,7 @@
 
 class TH1D;
 class TH2D;
+class TTree;
 class TGo4MbsEvent;
 class TGo4WinCond;
 class THypGeUnpackEvent;
@@ -51,7 +52,8 @@ class THypGeAnalysis : public TGo4Analysis  {
       
       //put elements here, that have to be accesed in more than one step or in UserPostLoop()
       TH1D							 	*fhTrace[FADC_CHAN];
-
+      TH1D							 	*fhTraceLN[FADC_CHAN];
+		//TTree							*ftDataTree;
 
 
 
@@ -67,6 +69,7 @@ class THypGeAnalysis : public TGo4Analysis  {
 			int 								EnableBaselineCorrection ; 	//Switch baseline correction on or off
 			int									SecondAnalysisRound;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
 			TString							ParameterFileName;		// name and path of parameters file
+			double							BaselineValue;
 			ClassDef(THypGeAnalysis,1)
 };
 

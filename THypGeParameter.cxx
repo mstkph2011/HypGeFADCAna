@@ -22,9 +22,9 @@ THypGeParameter::THypGeParameter(const char* name) :
 
 }
 
-void THypGeParameter::SetParameters( Int_t M, Int_t L, Int_t NOS_ext, Int_t Width_ext, Int_t Sigma, Int_t SigmaBil, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC)
+void THypGeParameter::SetParameters( Int_t M, Int_t L, Int_t NOS_ext, Int_t Width_ext, Int_t Sigma, Int_t SigmaBil, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC,double BaselineValue_ext)
 {
-	if (MWDm != M || MAl != L || NoOfSmoothing != NOS_ext || Width != Width_ext || sigmaGaus != Sigma || sigmaBil != SigmaBil || tau != tau_ext || EnableMA != EnaMA || SmoothingMethod != EnaSmo || EnableBaselineCorrection != EnaBC )
+	if (MWDm != M || MAl != L || NoOfSmoothing != NOS_ext || Width != Width_ext || sigmaGaus != Sigma || sigmaBil != SigmaBil || tau != tau_ext || EnableMA != EnaMA || SmoothingMethod != EnaSmo || EnableBaselineCorrection != EnaBC || BaselineValue_ext != BaselineValue)
 	{
 		ParametersChanged = 1;
 		MWDm = M;			// M of MWD
@@ -37,6 +37,7 @@ void THypGeParameter::SetParameters( Int_t M, Int_t L, Int_t NOS_ext, Int_t Widt
 		EnableMA = EnaMA;			// Switch for second moving average filter
 		SmoothingMethod = EnaSmo;	// Switch smoothing on or off
 		EnableBaselineCorrection = EnaBC; 	//Switch baseline correction on or off
+		BaselineValue = BaselineValue_ext;
 		//std::cout << "MWDm is \t" << MWDm << "\t" << M << std::endl;
 	}
 	else
@@ -121,4 +122,13 @@ void THypGeParameter::SetParametersChanged(Bool_t ParamaterChangedValue)
 {
 	ParametersChanged = ParamaterChangedValue;
 }
-
+double	THypGeParameter::GetBaselineValue()
+{return BaselineValue;}
+void THypGeParameter::SetTree(TTree* tree_ext)
+{
+	fTree=tree_ext;
+}
+TTree* THypGeParameter::GetTree()
+{
+	return fTree;
+}

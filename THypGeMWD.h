@@ -51,8 +51,8 @@ class THypGeMWD
 		//Double_t CalculateRisetime(TH1D* hTrace_ext,Double_t* times);
 		
 		Double_t 					FullAnalysis ();
-		void							ConnectTraceHistograms(TH1D** hTrace_ext,TH1D** hTraceDeri_ext, TH1D** hSmoothedTrace_ext, TH1D** hTrace_bc_ext, TH1D** hAmplitude_ext,TH1D** hMWD_ext,TH1D** hMWDMA_ext,TH1D** hTrace_Direct_ext);
-		void 							Connect1DEnergySpectraHistograms(TH1D **hEnergySpectrumMA_ext, TH1D **hEnergySpectrumMACorr_ext ,TH1D **hEnergySpectrumWithCut_ext);
+		void							ConnectTraceHistograms(TH1D** hTrace_ext,TH1D** hTraceDeri_ext, TH1D** hSmoothedTrace_ext, TH1D** hTrace_bc_ext, TH1D** hAmplitude_ext,TH1D** hMWD_ext,TH1D** hMWDMA_ext,TH1D** hTrace_Direct_ext,TH1D** hMWDMA2_ext);
+		void 							Connect1DEnergySpectraHistograms(TH1D **hEnergySpectrumMA_ext, TH1D **hEnergySpectrumMACorr_ext ,TH1D **hEnergySpectrumWithCut_ext,TH1D **hEnergySpectrumMA2_ext);
 		void 							Connect1DRisetimeHistograms(TH1D** hRisetime1090_ext, TH1D** hRisetime3090_ext,TH1D** hRisetime1090Co1332Only_ext);
 		void 							Connect2DEnergyRisetimeHistograms(TH2D** hEnergyRise1090Corr_ext,TH2D** fhEnergyRt1090CorrectionRt_ext, TH2D **hEnergyRt1090Co1332Only_ext, TH2D** hEnergyRise3090Corr_ext, TH2D** hEnergyRise1090CorrBallistic_ext);
 		void							ConnectRratioHistograms(TH1D** fhRratioCo1332Only_ext, TH2D** fhEnergyRratio_ext, TH2D** fhEnergyRratioCorrectionR_ext, TH2D** fhEnergyRratioCo1332Only_ext);
@@ -63,6 +63,9 @@ class THypGeMWD
 		void							ConnectRtCorrelationHistograms(TH2D **hRt1030Rt1090Co1332Only_ext, TH2D **hRt1030Rt80100Co1332Only_ext);
 		void							ConnectTraceDeriMaximumHistograms(TH1D **hTraceDeriMaximum_ext);
 		void							ConnectPreAmpTauFit(TH1D ** hPreAmpTauFit_ext);
+		void							ConnectDeriMaxHistograms(TH1D ** fhDeriMaxT90_ext,TH1D **fhDeriMaxT90Rel_ext, TH2D **fhEnergy_DeriMaxT90_ext,TH2D **fhEnergy_DeriMaxT90Rel_ext,TH2D **fDerimaxT90_T1090_ext,TH2D **fDerimaxT90Rel_T1090_ext,TH2D **fDerimaxT90_DerimaxT90Rel_ext);
+
+		
 
 	private :
 		
@@ -99,7 +102,7 @@ class THypGeMWD
 		Int_t 						FindLocalMinimumBin(TH1D* fHisto2,Int_t low2, Int_t high2);
 		
 		public:
-		void 							SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Width_ext, Int_t Sigma_ext, Int_t SigmaBil_ext, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC);
+		void 							SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Width_ext, Int_t Sigma_ext, Int_t SigmaBil_ext, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC,double BaselineValue_ext);
 		void							IsSecondRun(Bool_t isSR_ext = 1);
 		void							SetSecondRunParametersFileName(TString SecondRunParametersFileName_ext);
 		
@@ -151,10 +154,12 @@ class THypGeMWD
 		TH1D							**hAmplitude;
 		TH1D							**hMWD;
 		TH1D							**hMWDMA;
+		TH1D							**hMWDMA2;
 		TH1D							**hTrace_Direct;
 		
 
 		TH1D							**hEnergySpectrumMA;
+		TH1D							**hEnergySpectrumMA2;
 		TH1D							**hEnergySpectrumMACorr;
 		TH1D							**hEnergySpectrumWithCut;
 		TH1D							**fhEnergySpectrumFirstPulse;
@@ -196,6 +201,15 @@ class THypGeMWD
 		
 		TH1D 							**hPreAmpTauFit;
 		
+		TH1D							**fhDeriMaxT90;
+		TH1D							**fhDeriMaxT90Rel;
+		TH2D							**fhEnergy_DeriMaxT90;
+		TH2D							**fhEnergy_DeriMaxT90Rel;
+		TH2D							**fhDerimaxT90Rel_T1090;
+		TH2D							**fhDerimaxT90_T1090;
+		TH2D							**fhDerimaxT90_DerimaxT90Rel;
+		
+		
 		Int_t							OutputTraceNumber;
 		ofstream					TxtOutputFile;
 
@@ -211,11 +225,14 @@ class THypGeMWD
 		//std::vector<Double_t> y;
 
 		std::map<Int_t,Double_t> 	mTraceposEnergy[8];
+		std::map<Int_t,Double_t> 	mTraceposEnergyMA2[8];
 		std::map<Int_t,Double_t> 	mTraceposRt10[8];
 		std::map<Int_t,Double_t> 	mTraceposRt30[8];
 		std::map<Int_t,Double_t> 	mTraceposRt80[8];
 		std::map<Int_t,Double_t> 	mTraceposRt90[8];
 		std::map<Int_t,Double_t> 	mTraceposRratio[8];
+		std::map<Int_t,Double_t> 	mTraceposDeriMaxT90T[8];
+		std::map<Int_t,Double_t> 	mTraceposDeriMaxT90TRel[8];
 		std::map<Int_t,Double_t> 	mSignalTime[8];
 		std::map<Int_t,Int_t> 	mTraceposMinPositionBin[8];
 		std::map<Int_t,Int_t> 	mTraceposMaxPositionBin[8];
@@ -238,6 +255,7 @@ class THypGeMWD
 		Bool_t 		useMWD;				// Switch between MWD and Amplitude evaluation for energy spetrum
 		Bool_t 		isSR;					// Switch between first and second analysis round (second uses analysis results from first to make corrections)
 		TString		SecondRunParametersFileName;	// Name of Filename for parameters from gained in first analysis round
+		double 		BaselineValue;
 
 
 		Double_t g[10000];			// array for coefficients of gaussian filter
@@ -249,6 +267,7 @@ class THypGeMWD
 		Double_t **Derivative3array;
 		Double_t **Derivative4array;
 		Double_t **MWDMAarray;
+		Double_t **MWDMA2array;
 
 		Double_t **Sarray;		// array to store the result of the direct filter
 		Double_t **Parray;		// array to store an intermediate result of the direct filter

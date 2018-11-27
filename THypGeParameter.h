@@ -17,6 +17,7 @@
 #include "TGo4Parameter.h"
 #include "TString.h"
 #include "defines.h"
+#include "TTree.h"
 
 class THypGeParameter : public TGo4Parameter {
    public:
@@ -34,14 +35,16 @@ class THypGeParameter : public TGo4Parameter {
 	Int_t 							EnableBaselineCorrection; 	//Switch baseline correction on or off
 	Int_t								SecondAnalysisRound;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
 	TString							ParameterFileName;		// name and path of parameters file
-
-
+	double							BaselineValue;
+	
+	TTree							*fTree;
+	
 	Bool_t 							ParametersChanged;
 
 		
-	void 								SetParameters( Int_t M, Int_t L, Int_t NOS_ext, Int_t Width_ext, Int_t Sigma, Int_t SigmaBil, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC);
+	void 								SetParameters( Int_t M, Int_t L, Int_t NOS_ext, Int_t Width_ext, Int_t Sigma, Int_t SigmaBil, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC,double BaselineValue_ext);
 	void								SetSecondAnaRoundParameters(Int_t SecondAnalysisRound_ext, TString ParameterFileName_ext);
-
+	void								SetTree(TTree* tree_ext);
 	void 								PrintParameters();
 	Int_t 							GetMWDm();
 	Int_t 							GetMAl();
@@ -55,6 +58,8 @@ class THypGeParameter : public TGo4Parameter {
 	Int_t 							GetEnableBaselineCorrection();
 	Int_t 							GetSecondAnalysisRound();
 	TString							GetParameterFileName();
+	double							GetBaselineValue();
+	TTree*							GetTree();
 
 	Bool_t 							GetParametersChanged();
 	void 								SetParametersChanged(Bool_t ParamaterChangedValue = 1);

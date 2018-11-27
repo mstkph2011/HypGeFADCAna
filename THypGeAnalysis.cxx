@@ -18,6 +18,7 @@
 
 #include "TH1.h"
 #include "TH2.h"
+#include "TTree.h"
 #include "TFile.h"
 #include "TSystem.h"
 
@@ -81,17 +82,18 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 MAl = 100;				// L of MA
 	 NoS = 100;				// Number of smoothings of mean and WA filter
 	 Width = 3;				// Width of mean filter
-	 sigmaGaus = 3;			// sigma of gaussian shaper
+	 sigmaGaus = 2;			// sigma of gaussian shaper
 	 sigmaBil = 1500;			// sigma of gaussian shaper
-	 tau = 6210;			// tau of deconvolution
+	 tau = 5339.1;			// tau of deconvolution
 	 //tau = 7647;			// tau of deconvolution
 	 //tau = 2500;			// tau of deconvolution
 	 //tau = 6816;			// tau of deconvolution
 	 EnableMA = 1;			// Switch for second moving average filter
-	 SmoothingMethod = 0;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
+	 SmoothingMethod = 3;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
 	 EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
 	 SecondAnalysisRound = 0;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
 	 ParameterFileName = "/data/work/kpha1/steinen/COSYBeamtestAna/june2014/DatabaseFirstAnalysisStep/ParametersFirstAnaStepCOSY_Ana_1306_run1_1_20___200,100,0,3,0,6210,MA.root";		// name and path of parameters file
+	 BaselineValue=1413.6;
 	 if (argc>1)
 	 {
 		MWDm = atoi(argv[1]);
@@ -124,7 +126,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	}
 	if (argc>7)
 	{
-		tau = atoi(argv[7]);
+		tau = atof(argv[7]);
 		cout << "tau\t" << argv[7] << endl;
 	}
 	if (argc>8)
@@ -151,6 +153,11 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	{
 		ParameterFileName = argv[12];
 		cout << "ParameterFileName\t" << argv[12] << endl;
+	}
+	if (argc>13)
+	{
+		BaselineValue = atof(argv[13]);
+		cout << "BaselineValue\t" << argv[13] << endl;
 	}
 		//TGo4MbsFileParameter* input = new TGo4MbsFileParameter(userinput);
 	 TString kind, input, out1, out2;
@@ -199,7 +206,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	// Parameters of the analysis
 	fPar = new THypGeParameter("HypGeParameter");
 	 cout << "ParAdded " << AddParameter(fPar)  << endl;
-	 fPar->SetParameters( MWDm, MAl,NoS, Width ,sigmaGaus,sigmaBil, tau, EnableMA, SmoothingMethod, EnableBaselineCorrection);
+	 fPar->SetParameters( MWDm, MAl,NoS, Width ,sigmaGaus,sigmaBil, tau, EnableMA, SmoothingMethod, EnableBaselineCorrection,BaselineValue);
 	 fPar->SetSecondAnaRoundParameters(SecondAnalysisRound,ParameterFileName);
 		cout <<"Second run??? "<< fPar->GetSecondAnalysisRound()<< endl;
 	char chis[100], chead[100];
@@ -212,9 +219,19 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 			fhTrace[i]->GetYaxis()->CenterTitle();
 			
 			AddHistogram(fhTrace[i],"Traces");
+			snprintf(chis,15,"TraceLN_%02d",i+1);
+			snprintf(chead,63,"TraceLN channel %2d; time [#mus];Amplitude [a.u.]",i+1);
+			fhTraceLN[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
+			fhTraceLN[i]->GetXaxis()->CenterTitle();
+			fhTraceLN[i]->GetYaxis()->CenterTitle();
+			
+			AddHistogram(fhTraceLN[i],"Traces");
 		}
 		
-		
+	//ftDataTree=new TTree("ftDataTree","");				// Tree store not implemented in Go4 (or at least pretty weird) :(
+	////AddObject(ftDataTree,"Trees");
+	//AddTree(ftDataTree,"Trees");
+	//cout << "TREEEEEEEEEEEEEEEEEEEEEEEEEEEE" << ftDataTree << endl;
 	cout << "All global histograms created"<< endl;
 	
 	
@@ -244,7 +261,8 @@ Int_t THypGeAnalysis::UserPreLoop()
 	 // create histogram for UserEventFunc
 	 // At this point, the histogram has been restored
 	 // from auto-save file if any.
-	 fPar->SetParameters( MWDm, MAl,NoS, Width, sigmaGaus, sigmaBil, tau, EnableMA, SmoothingMethod, EnableBaselineCorrection);
+	 fPar->SetParameters( MWDm, MAl,NoS, Width, sigmaGaus, sigmaBil, tau, EnableMA, SmoothingMethod, EnableBaselineCorrection,BaselineValue);
+	 //fPar->SetTree(ftDataTree);
 	 fPar->PrintParameters();
 	 return 0;
 }
@@ -289,7 +307,8 @@ Int_t THypGeAnalysis::UserPostLoop()	// fitting can be done here
 	fRawEvent = 0;
 	fCalEvent = 0;
 	fEvents=0;
-
+	//ftDataTree->Write();
+	//cout << "Tree written main" << endl;
 	// ana of energyspectrum
 
 	//  (12.02.2014) fitting is done afterwards

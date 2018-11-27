@@ -97,6 +97,14 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fhTrace_MA[i]->GetYaxis()->CenterTitle();
 			AddHistogram(fhTrace_MA[i],"Traces");
 			
+		snprintf(chis,30,"Trace_MultiMA_%02d",i+1);
+		snprintf(chead,63,"Trace channel %2d after multi MA filter; time [#mus];Amplitude [a.u.] ",i+1);
+		fhTrace_MA2[i] = new TH1D(chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
+		fhTrace_MA2[i]->GetXaxis()->CenterTitle();
+		fhTrace_MA2[i]->GetYaxis()->CenterTitle();
+			AddHistogram(fhTrace_MA2[i],"Traces");
+			
+			
 		snprintf(chis,30,"Trace_Direct_%02d",i+1);
 		snprintf(chead,63,"Trace channel %2d after Direct filter; time [#mus];Amplitude [a.u.] ",i+1);
 		fhTrace_Direct[i] = new TH1D(chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
@@ -109,6 +117,11 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		snprintf(chead,63,"Energy spectrum from MA signal channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
 		fhEnergySpectrum[i] = new TH1D(chis,chead,32000,0,16000);
 			AddHistogram(fhEnergySpectrum[i],"Energyspectrum");
+			
+		snprintf(chis,30,"EnergyMultiMA_%02d",i+1);
+		snprintf(chead,63,"Energy spectrum from multi MA signal channel %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
+		fhEnergySpectrum_MA2[i] = new TH1D(chis,chead,32000,0,16000);
+			AddHistogram(fhEnergySpectrum_MA2[i],"Energyspectrum");
 		//create histogram for energy spectrum
 		snprintf(chis,30,"EnergyCorr_%02d",i+1);
 		snprintf(chead,63,"Energy spectrum from MA signal channel with risetime correction %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
@@ -228,8 +241,43 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 
 		snprintf(chis,50,"PreAmpTauFit_%02d",i+1);
 		snprintf(chead,100,"PreAmpTauFit_%02d;PreAmp Tau [#mus];counts [a.u.]",i+1);
-		fhPreAmpTauFit[i] =new TH1D (chis,chead,1000,0,100);
+		fhPreAmpTauFit[i] =new TH1D (chis,chead,1300,-300,100);
 			AddHistogram(fhPreAmpTauFit[i],"PreAmpTauFit");		
+			
+		snprintf(chis,30,"Energy_DeriMaxT90_%02d",i+1);
+		snprintf(chead,100,"Energy-t_{max,90}-Correlation channel %02d;t_{max,90} [ns];ADC Value [a.u.]",i+1);
+		fhEnergy_DeriMaxT90[i] = new TH2D(chis,chead,130,-300,1000,4000,0,4000);
+			AddHistogram(fhEnergy_DeriMaxT90[i],"Energy_DeriMaxT90");
+			
+		snprintf(chis,30,"Energy_DeriMaxT90Rel_%02d",i+1);
+		snprintf(chead,100,"Energy-t_{max,90,reö}-Correlation channel %02d;t_{max,90,rel};ADC Value [a.u.]",i+1);
+		fhEnergy_DeriMaxT90Rel[i] = new TH2D(chis,chead,160,-0.3,1.3,4000,0,4000);
+			AddHistogram(fhEnergy_DeriMaxT90Rel[i],"Energy_DeriMaxT90Rel");
+			
+		snprintf(chis,30,"DerimaxT90_T1090_%02d",i+1);
+		snprintf(chead,100,"t_{max,90}-t_{10,90}-Correlation channel %02d;t_{max,90} [ns];-t_{10,90} [ns]",i+1);
+		fDerimaxT90_T1090[i] = new TH2D(chis,chead,130,-300,1000,100,0,1000);
+			AddHistogram(fDerimaxT90_T1090[i],"DerimaxT90_T1090");
+		
+		snprintf(chis,30,"DerimaxT90Rel_T1090_%02d",i+1);
+		snprintf(chead,100,"t_{max,90,rel}-t_{10,90}-Correlation channel %02d;t_{max,90,rel} ;-t_{10,90} [ns]",i+1);
+		fDerimaxT90Rel_T1090[i] = new TH2D(chis,chead,160,-.3,1.300,100,0,1000);
+			AddHistogram(fDerimaxT90Rel_T1090[i],"DerimaxT90Rel_T1090");
+			
+		snprintf(chis,30,"fDerimaxT90_DerimaxT90Rel_%02d",i+1);
+		snprintf(chead,100,"t_{max,90}-t_{max,90,rel}-Correlation channel %02d;t_{max,90} [ns];-t_{max,90,rel} ",i+1);
+		fDerimaxT90_DerimaxT90Rel[i] = new TH2D(chis,chead,130,-300,1000,160,-.30,1.300);
+			AddHistogram(fDerimaxT90_DerimaxT90Rel[i],"DerimaxT90_DerimaxT90Rel");
+		snprintf(chis,30,"DerimaxT90_%02d",i+1);
+		snprintf(chead,63,"t_{max,90} %2d; t_{max,90} [ns];Counts [a.u.]",i+1);
+		fhDeriMaxT90[i] = new TH1D(chis,chead,130,-300,1000);		
+			AddHistogram(fhDeriMaxT90[i],"DerimaxT90");
+			
+		snprintf(chis,30,"DerimaxT90_%02dRel",i+1);
+		snprintf(chead,63,"t_{max,90,rel} %2d; t_{max,90,rel} [ns];Counts [a.u.]",i+1);
+		fhDeriMaxT90Rel[i] = new TH1D(chis,chead,160,-.300,1.300);		
+			AddHistogram(fhDeriMaxT90Rel[i],"DerimaxT90Rel");
+			
 	}
 	for (int i = 0; i < 20; i++)
 	{
@@ -270,13 +318,26 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		// get parameters
 	fHypPar = (THypGeParameter*)  GetParameter("HypGeParameter");
 	
-
+	//add tree
+	cout << "launching tree"<<endl;
+	
+	
+	//ftDataTree=fHypPar->GetTree();
+	
+	//snprintf(chis,40,"Trees/ftDataTree");
+	////ftDataTree = GetTree(chis);
+	//ftDataTree = (TTree*) GetObject("ftDataTree","Trees");
+	//ftDataTree =  GetTree("Trees/ftDataTree");
+	//cout << "TREEEEEEEEEEEEEEEEEEEEEEEEEEEE" << ftDataTree << endl;
+	//ftDataTree->Branch("event",&eventn,"Energy/D:t1090/D:t3090/D:t10max/D,tmax90/D");
+	
+		//AddTree(ftDataTree);
 
 		//cout << "\tMWDm " << fHypPar->GetMWDm() << endl;
 		// real analysis object
 	fMWDAna = new THypGeMWD(TRACE_LENGTH,FADC_CHAN);
-		fMWDAna->ConnectTraceHistograms(fhTrace, fhTrace_Deri, fhTrace_Smoothed, fhTrace_BaseCorr, fhTrace_deconv, fhTrace_MWD, fhTrace_MA, fhTrace_Direct);
-		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum, fhEnergySpectrumCorr, fhEnergySpectrum_withCut);
+		fMWDAna->ConnectTraceHistograms(fhTrace, fhTrace_Deri, fhTrace_Smoothed, fhTrace_BaseCorr, fhTrace_deconv, fhTrace_MWD, fhTrace_MA, fhTrace_Direct,fhTrace_MA2);
+		fMWDAna->Connect1DEnergySpectraHistograms(fhEnergySpectrum, fhEnergySpectrumCorr, fhEnergySpectrum_withCut, fhEnergySpectrum_MA2);
 		fMWDAna->Connect1DRisetimeHistograms(fhRisetime1090, fhRisetime3090,fhRisetime1090Co1332Only);
 		fMWDAna->Connect2DEnergyRisetimeHistograms(fhEnergyRt1090,fhEnergyRt1090CorrectionRt, fhEnergyRt1090Co1332Only, fhEnergyRt3090,fhEnergyRt1090_ballistic);
 		fMWDAna->ConnectRratioHistograms(fhRratioCo1332Only, fhEnergyRratio, fhEnergyRratioCorrectionR, fhEnergyRratioCo1332Only);
@@ -287,8 +348,9 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fMWDAna->ConnectRtCorrelationHistograms(fhRt1030Rt1090Co1332Only,fhRt1030Rt80100Co1332Only);
 		fMWDAna->ConnectTraceDeriMaximumHistograms(fhTraceDeriMaximumPosition);
 		fMWDAna->ConnectPreAmpTauFit(fhPreAmpTauFit);
+		fMWDAna->ConnectDeriMaxHistograms(fhDeriMaxT90,fhDeriMaxT90Rel,fhEnergy_DeriMaxT90,fhEnergy_DeriMaxT90Rel,fDerimaxT90_T1090,fDerimaxT90Rel_T1090,fDerimaxT90_DerimaxT90Rel);
 		
-		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection());
+		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection(),fHypPar->GetBaselineValue());
 		
 		cout << "Sr in AnaProc: " << fHypPar->GetSecondAnalysisRound() << endl;
 		if (fHypPar->GetSecondAnalysisRound())
@@ -334,13 +396,28 @@ Bool_t THypGeAnlProc::BuildEvent(TGo4EventElement* dest)
 	fMWDAna->SetUseMWD(1);
 	//if (fHypPar->GetParametersChanged())
 	//{
-		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection());
+		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection(),fHypPar->GetBaselineValue());
 		//fHypPar->SetParametersChanged(0);
 	//}
 	fMWDAna->FullAnalysis();
 	//if (fMWDAna->FullAnalysis() != -1)				// some error here
 		//fhTraceDeriMaximumPosition->Fill((fhTrace_deconv[0]->GetBinContent(1)-fhTrace_deconv[0]->GetBinContent(301))/300);
 	
+	//eventn.energy=fMWDAna->ExportEnergy();
+	//eventn.t1090=fMWDAna->ExportT1090();
+	//eventn.t3090=fMWDAna->ExportT3090();
+	//eventn.t10max=fMWDAna->ExportT10max();
+	//eventn.tmax90=fMWDAna->ExportTmax90();
+	
+	//eventn.energy=100;
+	//eventn.t1090=10;
+	//eventn.t3090=5;
+	//eventn.t10max=100;
+	//eventn.tmax90=200;
+	
+	
+	//ftDataTree->Fill();
+	//ftDataTree->Print();
 	//this shows number of real events
 	
 	//EventCounter++;
@@ -350,3 +427,13 @@ Bool_t THypGeAnlProc::BuildEvent(TGo4EventElement* dest)
 	out_evt->SetValid(isValid);
 	return isValid;
 }
+void THypGeAnlProc::UserPostLoop()
+{
+	//ftDataTree->Write();
+	cout << "Tree written" << endl;
+}
+ 
+//void THypGeAnlProc::ConnectTree(TTree *tree_ext)
+//{
+	//ftDataTree=tree_ext;
+//}

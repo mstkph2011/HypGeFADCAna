@@ -53,12 +53,42 @@ THypGeUnpackProc::THypGeUnpackProc(const char* name) :
 	fParam1   = (THypGeParameter *)   GetParameter("HypGeParameter");
 	
 	char chis[100];
+			char chead[100];
 	for (Int_t i =0;i < FADC_CHAN; i++)
 	{
 		snprintf(chis,63,"Traces/Trace_%02d",i+1);
 		fhTrace[i] = (TH1D*) GetHistogram(chis);
+		snprintf(chis,63,"Traces/TraceLN_%02d",i+1);
+		fhTraceLN[i] = (TH1D*) GetHistogram(chis);
+		
+
+		snprintf(chis,15,"Tau %02d",i+1);
+		snprintf(chead,63,"Tau channel %2d; tau [#mus];Counts [a.u.]",i+1);
+		fhTau[i] = new TH1D (chis,chead,1000,0,100);
+		fhTau[i]->GetXaxis()->CenterTitle();
+		fhTau[i]->GetYaxis()->CenterTitle();
+			
+			AddHistogram(fhTau[i],"Tau");
+		snprintf(chis,15,"Min %02d",i+1);
+		snprintf(chead,63,"Min channel %2d; min value [#mus];Counts [a.u.]",i+1);
+		fhMin[i] = new TH1D (chis,chead,2000,0,2000);
+		fhMin[i]->GetXaxis()->CenterTitle();
+		fhMin[i]->GetYaxis()->CenterTitle();
+			
+			AddHistogram(fhMin[i],"Min");	
+		snprintf(chis,15,"Test%02d",i+1);
+			snprintf(chead,63,"Trace channel %2d; time [#mus];Amplitude [a.u.]",i+1);
+			fhTauTest[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
+			fhTauTest[i]->GetXaxis()->CenterTitle();
+			fhTauTest[i]->GetYaxis()->CenterTitle();
+			
+			AddHistogram(fhTauTest[i],"Traces");
 	}
 	if (!fhTrace[0])
+		cout << "fhTrace[0] not found"<< endl;
+		else
+		cout << "fhTrace[0] found"<< endl;
+	if (!fhTraceLN[0])
 		cout << "fhTrace[0] not found"<< endl;
 		else
 		cout << "fhTrace[0] found"<< endl;
@@ -219,6 +249,8 @@ Bool_t THypGeUnpackProc::BuildEvent(TGo4EventElement* dest)
 									// first 14 bits (0:13) used for data
 			
 			mask=1;
+			int minValue=10000;
+			int minI=0;
 			for(;;)  // find next channel from channel mask // could also be a while, breaks if j == ch_cnt
 			{
 				if(mask&ch_mask)
@@ -227,16 +259,47 @@ Bool_t THypGeUnpackProc::BuildEvent(TGo4EventElement* dest)
 					for (Int_t i=0;i<samples;i++)   // Channel 
 					{
 						fhTrace[chan]->SetBinContent(i+1,(*pl_data16++)&0x3FFF);// fill first 14 bits to histogram
+						if (minValue>fhTrace[chan]->GetBinContent(i+1))
+						{
+							minValue=fhTrace[chan]->GetBinContent(i+1);
+							minI=i+1;
+							//cout << minValue<<endl;
+						}
+						//if (i==1000)
+						//	cout <<fhTrace[chan]->GetBinContent(i+1) << "\t"<<log(fhTrace[chan]->GetBinContent(i+1))<< endl;
+						
 						//fTrace[chan]->GetBinContent(i+1)
 						//(*pl_data16-1)&0x3FFF 
 					}
-
+					
+					
+					//minValue=(fhTrace[chan]->GetBinContent(minI-1)+fhTrace[chan]->GetBinContent(minI)+fhTrace[chan]->GetBinContent(minI+1))/3;
+					minValue=1413.6;//from Co60 data (3.6.14 Jülich, before beam time) , use this to find tau (steinen 21.11.18)
+					fhMin[chan]->Fill((fhTrace[chan]->GetBinContent(minI-1)+fhTrace[chan]->GetBinContent(minI)+fhTrace[chan]->GetBinContent(minI+1))/3);
+					//fhMin[chan]->Fill(minValue);
+					for (Int_t i=0;i<samples;i++)   // Channel 
+					{
+						
+						if(minValue <fhTrace[chan]->GetBinContent(i+1))
+							fhTraceLN[chan]->SetBinContent(i+1,log(fhTrace[chan]->GetBinContent(i+1)-minValue)); 
+							//fhTraceLN[chan]->SetBinContent(i+1,log(fhTrace[chan]->GetBinContent(i+1))); 
+					}
+								////TF1* fLin=new TF1("fLin","pol1",5.5,7);
+								//TF1* fLin=new TF1("fLin","pol1",21,40);
+								//fhTraceLN[chan]->Fit(fLin,"RQ");
+								//fhTau[chan]->Fill(-1/fLin->GetParameter(1));
+								//if(-1/fLin->GetParameter(1) <10)
+								//{
+									//for (Int_t i=0;i<samples;i++)
+										//fhTauTest[chan]->SetBinContent(i+1,fhTrace[chan]->GetBinContent(i+1));
+								//}
 						// length of measured trace shorter than size of spectrum
 					if (samples<TRACE_LENGTH)     // NEW 11-06-08, fill rest of spectra with last measured sample
 					{
 						for (Int_t i=0;i<(TRACE_LENGTH-samples);i++)
 						{
 							fhTrace[chan]->SetBinContent(i+1+samples,(*(pl_data16-1))&0x3FFF);  
+							
 						}
 					}
 					j++;

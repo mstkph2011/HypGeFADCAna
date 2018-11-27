@@ -21,7 +21,7 @@
 #include "defines.h"						// defines (~globals) are in this file, add this line to every file
 
 #include "THypGeMWD.h"
-
+#include "TTree.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"
 
@@ -32,13 +32,16 @@
 
 class THypGeParameter;
 class THypGeAnlEvent;
+class TTree;
+//typedef struct EVENTN {double energy, t1090,t3090,t10max,tmax90;};
 
 class THypGeAnlProc : public TGo4EventProcessor {
    public:
       THypGeAnlProc();
       THypGeAnlProc(const char * name);
+      //void ConnectTree(TTree *tree_ext);
       virtual ~THypGeAnlProc();
-
+		void UserPostLoop();
       virtual Bool_t BuildEvent(TGo4EventElement* dest);
 
 			THypGeParameter  	*fHypPar;
@@ -51,10 +54,12 @@ class THypGeAnlProc : public TGo4EventProcessor {
 			TH1D							*fhTrace_deconv[FADC_CHAN];
 			TH1D							*fhTrace_MWD[FADC_CHAN];
 			TH1D							*fhTrace_MA[FADC_CHAN];
+			TH1D							*fhTrace_MA2[FADC_CHAN];
 			TH1D							*fhTrace_Direct[FADC_CHAN];
 			
 
 			TH1D							*fhEnergySpectrum[FADC_CHAN];
+			TH1D							*fhEnergySpectrum_MA2[FADC_CHAN];
 			TH1D							*fhEnergySpectrumCorr[FADC_CHAN];
 			TH1D							*fhEnergySpectrumFirstPulse[FADC_CHAN];
 			TH1D							*fhEnergySpectrumOtherPulses[FADC_CHAN];
@@ -97,10 +102,34 @@ class THypGeAnlProc : public TGo4EventProcessor {
 
 			TH1D							*hTraceOutput[1000];
 
+			TH1D							*fhDeriMaxT90[FADC_CHAN];
+			TH1D							*fhDeriMaxT90Rel[FADC_CHAN];
+			TH2D							*fhEnergy_DeriMaxT90[FADC_CHAN];
+			TH2D							*fhEnergy_DeriMaxT90Rel[FADC_CHAN];
+			TH2D							*fDerimaxT90Rel_T1090[FADC_CHAN];
+			TH2D							*fDerimaxT90_T1090[FADC_CHAN];
+			TH2D							*fDerimaxT90_DerimaxT90Rel[FADC_CHAN];
 
+
+			//TTree							*ftDataTree;
 			//real analysis object
 			THypGeMWD					*fMWDAna;
 			
+			double 						fEnergy;
+			double 						ft1090;
+			double 						ft3090;
+			double 						ft10max;
+			double 						ftmax90;
+			public:
+			//struct EVENTN 
+			//{
+				//double energy;
+				//double t1090;
+				//double t3090; 
+				//double t10max;
+				//double tmax90;
+				//};
+			//EVENTN eventn;
 
    ClassDef(THypGeAnlProc, 1)
 };
