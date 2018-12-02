@@ -40,7 +40,7 @@ class THypGeUnpackProc : public TGo4EventProcessor {
       TH1D					*fhTrace[FADC_CHAN];
       TH1D					*fhTraceLN[FADC_CHAN];
       TH1D					*fhTau[FADC_CHAN];
-      TH1D					*fhMin[FADC_CHAN];
+      
       TH1D					*fhTauTest[FADC_CHAN];
 
 

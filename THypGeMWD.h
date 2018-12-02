@@ -63,9 +63,8 @@ class THypGeMWD
 		void							ConnectRtCorrelationHistograms(TH2D **hRt1030Rt1090Co1332Only_ext, TH2D **hRt1030Rt80100Co1332Only_ext);
 		void							ConnectTraceDeriMaximumHistograms(TH1D **hTraceDeriMaximum_ext);
 		void							ConnectPreAmpTauFit(TH1D ** hPreAmpTauFit_ext);
-		void							ConnectDeriMaxHistograms(TH1D ** fhDeriMaxT90_ext,TH1D **fhDeriMaxT90Rel_ext, TH2D **fhEnergy_DeriMaxT90_ext,TH2D **fhEnergy_DeriMaxT90Rel_ext,TH2D **fDerimaxT90_T1090_ext,TH2D **fDerimaxT90Rel_T1090_ext,TH2D **fDerimaxT90_DerimaxT90Rel_ext);
-
-		
+		void							ConnectDeriMaxHistograms(TH1D ** fhDeriMaxT90_ext,TH1D **fhDeriMaxT90Rel_ext, TH2D **fhEnergy_DeriMaxT90_ext,TH2D **fhEnergy_DeriMaxT90Rel_ext,TH2D **fDeriMaxT90_T1090_ext,TH2D **fDeriMaxT90Rel_T1090_ext,TH2D **fDeriMaxT90_DeriMaxT90Rel_ext, TH2D **fhEnergyCorr_DeriMaxT90Rel_ext, TH1D **fhT10DeriMax_ext, TH1D **fhT10DeriMaxRel_ext, TH2D **fhEnergy_T10DeriMax_ext, TH2D **fhEnergy_T10DeriMaxRel_ext, TH2D **fhEnergyCorr_T10DeriMaxRel_ext);
+		void							ConnectCorrCorrHistograms(TH1D **fhEnergySpectrumCorrCorr_ext,TH2D **fhEnergyRt1090CorrCorr_ext);
 
 	private :
 		
@@ -124,6 +123,16 @@ class THypGeMWD
 		TF1								*EnergyPileUpTimeCorrFunc;
 		Double_t					EnergyPileUpTimeCorrection(Double_t EnergyUncorr,Double_t PileUpTime);						// energy correction for high rates (close signals)
 		
+		TF1								*EnergyTDeriMaxRelCorrFuncNorm0;
+		TF1								*EnergyTDeriMaxRelCorrFuncNorm1;
+		TF1								*EnergyTDeriMaxRelCorrFuncNorm2;
+		TF1								*EnergyTDeriMaxRelCorrFuncNorm3;
+		
+		TF1								*EnergyCorrT1090FuncNorm0;
+		TF1								*EnergyCorrT1090FuncNorm1;
+		TF1								*EnergyCorrT1090FuncNorm2;
+		TF1								*EnergyCorrT1090FuncNorm3;
+		
 		void 							DoMeanFilter();
 		void 							DoWeightedAverageFilter();
 		void 							DoGaussianFilter();
@@ -138,6 +147,10 @@ class THypGeMWD
 		void							WriteTestTraces(Int_t IntervalBetweenOutputs,Int_t MaxTraces);
 		
 		Int_t							FindDerivativeMaximum(Int_t ChanNumber, Int_t StartPosition);
+
+		void							SetDynamicBaselineValue(double Baseline_ext);
+
+		Double_t						EnergyTDeriMax90RelCorrection( Double_t EnergyUncorr, Double_t TDeriMax90);
 
 	private:
 		Int_t 						TraceLength;
@@ -205,10 +218,19 @@ class THypGeMWD
 		TH1D							**fhDeriMaxT90Rel;
 		TH2D							**fhEnergy_DeriMaxT90;
 		TH2D							**fhEnergy_DeriMaxT90Rel;
-		TH2D							**fhDerimaxT90Rel_T1090;
-		TH2D							**fhDerimaxT90_T1090;
-		TH2D							**fhDerimaxT90_DerimaxT90Rel;
+		TH2D							**fhDeriMaxT90Rel_T1090;
+		TH2D							**fhDeriMaxT90_T1090;
+		TH2D							**fhDeriMaxT90_DeriMaxT90Rel;
+		TH2D							**fhEnergyCorr_DeriMaxT90Rel;
+			
+		TH1D							**fhT10DeriMax;
+		TH1D							**fhT10DeriMaxRel;
+		TH2D							**fhEnergy_T10DeriMax;
+		TH2D							**fhEnergy_T10DeriMaxRel;
+		TH2D							**fhEnergyCorr_T10DeriMaxRel;
 		
+		TH1D							**fhEnergySpectrumCorrCorr;
+		TH2D							**fhEnergyRt1090CorrCorr;
 		
 		Int_t							OutputTraceNumber;
 		ofstream					TxtOutputFile;
@@ -233,6 +255,8 @@ class THypGeMWD
 		std::map<Int_t,Double_t> 	mTraceposRratio[8];
 		std::map<Int_t,Double_t> 	mTraceposDeriMaxT90T[8];
 		std::map<Int_t,Double_t> 	mTraceposDeriMaxT90TRel[8];
+		std::map<Int_t,Double_t> 	mTraceposT10DeriMaxT[8];
+		std::map<Int_t,Double_t> 	mTraceposT10DeriMaxTRel[8];
 		std::map<Int_t,Double_t> 	mSignalTime[8];
 		std::map<Int_t,Int_t> 	mTraceposMinPositionBin[8];
 		std::map<Int_t,Int_t> 	mTraceposMaxPositionBin[8];
@@ -253,7 +277,7 @@ class THypGeMWD
 		Int_t 		EnableBaselineCorrection; 	//Switch baseline correction on or off
 		Int_t 		PileUpTimeThreshold;
 		Bool_t 		useMWD;				// Switch between MWD and Amplitude evaluation for energy spetrum
-		Bool_t 		isSR;					// Switch between first and second analysis round (second uses analysis results from first to make corrections)
+		int 		isSR;					// Switch between first and second analysis round (second uses analysis results from first to make corrections)
 		TString		SecondRunParametersFileName;	// Name of Filename for parameters from gained in first analysis round
 		double 		BaselineValue;
 
@@ -291,6 +315,7 @@ class THypGeMWD
 		Int_t EventNumber;
 
 		Double_t mCorrection;
+		int iRtError;
 		
 	ClassDef(THypGeMWD,2)			// doesn't compile with this line
 };

@@ -11,7 +11,8 @@ LDLIBS     = $(shell root-config --glibs) \
 # -lMinuit
 
 #MAINFILE = RealSpecAna.cxx
-MAINFILE = main_ExtractRisetimeCorrParametersAndRisetimePlots.cxx
+#MAINFILE = main_ExtractRisetimeCorrParametersAndRisetimePlots.cxx
+MAINFILE = main_MogonIIJülichAna.cxx
 
 SOURCES = $(wildcard *.cxx)
 HEADERS = $(wildcard *.h)

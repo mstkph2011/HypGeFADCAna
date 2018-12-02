@@ -902,8 +902,8 @@ Int_t THypGeSpectrumAnalyser::ExportToRootFile(TString RootFilename_ext )
 		RootFile->Close();
 	RootFile = new TFile(RootFilenameWithPath,"RECREATE",RootFilenameWithPath);
 		
-	TNtuple* DataNTuple = new TNtuple("DataNTuple","Data ntuple","PeakNumber:Energy:FWHM:FWTM:FWTMtoFWHMratio:PeakCounts");
-	Double_t wEnergy,wFWHM,wFWTM,wRatio,wPeakCounts;				// w means "write"
+	TNtuple* DataNTuple = new TNtuple("DataNTuple","Data ntuple","PeakNumber:Energy:FWHM:FWTM:FWTMtoFWHMratio:PeakCounts:ChannelPeakPos:ChannelRangeMin:ChannelRangeMax");
+	Double_t wEnergy,wFWHM,wFWTM,wRatio,wPeakCounts,ChannelPeakPos,ChannelRangeMin,ChannelRangeMax;				// w means "write"
 	Int_t wPeakNumber;
 	std::map<double,double>::const_iterator it=FWHM_en.begin();
 	std::map<double,double>::const_iterator it2=FWTM_en.begin();
@@ -915,7 +915,10 @@ Int_t THypGeSpectrumAnalyser::ExportToRootFile(TString RootFilename_ext )
 		wFWTM = it2->second;
 		wRatio = it2->second/it->second;
 		wPeakCounts = PeakCounts[i];
-		DataNTuple->Fill(wPeakNumber,wEnergy,wFWHM,wFWTM,wRatio,wPeakCounts);
+		ChannelPeakPos=PeakFitX[i];
+		ChannelRangeMin=FWTMlow[i]-20;
+		ChannelRangeMax=FWTMhigh[i]+10;
+		DataNTuple->Fill(wPeakNumber,wEnergy,wFWHM,wFWTM,wRatio,wPeakCounts,ChannelPeakPos,ChannelRangeMin,ChannelRangeMax);
 		it++;
 		it2++;
 	}

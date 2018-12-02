@@ -89,10 +89,10 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 //tau = 2500;			// tau of deconvolution
 	 //tau = 6816;			// tau of deconvolution
 	 EnableMA = 1;			// Switch for second moving average filter
-	 SmoothingMethod = 3;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
+	 SmoothingMethod = 0;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
 	 EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
-	 SecondAnalysisRound = 0;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
-	 ParameterFileName = "/data/work/kpha1/steinen/COSYBeamtestAna/june2014/DatabaseFirstAnalysisStep/ParametersFirstAnaStepCOSY_Ana_1306_run1_1_20___200,100,0,3,0,6210,MA.root";		// name and path of parameters file
+	 SecondAnalysisRound = 1;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
+	 ParameterFileName = "/lustre/miifs05/scratch/him-specf/hyp/steinen/COSYBeamtestAna/COSYnewMogon/Fit/FitCOSYJune2014Dataset14_200,100,0,5339_SR0.root";		// name and path of parameters file
 	 BaselineValue=1413.6;
 	 if (argc>1)
 	 {

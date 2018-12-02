@@ -90,6 +90,7 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext,Int_t NumberOfChannels_ext)          
 	GausNorm = new Double_t[TraceLength];
 	CalculateGausCoeff();
 	
+	iRtError=0;
 	//CalculateSecondGausCoeff();
 	cout << "Analysis created"<<endl;
 }
@@ -203,6 +204,7 @@ Int_t THypGeMWD::AnaStep_CheckTrace()
 
 Int_t THypGeMWD::AnaStep_BaselineCorrection()
 {
+	//Baseline correction depends with pile up on external information and is only implemented for the first channel!!!
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
 		if (hSmoothedTrace[ChanNumber]->GetMaximum() == 0)  	// changed in Jülich, trace must be positive to avoid a strong negative drift of the deconvoluted signal!, remaining offset is corrected after deconvolution
@@ -393,10 +395,10 @@ Int_t THypGeMWD::AnaStep_ExtractRisetime()
 	//cout << "new Trace" << endl;
 		
 	Double_t RiseX10, RiseX30,RiseX80, RiseX90,DeriMaxX;
-	Double_t RiseX1090, RiseX3090, RiseT1090, RiseT3090,DeriMaxT90T,DeriMaxT90TRel;
+	Double_t RiseX1090, RiseX3090, RiseT1090, RiseT3090,DeriMaxT90T,DeriMaxT90TRel,T10DeriMaxT,T10DeriMaxTRel;
 	Double_t threshold_Risetime = 50;		//threshold for signals to be identified as useful for Risetime calculation
-	double MinAvg=0;
-	double MaxAvg=0;
+	double MinAvg;
+	double MaxAvg;
 	for (Int_t ChanNumber = 0; ChanNumber < NumberOfChannels; ChanNumber++)
 	{
 
@@ -405,17 +407,22 @@ Int_t THypGeMWD::AnaStep_ExtractRisetime()
 		mTraceposRt90[ChanNumber].clear();
 		mTraceposDeriMaxT90T[ChanNumber].clear();
 		mTraceposDeriMaxT90TRel[ChanNumber].clear();
+		mTraceposT10DeriMaxT[ChanNumber].clear();
+		mTraceposT10DeriMaxTRel[ChanNumber].clear();
+		
 		for (std::map<Int_t,Double_t>::iterator it=mTraceposEnergy[ChanNumber].begin(); it!=mTraceposEnergy[ChanNumber].end(); ++it)
 		{
 			//it->first is bin number of the beginning of the rising edge
 			
-			Int_t MinimumPosition = FindLocalMinimumBin(hTrace[ChanNumber], it->first-10,it->first+40);
-			Int_t MaximumPosition = FindLocalMaximumBin(hTrace[ChanNumber],it->first,it->first+80);
+			Int_t MinimumPosition = FindLocalMinimumBin(hTrace[ChanNumber], max(it->first-100,1),it->first+40);
+			Int_t MaximumPosition = FindLocalMaximumBin(hTrace[ChanNumber],max(it->first-40,1),it->first+80);
 			//cout << "lb "<< it->first<<endl;
+			MinAvg=0;
+			MaxAvg=0;
 			for(int i =-2;i<3;i++)
 			{
 				MinAvg+=hTrace[ChanNumber]->GetBinContent(MinimumPosition+i)/5.;
-				MaxAvg+=hTrace[ChanNumber]->GetBinContent(MaximumPosition+i)/5.;		//hier stimmt was nicht
+				MaxAvg+=hTrace[ChanNumber]->GetBinContent(MaximumPosition+i)/5.;		
 			}
 				//cout << MaxAvg << endl;				
 				//cout << MinAvg << endl;				
@@ -431,14 +438,33 @@ Int_t THypGeMWD::AnaStep_ExtractRisetime()
 				RiseX10 = Double_t(FindFirstBinAboveInterpolated(hTrace[ChanNumber],Amp10Threshold,MinimumPosition,MaximumPosition,3));
 				RiseX30 = Double_t(FindFirstBinAboveInterpolated(hTrace[ChanNumber],Amp30Threshold,MinimumPosition,MaximumPosition,3));
 				RiseX80 = Double_t(FindFirstBinAboveInterpolated(hTrace[ChanNumber],Amp80Threshold,MinimumPosition,MaximumPosition,3));
-				RiseX90 = Double_t(FindFirstBinAboveInterpolated(hTrace[ChanNumber],Amp90Threshold,MinimumPosition,MaximumPosition,3));
+				RiseX90 = Double_t(FindFirstBinAboveInterpolated(hTrace[ChanNumber],Amp90Threshold,MinimumPosition,MaximumPosition+10,2));
 
 				DeriMaxX = Double_t(FindLocalMaximumBin(hTraceDeri[ChanNumber],MinimumPosition,MaximumPosition));
 	
-				//cout << "R10" << RiseX10 << endl;
-				//cout << "R30" << RiseX30 << endl;
-				//cout << "R90" << RiseX90 << endl;
-
+				if(RiseX90-RiseX10 <2)
+				//if(MaxAvg-MinAvg <250)
+				{
+					cout << "RisetimeError " << iRtError <<endl;
+					cout << "Pos " << it->first <<endl;
+					cout << "Min " << MinAvg <<endl;
+					cout << "Max " << MaxAvg <<endl;
+					cout << "R10 " << RiseX10 << endl;
+					cout << "R30 " << RiseX30 << endl;
+					cout << "R90 " << RiseX90 << endl;
+					cout << "R90 Tre" << Amp90Threshold << endl;
+					cout << "DeriMaxX" << DeriMaxX << endl;
+					
+					if (OutputTraceNumber < 100 && !isSR)
+					{
+						for(Int_t n=1;n<=TraceLength;n++)
+						{
+							hTraceOutput[iRtError]->SetBinContent(n,hTrace[0]->GetBinContent(n));
+						}
+					}
+					
+					iRtError++;
+				}
 				RiseX1090 = RiseX90 - RiseX10;
 				RiseX3090 = RiseX90 - RiseX30;
 				
@@ -447,6 +473,9 @@ Int_t THypGeMWD::AnaStep_ExtractRisetime()
 				RiseT3090 = RiseX3090 * 10;
 				DeriMaxT90T=(RiseX90-DeriMaxX)*10;
 				DeriMaxT90TRel=DeriMaxT90T/RiseT1090;
+				
+				T10DeriMaxT=(DeriMaxX-RiseX10)*10;
+				T10DeriMaxTRel=T10DeriMaxT/RiseT1090;
 				//cout << RiseT1090 << endl;
 
 				mTraceposRt10[ChanNumber][it->first] = RiseX10*10;
@@ -456,6 +485,9 @@ Int_t THypGeMWD::AnaStep_ExtractRisetime()
 				mTraceposRratio[ChanNumber][it->first] = (RiseX90-RiseX30)/(RiseX90+RiseX30 - 2* RiseX10);
 				mTraceposDeriMaxT90T[ChanNumber][it->first] = DeriMaxT90T;
 				mTraceposDeriMaxT90TRel[ChanNumber][it->first] = DeriMaxT90TRel;
+				mTraceposT10DeriMaxT[ChanNumber][it->first] = T10DeriMaxT;
+				mTraceposT10DeriMaxTRel[ChanNumber][it->first] =T10DeriMaxTRel;
+				
 				mTraceposMinPositionBin[ChanNumber][it->first] = MinimumPosition;
 				mTraceposMaxPositionBin[ChanNumber][it->first] = MaximumPosition;
 				
@@ -540,7 +572,7 @@ Int_t		THypGeMWD::AnaStep_FillHistograms()
 			std::map<Int_t,Double_t>::iterator it2 = mTraceposRt10[ChanNumber].find(it->first);		// check if a risetime was calculated for a found pulse with calculated energy, only pulses where both is found should be considered
 			std::map<Int_t,Int_t>::iterator it3 = mPulseNumber[ChanNumber].find(it->first);		// get the number of the pulse in the trace (
 
-			if (it2->first)
+			if (it2->second)
 			{
 				hEnergySpectrumMA2[ChanNumber]->Fill(PulseEnergy);
 			}
@@ -548,60 +580,79 @@ Int_t		THypGeMWD::AnaStep_FillHistograms()
 		for (std::map<Int_t,Double_t>::iterator it=mTraceposEnergy[ChanNumber].begin(); it!=mTraceposEnergy[ChanNumber].end(); ++it)
 		{
 			std::map<Int_t,Double_t>::iterator it2 = mTraceposRt10[ChanNumber].find(it->first);		// check if a risetime was calculated for a found pulse with calculated energy, only pulses where both is found should be considered
+			std::map<Int_t,Double_t>::iterator it2a = mTraceposRt10[ChanNumber].find(it->first);		// check if a risetime was calculated for a found pulse with calculated energy, only pulses where both is found should be considered
 			std::map<Int_t,Int_t>::iterator it3 = mPulseNumber[ChanNumber].find(it->first);		// get the number of the pulse in the trace (
 
-			if (it2->first)
+			if (it2->second && it2a->second)
 			{
 				//cout <<it2->first<<endl;
 				PulseStartingTime = it->first;
 				PulseEnergy = it->second;
+				double T1090=mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime];
+				double T3090=T3090;
 				//1D histos
 				//fill energy spectrum after MA
 				hEnergySpectrumMA[ChanNumber]->Fill(PulseEnergy);
 				//fill energy spectrum after MA -- rise time correction
-				if (isSR)
-					hEnergySpectrumMACorr[ChanNumber]->Fill(EnergyRtCorrection(PulseEnergy,mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime]));
+				if (isSR>0)
+				{
+					hEnergySpectrumMACorr[ChanNumber]->Fill(EnergyTDeriMax90RelCorrection(PulseEnergy , mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]));
+					//cout << PulseEnergy << " " << EnergyTDeriMax90RelCorrection(PulseEnergy , mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]) << endl;
+				}
 				//fill rt1090 distribution
-				hRisetime1090[ChanNumber]->Fill(mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime]);
+				if(T1090 <10)
+					cout << "Rt90 " << mTraceposRt90[ChanNumber][PulseStartingTime] 
+						<< " Rt10 "<<  mTraceposRt10[ChanNumber][PulseStartingTime] << " E " << PulseEnergy << endl;
+				hRisetime1090[ChanNumber]->Fill(T1090);
 				//fill rt3090 distribution
-				hRisetime3090[ChanNumber]->Fill(mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt30[ChanNumber][PulseStartingTime]);
+				hRisetime3090[ChanNumber]->Fill(T3090);
 				//fill rt1090 distribution - Co60 1332 keV line only
 				if (PulseEnergy > Co60PeakRangeMin && PulseEnergy < Co60PeakRangeMax )
 				{
-					hRisetime1090Co1332Only[ChanNumber]->Fill(mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime]);
+					hRisetime1090Co1332Only[ChanNumber]->Fill(T1090);
 				}
 				if (it3->second == 0)		// 0 = first pulse in trace
 				{
 					fhEnergySpectrumFirstPulse[ChanNumber]->Fill(PulseEnergy);
 					if (PulseEnergy > Co60PeakRangeMin && PulseEnergy < Co60PeakRangeMax )
-						fhRisetime1090FirstPulse[ChanNumber]->Fill(mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime]);
+						fhRisetime1090FirstPulse[ChanNumber]->Fill(T1090);
 				}
 				else
 				{
 					fhEnergySpectrumOtherPulses[ChanNumber]->Fill(PulseEnergy);
 					if (PulseEnergy > Co60PeakRangeMin && PulseEnergy < Co60PeakRangeMax )
-						fhRisetime1090OtherPulses[ChanNumber]->Fill(mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime]);
+						fhRisetime1090OtherPulses[ChanNumber]->Fill(T1090);
 				}
 				//DeriMaxT90 histograms
 				fhDeriMaxT90[ChanNumber]->Fill(mTraceposDeriMaxT90T[ChanNumber][PulseStartingTime]);
 				fhDeriMaxT90Rel[ChanNumber]->Fill(mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]);
 				fhEnergy_DeriMaxT90[ChanNumber]->Fill(mTraceposDeriMaxT90T[ChanNumber][PulseStartingTime],PulseEnergy);
 				fhEnergy_DeriMaxT90Rel[ChanNumber]->Fill(mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime],PulseEnergy);
-				fhDerimaxT90Rel_T1090[ChanNumber]->Fill(mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime],mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime]);
-				fhDerimaxT90_T1090[ChanNumber]->Fill(mTraceposDeriMaxT90T[ChanNumber][PulseStartingTime],mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime]);
-				fhDerimaxT90_DerimaxT90Rel[ChanNumber]->Fill(mTraceposDeriMaxT90T[ChanNumber][PulseStartingTime],mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]);
-
+				fhDeriMaxT90Rel_T1090[ChanNumber]->Fill(mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime],T1090);
+				fhDeriMaxT90_T1090[ChanNumber]->Fill(mTraceposDeriMaxT90T[ChanNumber][PulseStartingTime],T1090);
+				fhDeriMaxT90_DeriMaxT90Rel[ChanNumber]->Fill(mTraceposDeriMaxT90T[ChanNumber][PulseStartingTime],mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]);
+				if (isSR>0)
+					fhEnergyCorr_DeriMaxT90Rel[ChanNumber]->Fill(mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime],EnergyTDeriMax90RelCorrection(PulseEnergy , mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]));	//this must be changed for second run, correction not yet implemented 
+				//DeriT10Max histograms
+				fhT10DeriMax[ChanNumber]->Fill(mTraceposT10DeriMaxT[ChanNumber][PulseStartingTime]);
+				fhT10DeriMaxRel[ChanNumber]->Fill(mTraceposT10DeriMaxTRel[ChanNumber][PulseStartingTime]);
+				fhEnergy_T10DeriMax[ChanNumber]->Fill(mTraceposT10DeriMaxT[ChanNumber][PulseStartingTime],PulseEnergy);
+				fhEnergy_T10DeriMaxRel[ChanNumber]->Fill(mTraceposT10DeriMaxTRel[ChanNumber][PulseStartingTime],PulseEnergy);
+				if (isSR>0)
+					fhEnergyCorr_T10DeriMaxRel[ChanNumber]->Fill(mTraceposT10DeriMaxTRel[ChanNumber][PulseStartingTime],EnergyTDeriMax90RelCorrection(PulseEnergy , mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]));  	//this must be changed for second run, correction not yet implemented 
+				
 				//2D histos
 				//fill rt1090 - energy correlation
-				hEnergyRt1090[ChanNumber]->Fill(mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime],PulseEnergy);
+				hEnergyRt1090[ChanNumber]->Fill(T1090,PulseEnergy);
 				if (PulseEnergy > Co60PeakRangeMin && PulseEnergy < Co60PeakRangeMax )
-					hEnergyRt1090Co1332Only[ChanNumber]->Fill(mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime],PulseEnergy);
+					hEnergyRt1090Co1332Only[ChanNumber]->Fill(T1090,PulseEnergy);
 				//fill rt3090 - energy correlation
-				hEnergyRt3090[ChanNumber]->Fill(mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt30[ChanNumber][PulseStartingTime],PulseEnergy);
+				hEnergyRt3090[ChanNumber]->Fill(T3090,PulseEnergy);
 				//fill rt1090 - energy correlation -- risetime correction
-				if (isSR)
+				if (isSR>0)
 				{
-					hEnergyRt1090CorrectionRt[ChanNumber]->Fill(mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime],EnergyRtCorrection(PulseEnergy,mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime]));
+					//hEnergyRt1090CorrectionRt[ChanNumber]->Fill(T1090,EnergyRtCorrection(PulseEnergy,T1090));
+					hEnergyRt1090CorrectionRt[ChanNumber]->Fill(T1090,EnergyTDeriMax90RelCorrection(PulseEnergy , mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]));
 					//cout <<EnergyRtCorrection(energyMA[ChanNumber][n],risetime1090[ChanNumber][n])<<endl;
 				}
 
@@ -614,16 +665,17 @@ Int_t		THypGeMWD::AnaStep_FillHistograms()
 				fhEnergyRratio[ChanNumber]->Fill(mTraceposRratio[ChanNumber][PulseStartingTime],PulseEnergy);
 
 
-				if (isSR)
+				if (isSR>0)
 				{
-					fhEnergyRratioCorrectionR[ChanNumber]->Fill(mTraceposRratio[ChanNumber][PulseStartingTime],EnergyRratioCorrection(PulseEnergy,mTraceposRratio[ChanNumber][PulseStartingTime]));
+					//fhEnergyRratioCorrectionR[ChanNumber]->Fill(mTraceposRratio[ChanNumber][PulseStartingTime],EnergyRratioCorrection(PulseEnergy,mTraceposRratio[ChanNumber][PulseStartingTime]));
+					fhEnergyRratioCorrectionR[ChanNumber]->Fill(mTraceposRratio[ChanNumber][PulseStartingTime],EnergyTDeriMax90RelCorrection(PulseEnergy , mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]));
 				}
 
 
 				//Rt Rt correlation
 				if (isSR && PulseEnergy > Co60PeakRangeMin && PulseEnergy < Co60PeakRangeMax)
 				{
-					hRt1030Rt1090Co1332Only[ChanNumber] -> Fill (mTraceposRt30[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime],mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt30[ChanNumber][PulseStartingTime]);
+					hRt1030Rt1090Co1332Only[ChanNumber] -> Fill (mTraceposRt30[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime],T3090);
 					hRt1030Rt80100Co1332Only[ChanNumber] -> Fill (mTraceposRt30[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime],mTraceposMaxPositionBin[ChanNumber][PulseStartingTime]*10 - mTraceposRt80[ChanNumber][PulseStartingTime]);	// factor 10 to change bins into ns
 
 				}
@@ -651,10 +703,19 @@ Int_t		THypGeMWD::AnaStep_FillHistograms()
 					hTraceDeriMaximum[ChanNumber]->Fill(FindLocalMaximumBin(hTraceDeri[ChanNumber], it->first-10,it->first+100)-it->first);
 					//cout << FindLocalMaximumBin(hTraceDeri[ChanNumber], it->first-10,it->first+100) << "\t" <<  it->first << endl;
 				}
+				
+				//CorrCorr histograms
+				if (isSR>1)
+				{
+					fhEnergySpectrumCorrCorr[ChanNumber]->Fill(EnergyRtCorrection(EnergyTDeriMax90RelCorrection(PulseEnergy , mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]),  T1090));
+					fhEnergyRt1090CorrCorr[ChanNumber]->Fill(T1090, EnergyRtCorrection(EnergyTDeriMax90RelCorrection(PulseEnergy , mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]),  T1090));
+							
+				}
+				
 				PulseStartingTimeBefore = PulseStartingTime;
 				PulseEnergyBefore = PulseEnergy;
 				PulseNumber++;
-			} // end of if (it2->first)
+			} // end of if (it2->second)
 		}
 	}
 	return 0;
@@ -905,33 +966,53 @@ void THypGeMWD::Init()
 
 	TxtOutputFile.open("TraceOutput.txt",std::ofstream::out | std::ofstream::trunc);
 	cout << "SR: " << isSR << endl;
-	if (isSR)
-	{
-		TFile *InParameterFile = new TFile(SecondRunParametersFileName);
-		cout << "second run mode" << endl;
-
-		//EnergyRtCorrFuncPol = (TF1*) InParameterFile->Get("fProfileFitFuncPolPeak2");
-		//EnergyRtCorrFuncConst= (TF1*) InParameterFile->Get("fProfileFitFuncConstantPeak2");
-		EnergyRtCorrFuncPol = (TF1*) InParameterFile->Get("fFitBinScan");
-		EnergyRtCorrFuncConst= (TF1*) InParameterFile->Get("fFitBinScanConst");
-		EnergyRratioCorrFuncPol = (TF1*) InParameterFile->Get("fProfileFitFuncPolRratio");
-		EnergyRratioCorrFuncConst = (TF1*) InParameterFile->Get("fProfileFitFuncConstantRratio");
-		TTree *Tree = (TTree*) InParameterFile->Get("tNtupleD");
-		Double_t Co60PeakRangeMinBuf, Co60PeakRangeMaxBuf;
-		Tree->SetBranchAddress("RangeMin",&Co60PeakRangeMinBuf);
-		Tree->SetBranchAddress("RangeMax",&Co60PeakRangeMaxBuf);
-		Tree->GetEntry(2); //1332 keV in Jülich configuration
-		Co60PeakRangeMin = Co60PeakRangeMinBuf;		// values copied from buffers -> file can be closed
-		Co60PeakRangeMax = Co60PeakRangeMaxBuf;
-			Tree->Delete();
-			Tree = 0;
-		InParameterFile->Close();
-	}
-	else
+	if(isSR==0)
 	{
 		Co60PeakRangeMin = -1;
 		Co60PeakRangeMax = -1;
 	}
+	if (isSR>0)
+	{
+		TFile *InParameterFile = new TFile(SecondRunParametersFileName);
+		cout << "second run mode" << endl;
+
+
+		EnergyTDeriMaxRelCorrFuncNorm0= (TF1*) InParameterFile->Get("funcCorrNorm_0");
+		EnergyTDeriMaxRelCorrFuncNorm1= (TF1*) InParameterFile->Get("funcCorrNorm_1");
+		EnergyTDeriMaxRelCorrFuncNorm2= (TF1*) InParameterFile->Get("funcCorrNorm_2");
+		EnergyTDeriMaxRelCorrFuncNorm3= (TF1*) InParameterFile->Get("funcCorrNorm_3");
+		
+
+
+
+		//EnergyRtCorrFuncPol = (TF1*) InParameterFile->Get("fProfileFitFuncPolPeak2");
+		//EnergyRtCorrFuncConst= (TF1*) InParameterFile->Get("fProfileFitFuncConstantPeak2");
+		//EnergyRtCorrFuncPol = (TF1*) InParameterFile->Get("fFitBinScan");
+		//EnergyRtCorrFuncConst= (TF1*) InParameterFile->Get("fFitBinScanConst");
+		//EnergyRratioCorrFuncPol = (TF1*) InParameterFile->Get("fProfileFitFuncPolRratio");
+		//EnergyRratioCorrFuncConst = (TF1*) InParameterFile->Get("fProfileFitFuncConstantRratio");
+		//TTree *Tree = (TTree*) InParameterFile->Get("tNtupleD");
+		TTree *Tree = (TTree*) InParameterFile->Get("DataNTuple");
+		Double_t Co60PeakRangeMinBuf, Co60PeakRangeMaxBuf;
+		Tree->SetBranchAddress("ChannelRangeMin",&Co60PeakRangeMinBuf);
+		Tree->SetBranchAddress("ChannelRangeMax",&Co60PeakRangeMaxBuf);
+		Tree->GetEntry(2); //1332 keV in Jülich2 configuration
+		Co60PeakRangeMin = Co60PeakRangeMinBuf;		// values copied from buffers -> file can be closed
+		Co60PeakRangeMax = Co60PeakRangeMaxBuf;
+			Tree->Delete();
+			//Tree = 0;
+		if (isSR>1)
+		{
+			EnergyCorrT1090FuncNorm0= (TF1*) InParameterFile->Get("funcCorr2Norm_0");
+			EnergyCorrT1090FuncNorm1= (TF1*) InParameterFile->Get("funcCorr2Norm_1");
+			EnergyCorrT1090FuncNorm2= (TF1*) InParameterFile->Get("funcCorr2Norm_2");
+			EnergyCorrT1090FuncNorm3= (TF1*) InParameterFile->Get("funcCorr2Norm_3");
+			
+		}
+		InParameterFile->Close();
+	}
+	
+		
 		// PileUpTimeCorr to be reworked! (maybe not neccessary) -- steinen, 13.1.15
 	EnergyPileUpTimeCorrFunc = new TF1("EnergyPileUpTimeCorrFunc","[0]*(1-[1]/pow(x,[2]))",0,2000);
 		EnergyPileUpTimeCorrFunc->SetParameters(1,3.74495e-02,1.95113);
@@ -1216,7 +1297,7 @@ void THypGeMWD::CalculateGausCoeff()
 Double_t THypGeMWD::EnergyRtCorrection( Double_t EnergyUncorr, Double_t Rt)
 {
 	//cout << 1/EnergyRtCorrFuncPol->Eval(Rt) * EnergyRtCorrFuncConst->Eval(Rt) << endl;
-	Double_t EnergyCorr = EnergyUncorr / EnergyRtCorrFuncPol->Eval(Rt) * EnergyRtCorrFuncConst->Eval(Rt);
+	Double_t EnergyCorr = EnergyUncorr / EnergyCorrT1090FuncNorm2->Eval(Rt);
 	return EnergyCorr;
 }
 
@@ -1234,6 +1315,12 @@ Double_t	THypGeMWD::EnergyPileUpTimeCorrection(Double_t EnergyUncorr,Double_t Pi
 {
 	// energy[ChanNumber] correction for high rates (close signals)
 	Double_t EnergyCorr = EnergyUncorr / EnergyPileUpTimeCorrFunc->Eval(PileUpTime);
+	return EnergyCorr;
+}
+
+Double_t THypGeMWD::EnergyTDeriMax90RelCorrection( Double_t EnergyUncorr, Double_t TDeriMax90)
+{
+	Double_t EnergyCorr = EnergyUncorr / EnergyTDeriMaxRelCorrFuncNorm2->Eval(TDeriMax90);
 	return EnergyCorr;
 }
 
@@ -1459,6 +1546,13 @@ void  THypGeMWD::ConnectPreAmpTauFit(TH1D **hPreAmpTauFit_ext)
 {
 	hPreAmpTauFit = hPreAmpTauFit_ext;
 }
+
+void	THypGeMWD::ConnectCorrCorrHistograms(TH1D **fhEnergySpectrumCorrCorr_ext,TH2D **fhEnergyRt1090CorrCorr_ext)
+{
+	fhEnergySpectrumCorrCorr=fhEnergySpectrumCorrCorr_ext;
+	fhEnergyRt1090CorrCorr=fhEnergyRt1090CorrCorr_ext;
+}
+
 void THypGeMWD::PossiblePrintTimer(const char *text )
 {
 	if (UseTimer)
@@ -1499,14 +1593,7 @@ void THypGeMWD::CalculateDerivatives(TH1D* hInput,Int_t ChanNumber)
 
 void THypGeMWD::WriteTestTraces(Int_t IntervalBetweenOutputs,Int_t MaxTraces)
 {
-	// format of file: (after this header)
-	// PeakRange <PeakRangeMin>	<PeakRangeMax>
-	// MaxTraces <NumberOfRecordedTraces>
-	// Trace <Number>
-	// <NumberOfEventsInTrace>
-	// <ADCValueOfEvent>	<XPositionMinimum>	<XPositionAt10%>	<XPositionAt10%>	<XPositionAt30%>	<XPositionAt90%>	<XPositionMaximum>
-	// repeat last line for all events in this trace
-	// repeat for all recorded traces
+	
 	if (OutputTraceNumber < MaxTraces )
 	{
 		if (!(EventNumber % IntervalBetweenOutputs) && PulseEnergy > Co60PeakRangeMin && PulseEnergy < Co60PeakRangeMax)
@@ -1577,14 +1664,27 @@ Int_t THypGeMWD::AnaStep_PreAmpTauFit()
 	return 0;
 }	
 
-void THypGeMWD::ConnectDeriMaxHistograms(TH1D ** fhDeriMaxT90_ext,TH1D **fhDeriMaxT90Rel_ext, TH2D **fhEnergy_DeriMaxT90_ext,TH2D **fhEnergy_DeriMaxT90Rel_ext,TH2D **fDerimaxT90_T1090_ext,TH2D **fDerimaxT90Rel_T1090_ext,TH2D **fDerimaxT90_DerimaxT90Rel_ext)	
+void THypGeMWD::ConnectDeriMaxHistograms(TH1D ** fhDeriMaxT90_ext,TH1D **fhDeriMaxT90Rel_ext, TH2D **fhEnergy_DeriMaxT90_ext,TH2D **fhEnergy_DeriMaxT90Rel_ext,TH2D **fDeriMaxT90_T1090_ext,TH2D **fDeriMaxT90Rel_T1090_ext,TH2D **fDeriMaxT90_DeriMaxT90Rel_ext, TH2D **fhEnergyCorr_DeriMaxT90Rel_ext, TH1D **fhT10DeriMax_ext, TH1D **fhT10DeriMaxRel_ext, TH2D **fhEnergy_T10DeriMax_ext, TH2D **fhEnergy_T10DeriMaxRel_ext, TH2D **fhEnergyCorr_T10DeriMaxRel_ext)
+//ConnectDeriMaxHistograms(TH1D ** fhDeriMaxT90_ext,TH1D **fhDeriMaxT90Rel_ext, TH2D **fhEnergy_DeriMaxT90_ext,TH2D **fhEnergy_DeriMaxT90Rel_ext,TH2D **fDeriMaxT90_T1090_ext,TH2D **fDeriMaxT90Rel_T1090_ext,TH2D **fDeriMaxT90_DeriMaxT90Rel_ext)	
 {
 	fhDeriMaxT90=fhDeriMaxT90_ext;
 	fhDeriMaxT90Rel=fhDeriMaxT90Rel_ext;
 	fhEnergy_DeriMaxT90=fhEnergy_DeriMaxT90_ext;
 	fhEnergy_DeriMaxT90Rel=fhEnergy_DeriMaxT90Rel_ext;
-	fhDerimaxT90Rel_T1090=fDerimaxT90Rel_T1090_ext;
-	fhDerimaxT90_T1090=fDerimaxT90_T1090_ext;
-	fhDerimaxT90_DerimaxT90Rel=fDerimaxT90_DerimaxT90Rel_ext;
+	fhDeriMaxT90Rel_T1090=fDeriMaxT90Rel_T1090_ext;
+	fhDeriMaxT90_T1090=fDeriMaxT90_T1090_ext;
+	fhDeriMaxT90_DeriMaxT90Rel=fDeriMaxT90_DeriMaxT90Rel_ext;
+	fhEnergyCorr_DeriMaxT90Rel=fhEnergyCorr_DeriMaxT90Rel_ext;
+			
+	fhT10DeriMax=fhT10DeriMax_ext;
+	fhT10DeriMaxRel=fhT10DeriMaxRel_ext;
+	fhEnergy_T10DeriMax=fhEnergy_T10DeriMax_ext;
+	fhEnergy_T10DeriMaxRel=fhEnergy_T10DeriMaxRel_ext;
+	fhEnergyCorr_T10DeriMaxRel=fhEnergyCorr_T10DeriMaxRel_ext;
+	
 }
 
+void	THypGeMWD::SetDynamicBaselineValue(double Baseline_ext)
+{
+	BaselineValue=Baseline_ext;
+}

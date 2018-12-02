@@ -21,7 +21,8 @@ int main(int argc, char* argv[] )
 {
 	
 	//TRint *App = new TRint("ROOT",0,0); //&argc,argv);
-	TString BeamTimeMonth = "july2014";
+	//TString BeamTimeMonth = "july2014";
+	TString BeamTimeMonth = "COSYnewMogon";
 	if (argc == 1)
 		BeamTimeMonth=argv[0];
 		

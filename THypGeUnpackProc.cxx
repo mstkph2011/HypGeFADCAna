@@ -69,20 +69,15 @@ THypGeUnpackProc::THypGeUnpackProc(const char* name) :
 		fhTau[i]->GetYaxis()->CenterTitle();
 			
 			AddHistogram(fhTau[i],"Tau");
-		snprintf(chis,15,"Min %02d",i+1);
-		snprintf(chead,63,"Min channel %2d; min value [#mus];Counts [a.u.]",i+1);
-		fhMin[i] = new TH1D (chis,chead,2000,0,2000);
-		fhMin[i]->GetXaxis()->CenterTitle();
-		fhMin[i]->GetYaxis()->CenterTitle();
-			
-			AddHistogram(fhMin[i],"Min");	
+		
 		snprintf(chis,15,"Test%02d",i+1);
 			snprintf(chead,63,"Trace channel %2d; time [#mus];Amplitude [a.u.]",i+1);
 			fhTauTest[i] = new TH1D (chis,chead,TRACE_LENGTH,0,TRACE_LENGTH * TIME_RESOLUTION_FACTOR);
 			fhTauTest[i]->GetXaxis()->CenterTitle();
 			fhTauTest[i]->GetYaxis()->CenterTitle();
 			
-			AddHistogram(fhTauTest[i],"Traces");
+			AddHistogram(fhTauTest[i],"Traces");	
+			
 	}
 	if (!fhTrace[0])
 		cout << "fhTrace[0] not found"<< endl;
@@ -275,7 +270,7 @@ Bool_t THypGeUnpackProc::BuildEvent(TGo4EventElement* dest)
 					
 					//minValue=(fhTrace[chan]->GetBinContent(minI-1)+fhTrace[chan]->GetBinContent(minI)+fhTrace[chan]->GetBinContent(minI+1))/3;
 					minValue=1413.6;//from Co60 data (3.6.14 Jülich, before beam time) , use this to find tau (steinen 21.11.18)
-					fhMin[chan]->Fill((fhTrace[chan]->GetBinContent(minI-1)+fhTrace[chan]->GetBinContent(minI)+fhTrace[chan]->GetBinContent(minI+1))/3);
+					//fhMin[chan]->Fill((fhTrace[chan]->GetBinContent(minI-1)+fhTrace[chan]->GetBinContent(minI)+fhTrace[chan]->GetBinContent(minI+1))/3);
 					//fhMin[chan]->Fill(minValue);
 					for (Int_t i=0;i<samples;i++)   // Channel 
 					{
@@ -285,8 +280,7 @@ Bool_t THypGeUnpackProc::BuildEvent(TGo4EventElement* dest)
 							//fhTraceLN[chan]->SetBinContent(i+1,log(fhTrace[chan]->GetBinContent(i+1))); 
 					}
 								////TF1* fLin=new TF1("fLin","pol1",5.5,7);
-								//TF1* fLin=new TF1("fLin","pol1",21,40);
-								//fhTraceLN[chan]->Fit(fLin,"RQ");
+								
 								//fhTau[chan]->Fill(-1/fLin->GetParameter(1));
 								//if(-1/fLin->GetParameter(1) <10)
 								//{

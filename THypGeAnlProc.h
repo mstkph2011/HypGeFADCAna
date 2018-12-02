@@ -106,10 +106,21 @@ class THypGeAnlProc : public TGo4EventProcessor {
 			TH1D							*fhDeriMaxT90Rel[FADC_CHAN];
 			TH2D							*fhEnergy_DeriMaxT90[FADC_CHAN];
 			TH2D							*fhEnergy_DeriMaxT90Rel[FADC_CHAN];
-			TH2D							*fDerimaxT90Rel_T1090[FADC_CHAN];
-			TH2D							*fDerimaxT90_T1090[FADC_CHAN];
-			TH2D							*fDerimaxT90_DerimaxT90Rel[FADC_CHAN];
+			TH2D							*fDeriMaxT90Rel_T1090[FADC_CHAN];
+			TH2D							*fDeriMaxT90_T1090[FADC_CHAN];
+			TH2D							*fDeriMaxT90_DeriMaxT90Rel[FADC_CHAN];
 
+			TH2D							*fhEnergyCorr_DeriMaxT90Rel[FADC_CHAN];
+			
+			TH1D							*fhT10DeriMax[FADC_CHAN];
+			TH1D							*fhT10DeriMaxRel[FADC_CHAN];
+			TH2D							*fhEnergy_T10DeriMax[FADC_CHAN];
+			TH2D							*fhEnergy_T10DeriMaxRel[FADC_CHAN];
+			TH2D							*fhEnergyCorr_T10DeriMaxRel[FADC_CHAN];
+			TH1D							*fhMin[FADC_CHAN];
+			
+			TH1D							*fhEnergySpectrumCorrCorr[FADC_CHAN];
+			TH2D							*fhEnergyRt1090CorrCorr[FADC_CHAN];
 
 			//TTree							*ftDataTree;
 			//real analysis object

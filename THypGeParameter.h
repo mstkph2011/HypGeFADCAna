@@ -33,7 +33,7 @@ class THypGeParameter : public TGo4Parameter {
 	Int_t 							EnableMA;			// Switch for second moving average filter
 	Int_t 							SmoothingMethod;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
 	Int_t 							EnableBaselineCorrection; 	//Switch baseline correction on or off
-	Int_t								SecondAnalysisRound;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
+	Int_t							SecondAnalysisRound;	// parameter file from previous analysis run with parameters for corrections from first analysis run exists and should be read
 	TString							ParameterFileName;		// name and path of parameters file
 	double							BaselineValue;
 	

@@ -250,34 +250,95 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 			AddHistogram(fhEnergy_DeriMaxT90[i],"Energy_DeriMaxT90");
 			
 		snprintf(chis,30,"Energy_DeriMaxT90Rel_%02d",i+1);
-		snprintf(chead,100,"Energy-t_{max,90,reö}-Correlation channel %02d;t_{max,90,rel};ADC Value [a.u.]",i+1);
+		snprintf(chead,100,"Energy-t_{max,90,rel}-Correlation channel %02d;t_{max,90,rel};ADC Value [a.u.]",i+1);
 		fhEnergy_DeriMaxT90Rel[i] = new TH2D(chis,chead,160,-0.3,1.3,4000,0,4000);
 			AddHistogram(fhEnergy_DeriMaxT90Rel[i],"Energy_DeriMaxT90Rel");
-			
-		snprintf(chis,30,"DerimaxT90_T1090_%02d",i+1);
-		snprintf(chead,100,"t_{max,90}-t_{10,90}-Correlation channel %02d;t_{max,90} [ns];-t_{10,90} [ns]",i+1);
-		fDerimaxT90_T1090[i] = new TH2D(chis,chead,130,-300,1000,100,0,1000);
-			AddHistogram(fDerimaxT90_T1090[i],"DerimaxT90_T1090");
 		
-		snprintf(chis,30,"DerimaxT90Rel_T1090_%02d",i+1);
+		snprintf(chis,30,"EnergyCorr_DeriMaxT90Rel_%02d",i+1);
+		snprintf(chead,100,"Energy-Corr t_{max,90,rel}-Correlation channel %02d;t_{max,90,rel};ADC Value [a.u.]",i+1);
+		fhEnergyCorr_DeriMaxT90Rel[i] = new TH2D(chis,chead,160,-0.3,1.3,4000,0,4000);
+			AddHistogram(fhEnergyCorr_DeriMaxT90Rel[i],"EnergyCorr_DeriMaxT90Rel");
+		
+		
+		
+		snprintf(chis,30,"DeriMaxT90_T1090_%02d",i+1);
+		snprintf(chead,100,"t_{max,90}-t_{10,90}-Correlation channel %02d;t_{max,90} [ns];-t_{10,90} [ns]",i+1);
+		fDeriMaxT90_T1090[i] = new TH2D(chis,chead,130,-300,1000,100,0,1000);
+			AddHistogram(fDeriMaxT90_T1090[i],"DeriMaxT90_T1090");
+		
+		snprintf(chis,30,"DeriMaxT90Rel_T1090_%02d",i+1);
 		snprintf(chead,100,"t_{max,90,rel}-t_{10,90}-Correlation channel %02d;t_{max,90,rel} ;-t_{10,90} [ns]",i+1);
-		fDerimaxT90Rel_T1090[i] = new TH2D(chis,chead,160,-.3,1.300,100,0,1000);
-			AddHistogram(fDerimaxT90Rel_T1090[i],"DerimaxT90Rel_T1090");
+		fDeriMaxT90Rel_T1090[i] = new TH2D(chis,chead,160,-.3,1.300,100,0,1000);
+			AddHistogram(fDeriMaxT90Rel_T1090[i],"DeriMaxT90Rel_T1090");
 			
-		snprintf(chis,30,"fDerimaxT90_DerimaxT90Rel_%02d",i+1);
+		snprintf(chis,30,"fDeriMaxT90_DeriMaxT90Rel_%02d",i+1);
 		snprintf(chead,100,"t_{max,90}-t_{max,90,rel}-Correlation channel %02d;t_{max,90} [ns];-t_{max,90,rel} ",i+1);
-		fDerimaxT90_DerimaxT90Rel[i] = new TH2D(chis,chead,130,-300,1000,160,-.30,1.300);
-			AddHistogram(fDerimaxT90_DerimaxT90Rel[i],"DerimaxT90_DerimaxT90Rel");
-		snprintf(chis,30,"DerimaxT90_%02d",i+1);
+		fDeriMaxT90_DeriMaxT90Rel[i] = new TH2D(chis,chead,130,-300,1000,160,-.30,1.300);
+			AddHistogram(fDeriMaxT90_DeriMaxT90Rel[i],"DeriMaxT90_DeriMaxT90Rel");
+			
+		snprintf(chis,30,"DeriMaxT90_%02d",i+1);
 		snprintf(chead,63,"t_{max,90} %2d; t_{max,90} [ns];Counts [a.u.]",i+1);
 		fhDeriMaxT90[i] = new TH1D(chis,chead,130,-300,1000);		
-			AddHistogram(fhDeriMaxT90[i],"DerimaxT90");
+			AddHistogram(fhDeriMaxT90[i],"DeriMaxT90");
 			
-		snprintf(chis,30,"DerimaxT90_%02dRel",i+1);
+		snprintf(chis,30,"DeriMaxT90Rel_%02d",i+1);
 		snprintf(chead,63,"t_{max,90,rel} %2d; t_{max,90,rel} [ns];Counts [a.u.]",i+1);
 		fhDeriMaxT90Rel[i] = new TH1D(chis,chead,160,-.300,1.300);		
-			AddHistogram(fhDeriMaxT90Rel[i],"DerimaxT90Rel");
+			AddHistogram(fhDeriMaxT90Rel[i],"DeriMaxT90Rel");
 			
+		
+		snprintf(chis,30,"T10DeriMax_%02d",i+1);
+		snprintf(chead,63,"t_{10,max} %2d; t_{10,max} [ns];Counts [a.u.]",i+1);
+		fhT10DeriMax[i] = new TH1D(chis,chead,130,-300,1000);		
+			AddHistogram(fhT10DeriMax[i],"T10DeriMax");
+		
+		snprintf(chis,30,"T10DeriMaxRel_%02d",i+1);
+		snprintf(chead,63,"t_{10,max,rel} %2d; t_{10,max,rel} [ns];Counts [a.u.]",i+1);
+		fhT10DeriMaxRel[i] = new TH1D(chis,chead,160,-.300,1.300);		
+			AddHistogram(fhT10DeriMaxRel[i],"T10DeriMaxRel");
+		
+		snprintf(chis,30,"Energy_T10DeriMax_%02d",i+1);
+		snprintf(chead,100,"Energy-t_{10,max}-Correlation channel %02d;t_{10,max} [ns];ADC Value [a.u.]",i+1);
+		fhEnergy_T10DeriMax[i] = new TH2D(chis,chead,130,-300,1000,4000,0,4000);
+			AddHistogram(fhEnergy_T10DeriMax[i],"Energy_T10DeriMax");
+			
+		snprintf(chis,30,"Energy_T10DeriMaxRel_%02d",i+1);
+		snprintf(chead,100,"Energy-t_{10,max,rel}-Correlation channel %02d;t_{10,max,rel};ADC Value [a.u.]",i+1);
+		fhEnergy_T10DeriMaxRel[i] = new TH2D(chis,chead,160,-0.3,1.3,4000,0,4000);
+			AddHistogram(fhEnergy_T10DeriMaxRel[i],"Energy_T10DeriMaxRel");
+		
+		snprintf(chis,30,"EnergyCorr_T10DeriMaxRel_%02d",i+1);
+		snprintf(chead,100,"Energy Corr-t_{10,max,rel}-Correlation channel %02d;t_{10,max,rel};ADC Value [a.u.]",i+1);
+		fhEnergyCorr_T10DeriMaxRel[i] = new TH2D(chis,chead,160,-0.3,1.3,4000,0,4000);
+			AddHistogram(fhEnergyCorr_T10DeriMaxRel[i],"EnergyCorr_T10DeriMaxRel");
+		
+		//second correction
+		snprintf(chis,30,"EnergyCorrCorr_%02d",i+1);
+		snprintf(chead,63,"Energy spectrum from MA signal channel with two corrections %2d; ADC channel [a.u.];Counts [a.u.] ",i+1);
+		fhEnergySpectrumCorrCorr[i] = new TH1D(chis,chead,16000,0,8000);
+			AddHistogram(fhEnergySpectrumCorrCorr[i],"CorrCorr");
+		
+		snprintf(chis,30,"EnergyRt1090CorrCorr_%02d",i+1);
+		snprintf(chead,63,"Energy-Risetime1090-Correlation with two corrections channel %02d;Risetime [ns];ADC Value [a.u.]",i+1);
+		fhEnergyRt1090CorrCorr[i] = new TH2D(chis,chead,100,0,1000,4000,0,4000);
+			AddHistogram(fhEnergyRt1090CorrCorr[i],"CorrCorr");
+		
+		
+		
+		
+		
+		snprintf(chis,15,"Min %02d",i+1);
+		snprintf(chead,63,"Min channel %2d; min value [#mus];Counts [a.u.]",i+1);
+		fhMin[i] = new TH1D (chis,chead,3000,-1000,2000);
+		fhMin[i]->GetXaxis()->CenterTitle();
+		fhMin[i]->GetYaxis()->CenterTitle();
+			AddHistogram(fhMin[i],"Min");	
+			
+		
+		
+		
+		
+		
 	}
 	for (int i = 0; i < 20; i++)
 	{
@@ -348,8 +409,9 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		fMWDAna->ConnectRtCorrelationHistograms(fhRt1030Rt1090Co1332Only,fhRt1030Rt80100Co1332Only);
 		fMWDAna->ConnectTraceDeriMaximumHistograms(fhTraceDeriMaximumPosition);
 		fMWDAna->ConnectPreAmpTauFit(fhPreAmpTauFit);
-		fMWDAna->ConnectDeriMaxHistograms(fhDeriMaxT90,fhDeriMaxT90Rel,fhEnergy_DeriMaxT90,fhEnergy_DeriMaxT90Rel,fDerimaxT90_T1090,fDerimaxT90Rel_T1090,fDerimaxT90_DerimaxT90Rel);
-		
+		fMWDAna->ConnectDeriMaxHistograms(fhDeriMaxT90,fhDeriMaxT90Rel,fhEnergy_DeriMaxT90,fhEnergy_DeriMaxT90Rel,fDeriMaxT90_T1090,fDeriMaxT90Rel_T1090,fDeriMaxT90_DeriMaxT90Rel,fhEnergyCorr_DeriMaxT90Rel, fhT10DeriMax, fhT10DeriMaxRel, fhEnergy_T10DeriMax, fhEnergy_T10DeriMaxRel, fhEnergyCorr_T10DeriMaxRel);
+				 //ConnectDeriMaxHistograms(TH1D ** fhDeriMaxT90_ext,TH1D **fhDeriMaxT90Rel_ext, TH2D **fhEnergy_DeriMaxT90_ext,TH2D **fhEnergy_DeriMaxT90Rel_ext,TH2D **fDeriMaxT90_T1090_ext,TH2D **fDeriMaxT90Rel_T1090_ext,TH2D **fDeriMaxT90_DeriMaxT90Rel_ext,
+		fMWDAna->ConnectCorrCorrHistograms(fhEnergySpectrumCorrCorr,fhEnergyRt1090CorrCorr);
 		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection(),fHypPar->GetBaselineValue());
 		
 		cout << "Sr in AnaProc: " << fHypPar->GetSecondAnalysisRound() << endl;
@@ -391,14 +453,36 @@ Bool_t THypGeAnlProc::BuildEvent(TGo4EventElement* dest)
    }
    isValid=kTRUE;
 
+	//dynamic baseline aquisition, this was required for the analysis of the jülich data (steinen, 28.11.2018)
+	// ONLY IMPLEMENTED FOR ONE CHANNEL!!!!!!
+	TF1* fLin=new TF1("fLin","[0]+expo(1)",0.1,3.5);
+	fLin->SetParameters(500, 10,-1/54.);
+	fLin->FixParameter(2,-1/53.391);
+	fLin->SetParLimits(0,-1000,3000);
+	fLin->SetParLimits(1,0,10);
+	int fitstatus = fhTrace[0]->Fit(fLin,"RBNQ");
+	double BaseLine=fLin->GetParameter(0);
+	fLin->Delete();
+	if(fitstatus ==0 && BaseLine>-1000)
+		fhMin[0]->Fill(BaseLine);
+	else
+	{
+		//cout << "bad trace" << endl;
+		return kFALSE;
+	}
+	
+
 	//add ana code here
 	//cout << fHypPar->GetMAl() << endl;
 	fMWDAna->SetUseMWD(1);
 	//if (fHypPar->GetParametersChanged())
 	//{
-		fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection(),fHypPar->GetBaselineValue());
+	// resetting of parameters, including the dynamic baseline value. If they are not reset for every trace, changes in the go4 parameter value will have no effect
+	fMWDAna->SetParameters(fHypPar->GetMWDm(),fHypPar->GetMAl(),fHypPar->GetNoOfSmoothing(),fHypPar->GetWidth() ,fHypPar->GetSigmaGaus(),fHypPar->GetSigmaBil(),fHypPar->GetTau(), fHypPar->GetEnableMA(),fHypPar->GetSmoothingMethod(),fHypPar->GetEnableBaselineCorrection(),BaseLine);
 		//fHypPar->SetParametersChanged(0);
 	//}
+	
+	//fMWDAna->SetDynamicBaselineValue(BaseLine);
 	fMWDAna->FullAnalysis();
 	//if (fMWDAna->FullAnalysis() != -1)				// some error here
 		//fhTraceDeriMaximumPosition->Fill((fhTrace_deconv[0]->GetBinContent(1)-fhTrace_deconv[0]->GetBinContent(301))/300);
