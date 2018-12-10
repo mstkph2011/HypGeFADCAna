@@ -91,9 +91,10 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 EnableMA = 1;			// Switch for second moving average filter
 	 SmoothingMethod = 0;	// Choose Smoothing Filter: 0 = Off, 1 = Mean, 2 = WA, 3 = Gaus, 4 = Bil
 	 EnableBaselineCorrection = 1; 	//Switch baseline correction on or off
-	 SecondAnalysisRound = 1;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
-	 ParameterFileName = "/lustre/miifs05/scratch/him-specf/hyp/steinen/COSYBeamtestAna/COSYnewMogon/Fit/FitCOSYJune2014Dataset14_200,100,0,5339_SR0.root";		// name and path of parameters file
+	 SecondAnalysisRound = 0;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
+	 ParameterFileName = "/lustre/miifs05/scratch/him-specf/hyp/steinen/COSYBeamtestAna/COSYnewMogon/Fit/FitCOSYJune2014Dataset14_200,100,0,5339_SR1.root";		// name and path of parameters file
 	 BaselineValue=1413.6;
+	 TreeFile="TreeTestFile111.root";
 	 if (argc>1)
 	 {
 		MWDm = atoi(argv[1]);
@@ -159,6 +160,11 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 		BaselineValue = atof(argv[13]);
 		cout << "BaselineValue\t" << argv[13] << endl;
 	}
+	if (argc>14)
+	{
+		TreeFile = argv[14];
+		cout << "TreeFile\t" << argv[14] << endl;
+	}
 		//TGo4MbsFileParameter* input = new TGo4MbsFileParameter(userinput);
 	 TString kind, input, out1, out2;
 
@@ -208,6 +214,7 @@ THypGeAnalysis::THypGeAnalysis(int argc, char** argv) :
 	 cout << "ParAdded " << AddParameter(fPar)  << endl;
 	 fPar->SetParameters( MWDm, MAl,NoS, Width ,sigmaGaus,sigmaBil, tau, EnableMA, SmoothingMethod, EnableBaselineCorrection,BaselineValue);
 	 fPar->SetSecondAnaRoundParameters(SecondAnalysisRound,ParameterFileName);
+	 fPar->SetTreeFileName(TreeFile);
 		cout <<"Second run??? "<< fPar->GetSecondAnalysisRound()<< endl;
 	char chis[100], chead[100];
 	for(Int_t i=0;i<FADC_CHAN;i++)

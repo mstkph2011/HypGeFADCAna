@@ -77,7 +77,7 @@ class THypGeSpectrumAnalyser
 		Int_t											CompareNuclei(TString NucleiName);						// database comparison
 		
 		void											SetTxtFileOutputName(TString TxtFilename_ext);
-		void											SetRootFileOutputName(TString RootFilename_ext);
+		void											SetRootFileOutputName(TString RootFilename_ext,TString PathInRootFile_ext="", TString PathInRootFileCorr2_ext="");
 		void											SetOutputPath(TString OutputPath_ext);
 		
 		Int_t 										ExportToTextFile(TString TxtFilename_ext = "test.txt");
@@ -192,6 +192,9 @@ class THypGeSpectrumAnalyser
 		Int_t											fFittingMethod;
 		
 		Bool_t										NoDrawingMode;
+		bool										usePathInRootFile;
+		TString										PathInRootFile;
+		TString										PathInRootFileCorr2;
 		
 		//ClassDef(THypGeSpectrumAnalyser,1)					// This line must be used for Go4 and PANDAroot !!!!!!!!!!!   gives "IsA()" Error if compiled with g++
 };

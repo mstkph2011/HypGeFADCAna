@@ -93,6 +93,18 @@ THypGeMWD::THypGeMWD(Int_t TraceLength_ext,Int_t NumberOfChannels_ext)          
 	iRtError=0;
 	//CalculateSecondGausCoeff();
 	cout << "Analysis created"<<endl;
+	
+	DataTree=new TTree("DataTree","");
+		DataTree->Branch("Energy",&fTreeEnergy,"Energy/D");
+		DataTree->Branch("T1090",&fTreeT1090,"T1090/D");
+		DataTree->Branch("T3090",&fTreeT3090,"T3090/D");
+		DataTree->Branch("TDerimax90",&fTreeTDerimax90,"TDerimax90/D");
+		DataTree->Branch("TDerimax90Rel",&fTreeTDerimax90Rel,"TDerimax90Rel/D");
+		DataTree->Branch("T10Derimax",&fTreeT10Derimax,"T10Derimax/D");
+		DataTree->Branch("T10DerimaxRel",&fTreeT10DerimaxRel,"T10DerimaxRel/D");
+		
+		
+		
 }
 
 THypGeMWD::~THypGeMWD()            //destructor
@@ -442,29 +454,29 @@ Int_t THypGeMWD::AnaStep_ExtractRisetime()
 
 				DeriMaxX = Double_t(FindLocalMaximumBin(hTraceDeri[ChanNumber],MinimumPosition,MaximumPosition));
 	
-				if(RiseX90-RiseX10 <2)
-				//if(MaxAvg-MinAvg <250)
-				{
-					cout << "RisetimeError " << iRtError <<endl;
-					cout << "Pos " << it->first <<endl;
-					cout << "Min " << MinAvg <<endl;
-					cout << "Max " << MaxAvg <<endl;
-					cout << "R10 " << RiseX10 << endl;
-					cout << "R30 " << RiseX30 << endl;
-					cout << "R90 " << RiseX90 << endl;
-					cout << "R90 Tre" << Amp90Threshold << endl;
-					cout << "DeriMaxX" << DeriMaxX << endl;
+				//if(RiseX90-RiseX10 <2)
+				////if(MaxAvg-MinAvg <250)
+				//{
+					//cout << "RisetimeError " << iRtError <<endl;
+					//cout << "Pos " << it->first <<endl;
+					//cout << "Min " << MinAvg <<endl;
+					//cout << "Max " << MaxAvg <<endl;
+					//cout << "R10 " << RiseX10 << endl;
+					//cout << "R30 " << RiseX30 << endl;
+					//cout << "R90 " << RiseX90 << endl;
+					//cout << "R90 Tre" << Amp90Threshold << endl;
+					//cout << "DeriMaxX" << DeriMaxX << endl;
 					
-					if (OutputTraceNumber < 100 && !isSR)
-					{
-						for(Int_t n=1;n<=TraceLength;n++)
-						{
-							hTraceOutput[iRtError]->SetBinContent(n,hTrace[0]->GetBinContent(n));
-						}
-					}
+					//if (OutputTraceNumber < 100 && !isSR)
+					//{
+						//for(Int_t n=1;n<=TraceLength;n++)
+						//{
+							//hTraceOutput[iRtError]->SetBinContent(n,hTrace[0]->GetBinContent(n));
+						//}
+					//}
 					
-					iRtError++;
-				}
+					//iRtError++;
+				//}
 				RiseX1090 = RiseX90 - RiseX10;
 				RiseX3090 = RiseX90 - RiseX30;
 				
@@ -588,8 +600,25 @@ Int_t		THypGeMWD::AnaStep_FillHistograms()
 				//cout <<it2->first<<endl;
 				PulseStartingTime = it->first;
 				PulseEnergy = it->second;
+				fTreeEnergy=PulseEnergy;
+				
+				
+			
+			
+				
 				double T1090=mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt10[ChanNumber][PulseStartingTime];
-				double T3090=T3090;
+				fTreeT1090=T1090;
+				double T3090=mTraceposRt90[ChanNumber][PulseStartingTime] - mTraceposRt30[ChanNumber][PulseStartingTime];
+				fTreeT3090=T3090;
+				
+				
+				fTreeTDerimax90=mTraceposDeriMaxT90T[ChanNumber][PulseStartingTime];
+				fTreeTDerimax90Rel=mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime];
+				fTreeT10Derimax=mTraceposT10DeriMaxT[ChanNumber][PulseStartingTime];
+				fTreeT10DerimaxRel=mTraceposT10DeriMaxTRel[ChanNumber][PulseStartingTime];
+				
+				DataTree->Fill();
+				
 				//1D histos
 				//fill energy spectrum after MA
 				hEnergySpectrumMA[ChanNumber]->Fill(PulseEnergy);
@@ -705,6 +734,7 @@ Int_t		THypGeMWD::AnaStep_FillHistograms()
 				}
 				
 				//CorrCorr histograms
+				
 				if (isSR>1)
 				{
 					fhEnergySpectrumCorrCorr[ChanNumber]->Fill(EnergyRtCorrection(EnergyTDeriMax90RelCorrection(PulseEnergy , mTraceposDeriMaxT90TRel[ChanNumber][PulseStartingTime]),  T1090));
@@ -949,7 +979,7 @@ void THypGeMWD::SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Wid
 	//cout << "new parameters set"<< endl;
 }
 
-void THypGeMWD::IsSecondRun(Bool_t isSR_ext)
+void THypGeMWD::IsSecondRun(int isSR_ext)
 {
 	isSR = isSR_ext;
 }
@@ -1687,4 +1717,10 @@ void THypGeMWD::ConnectDeriMaxHistograms(TH1D ** fhDeriMaxT90_ext,TH1D **fhDeriM
 void	THypGeMWD::SetDynamicBaselineValue(double Baseline_ext)
 {
 	BaselineValue=Baseline_ext;
+}
+void 	THypGeMWD::WriteTreeToFile(TString TreeFileName = "TestTreeFile.root")
+{
+	TFile *TreeFile = new TFile (TreeFileName.Data(),"RECREATE");
+	DataTree->Write();
+	TreeFile->Close();
 }

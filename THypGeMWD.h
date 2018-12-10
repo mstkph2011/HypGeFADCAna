@@ -39,6 +39,7 @@
 #include "TVirtualFFT.h"
 #include "TStopwatch.h"
 #include <fstream>
+#include "TTree.h"
 
 
 class THypGeMWD
@@ -65,7 +66,7 @@ class THypGeMWD
 		void							ConnectPreAmpTauFit(TH1D ** hPreAmpTauFit_ext);
 		void							ConnectDeriMaxHistograms(TH1D ** fhDeriMaxT90_ext,TH1D **fhDeriMaxT90Rel_ext, TH2D **fhEnergy_DeriMaxT90_ext,TH2D **fhEnergy_DeriMaxT90Rel_ext,TH2D **fDeriMaxT90_T1090_ext,TH2D **fDeriMaxT90Rel_T1090_ext,TH2D **fDeriMaxT90_DeriMaxT90Rel_ext, TH2D **fhEnergyCorr_DeriMaxT90Rel_ext, TH1D **fhT10DeriMax_ext, TH1D **fhT10DeriMaxRel_ext, TH2D **fhEnergy_T10DeriMax_ext, TH2D **fhEnergy_T10DeriMaxRel_ext, TH2D **fhEnergyCorr_T10DeriMaxRel_ext);
 		void							ConnectCorrCorrHistograms(TH1D **fhEnergySpectrumCorrCorr_ext,TH2D **fhEnergyRt1090CorrCorr_ext);
-
+		void 							WriteTreeToFile(TString TreeFileName);
 	private :
 		
 		//single steps of the analysis
@@ -102,7 +103,7 @@ class THypGeMWD
 		
 		public:
 		void 							SetParameters( Int_t M_ext, Int_t L_ext,Int_t NoS_ext, Int_t Width_ext, Int_t Sigma_ext, Int_t SigmaBil_ext, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC,double BaselineValue_ext);
-		void							IsSecondRun(Bool_t isSR_ext = 1);
+		void							IsSecondRun(int isSR_ext = 1);
 		void							SetSecondRunParametersFileName(TString SecondRunParametersFileName_ext);
 		
 		void							Init();
@@ -152,6 +153,8 @@ class THypGeMWD
 
 		Double_t						EnergyTDeriMax90RelCorrection( Double_t EnergyUncorr, Double_t TDeriMax90);
 
+
+		
 	private:
 		Int_t 						TraceLength;
 		Int_t							NumberOfChannels;
@@ -317,6 +320,14 @@ class THypGeMWD
 		Double_t mCorrection;
 		int iRtError;
 		
+		TTree *DataTree;
+			double fTreeEnergy;
+			double fTreeT1090;
+			double fTreeT3090;
+			double fTreeTDerimax90;
+			double fTreeTDerimax90Rel;
+			double fTreeT10Derimax;
+			double fTreeT10DerimaxRel;
 	ClassDef(THypGeMWD,2)			// doesn't compile with this line
 };
 

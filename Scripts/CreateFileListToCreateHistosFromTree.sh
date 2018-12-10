@@ -10,8 +10,6 @@ TxtDir=${COSYTESTANADIR}/${SubSubDir}/txtfiles
 
 rm ${TxtDir}/Filestofit.txt
 
-ls ${SubDir}/HistosTreeCOSY*.root >> ${TxtDir}/Filestofit.txt
-#ls ${SubDir}/COSY*.root >> ${TxtDir}/Filestofit.txt
-ls ${SubDir}/HistosTreeCOSY*.root
-#ls ${SubDir}/COSY*.root
-echo ${TxtDir}/Filestofit.txt
+ls ${SubDir}/Tree*.root >> ${TxtDir}/TreeFiles.txt
+ls ${SubDir}/Tree*.root
+echo ${TxtDir}/TreeFiles.txt

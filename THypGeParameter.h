@@ -36,6 +36,7 @@ class THypGeParameter : public TGo4Parameter {
 	Int_t							SecondAnalysisRound;	// parameter file from previous analysis run with parameters for corrections from first analysis run exists and should be read
 	TString							ParameterFileName;		// name and path of parameters file
 	double							BaselineValue;
+	TString							TreeFile;
 	
 	TTree							*fTree;
 	
@@ -45,6 +46,7 @@ class THypGeParameter : public TGo4Parameter {
 	void 								SetParameters( Int_t M, Int_t L, Int_t NOS_ext, Int_t Width_ext, Int_t Sigma, Int_t SigmaBil, Double_t tau_ext, Int_t EnaMA, Int_t EnaSmo, Int_t EnaBC,double BaselineValue_ext);
 	void								SetSecondAnaRoundParameters(Int_t SecondAnalysisRound_ext, TString ParameterFileName_ext);
 	void								SetTree(TTree* tree_ext);
+	void							SetTreeFileName(TString TreeFile_ext);
 	void 								PrintParameters();
 	Int_t 							GetMWDm();
 	Int_t 							GetMAl();
@@ -60,6 +62,7 @@ class THypGeParameter : public TGo4Parameter {
 	TString							GetParameterFileName();
 	double							GetBaselineValue();
 	TTree*							GetTree();
+	TString							GetTreeFileName();
 
 	Bool_t 							GetParametersChanged();
 	void 								SetParametersChanged(Bool_t ParamaterChangedValue = 1);

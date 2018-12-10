@@ -70,6 +70,7 @@ class THypGeAnalysis : public TGo4Analysis  {
 			int									SecondAnalysisRound;	// parameter file from first analysis run with parameters for corrections from first analysis run exists and should be read
 			TString							ParameterFileName;		// name and path of parameters file
 			double							BaselineValue;
+			TString							TreeFile;
 			ClassDef(THypGeAnalysis,1)
 };
 

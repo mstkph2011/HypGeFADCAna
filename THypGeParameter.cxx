@@ -132,3 +132,11 @@ TTree* THypGeParameter::GetTree()
 {
 	return fTree;
 }
+void THypGeParameter::SetTreeFileName(TString TreeFile_ext)
+{
+	TreeFile=TreeFile_ext;
+}
+TString THypGeParameter::GetTreeFileName()
+{
+	return TreeFile;
+}

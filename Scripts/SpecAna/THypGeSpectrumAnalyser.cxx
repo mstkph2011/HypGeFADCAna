@@ -32,6 +32,7 @@
 #include "TNtuple.h"
 #include "TVirtualFitter.h"
 #include "TMatrixD.h"
+#include "TDirectory.h"
 
 
 THypGeSpectrumAnalyser::THypGeSpectrumAnalyser(TH1D* hEnergyspec_ext, Int_t nPeaks_ext, Int_t FuncWidthExt )
@@ -900,8 +901,21 @@ Int_t THypGeSpectrumAnalyser::ExportToRootFile(TString RootFilename_ext )
 	RootFile = (TFile*)gROOT->FindObject(RootFilenameWithPath); 
 	if (RootFile) 
 		RootFile->Close();
-	RootFile = new TFile(RootFilenameWithPath,"RECREATE",RootFilenameWithPath);
-		
+	RootFile = new TFile(RootFilenameWithPath,"UPDATE",RootFilenameWithPath);
+	if (usePathInRootFile)
+	{
+		TDirectory *SubDir= RootFile->mkdir(PathInRootFile.Data());
+		if(!SubDir)
+			SubDir=gDirectory->GetDirectory(PathInRootFile.Data());
+		SubDir->cd();
+		if(!PathInRootFileCorr2.IsNull())
+		{
+			TDirectory *SubSubDir= SubDir->mkdir(PathInRootFileCorr2.Data());
+			if(!SubSubDir)
+				SubDir=gDirectory->GetDirectory(PathInRootFile.Data());
+			SubSubDir->cd();
+		}
+	}
 	TNtuple* DataNTuple = new TNtuple("DataNTuple","Data ntuple","PeakNumber:Energy:FWHM:FWTM:FWTMtoFWHMratio:PeakCounts:ChannelPeakPos:ChannelRangeMin:ChannelRangeMax");
 	Double_t wEnergy,wFWHM,wFWTM,wRatio,wPeakCounts,ChannelPeakPos,ChannelRangeMin,ChannelRangeMax;				// w means "write"
 	Int_t wPeakNumber;
@@ -922,16 +936,16 @@ Int_t THypGeSpectrumAnalyser::ExportToRootFile(TString RootFilename_ext )
 		it++;
 		it2++;
 	}
-	DataNTuple->Write();
+	DataNTuple->Write(0,TObject::kOverwrite);
 
 	if (nPeaksFound==2)
-		FitFunc[1]->Write();
+		FitFunc[1]->Write(0,TObject::kOverwrite);
 	else if (nPeaksFound>2)
-		FitFunc[2]->Write();
+		FitFunc[2]->Write(0,TObject::kOverwrite);
 
-	fhEnergySpectrum->Write();
-	fCalCanvas->Write();
-	fCalSpecCanvas->Write();
+	fhEnergySpectrum->Write(0,TObject::kOverwrite);
+	fCalCanvas->Write(0,TObject::kOverwrite);
+	fCalSpecCanvas->Write(0,TObject::kOverwrite);
 	RootFile->Close();
 	cout << "Export to root file finished"<<endl;
 	cout << "Written to: " << RootFilenameWithPath.Data()<<endl;
@@ -940,6 +954,7 @@ Int_t THypGeSpectrumAnalyser::ExportToRootFile(TString RootFilename_ext )
 
 void THypGeSpectrumAnalyser::SetSearchRange(Double_t RangeMin,Double_t RangeMax)
 {
+	cout << fhEnergySpectrum << endl;
 	fhEnergySpectrum->GetXaxis()->SetRangeUser(RangeMin,RangeMax);
 }
 
@@ -947,9 +962,18 @@ void THypGeSpectrumAnalyser::SetTxtFileOutputName(TString TxtFilename_ext)
 {
 	TxtFilename = TxtFilename_ext; 
 }
-void THypGeSpectrumAnalyser::SetRootFileOutputName(TString RootFilename_ext)
+void THypGeSpectrumAnalyser::SetRootFileOutputName(TString RootFilename_ext,TString PathInRootFile_ext, TString PathInRootFileCorr2_ext)
 {
 	 RootFilename = RootFilename_ext;
+	 if(!PathInRootFile_ext.IsNull())
+	 {
+		 PathInRootFile=PathInRootFile_ext;
+		 usePathInRootFile=1;
+	 }
+	 if(!PathInRootFileCorr2_ext.IsNull())
+	 {
+		 PathInRootFileCorr2=PathInRootFileCorr2_ext;
+	 }
 }
 
 void THypGeSpectrumAnalyser::SetOutputPath(TString OutputPath_ext)

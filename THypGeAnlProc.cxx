@@ -417,7 +417,7 @@ THypGeAnlProc::THypGeAnlProc(const char* name) :
 		cout << "Sr in AnaProc: " << fHypPar->GetSecondAnalysisRound() << endl;
 		if (fHypPar->GetSecondAnalysisRound())
 		{
-			fMWDAna->IsSecondRun();
+			fMWDAna->IsSecondRun(fHypPar->GetSecondAnalysisRound());
 			fMWDAna->SetSecondRunParametersFileName(fHypPar->GetParameterFileName());
 		}
 		fMWDAna->Init();
@@ -514,6 +514,7 @@ Bool_t THypGeAnlProc::BuildEvent(TGo4EventElement* dest)
 void THypGeAnlProc::UserPostLoop()
 {
 	//ftDataTree->Write();
+	fMWDAna->WriteTreeToFile(fHypPar->GetTreeFileName());
 	cout << "Tree written" << endl;
 }
  
