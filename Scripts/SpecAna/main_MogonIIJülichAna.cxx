@@ -34,7 +34,7 @@ int main(int argc, char* argv[] )
 	TString SpektrumModel= "jülich2";
 	TString PathInRootFileCorr1="";
 	TString PathInRootFileCorr2="";
-	
+	TString UseT10DMCut="";
 	
 	bool UseFreeSkewedFitting=1;
 	int SecondRun=0;
@@ -75,29 +75,30 @@ int main(int argc, char* argv[] )
 		PathInRootFileCorr1=argv[4];
 		cout << PathInRootFileCorr1.Data()<<endl;
 	}
-	if (argc==6)
+	if (argc>=6)
 	{
 		PathInRootFileCorr2=argv[5];
 		cout << PathInRootFileCorr2.Data()<<endl;
 	}
+	if (argc>=7)
+	{
+		UseT10DMCut=argv[6];
+		cout << UseT10DMCut.Data()<<endl;
+	}
 	TH1D* hEnergyMA;
-	//TH2D* hEnergyRt1090;
+	TH2D* hEnergyT10DM;
 	
 	TString EnergyHistoString="hEnergy;1";
-	EnergyHistoString.Form("hEnergy%s%s;1",PathInRootFileCorr1.Data(),PathInRootFileCorr2.Data());
-	//if(!PathInRootFileCorr1.IsNull() && PathInRootFileCorr2.IsNull())
-	//{
-		////EnergyHistoString.Form("%s;1/hEnergy%s;1",PathInRootFileCorr1.Data(),PathInRootFileCorr1.Data());
-		//EnergyHistoString.Form("hEnergy%s;1",PathInRootFileCorr1.Data());
-	//}
-	//if(!PathInRootFileCorr1.IsNull()&& !PathInRootFileCorr2.IsNull())
-	//{
-		////EnergyHistoString.Form("%s;1/%s;1/hEnergy%s%s;1",PathInRootFileCorr1.Data(),PathInRootFileCorr2.Data(),PathInRootFileCorr1.Data(),PathInRootFileCorr2.Data());
-		//EnergyHistoString.Form("hEnergy%s%s;1",PathInRootFileCorr1.Data(),PathInRootFileCorr2.Data());
-	//}
+	EnergyHistoString.Form("hEnergy%s%s;1",PathInRootFileCorr2.Data(),PathInRootFileCorr1.Data());
+	TString EnergyT10DMHistoString="hT10DeriMaxEnergy;1";
+	if(!UseT10DMCut.IsNull())
+	{
+		EnergyT10DMHistoString.Form("hT10DeriMaxEnergy%s%s;1",PathInRootFileCorr2.Data(),PathInRootFileCorr1.Data());
+	}
 	cout << EnergyHistoString.Data() << endl;
+	cout << EnergyT10DMHistoString.Data() << endl;
 	//return 0;
-	//changes here for the proper input
+	//change here for the proper input
 	TFile *Input= new TFile(InputFile.Data());
 		if(!PathInRootFileCorr1.IsNull())
 		{
@@ -105,47 +106,42 @@ int main(int argc, char* argv[] )
 			gDirectory->cd(PathInRootFileCorr1.Data());
 			if(!PathInRootFileCorr2.IsNull())
 			{
-				TDirectory *SubSubdir = Subdir->GetDirectory(PathInRootFileCorr2.Data());
-				gDirectory->cd(PathInRootFileCorr1.Data());
+				cout << "test" << endl;
+				TDirectory *SubSubdir = gDirectory->GetDirectory(PathInRootFileCorr2.Data());
+				cout << "SSd" << SubSubdir<< endl;
+				gDirectory->cd(PathInRootFileCorr2.Data());
 			}
 			
 		}
-		cout << "directory?"<< endl;
-		cout <<gDirectory->GetPath()<<endl;
-		gDirectory->ls();
-		cout << "directory?"<< endl;
-		//Input->GetObject(EnergyHistoString.Data(),hEnergyMA);									// get histrogram
+		//cout << "directory?"<< endl;
+		//cout <<gDirectory->GetPath()<<endl;
+
+		//gDirectory->ls();
+		//cout << "directory?"<< endl;
+
 		hEnergyMA= (TH1D*) gDirectory->Get(EnergyHistoString.Data());
-		//hEnergyMA= (TH1D*) gDirectory->Get("hEnergyCorr1_T10DeriMaxEnergyNorm_2;1");
-		//Input->GetObject(EnergyHistoString.Data(),hEnergyMA);									// get histrogram
-	
-		//if (!SecondRun)
-		//{
-			//Input->GetObject("/Histograms/Energyspectrum/Energy_01;1",hEnergyMA);									// get histrogram
-			//Input->GetObject("/Histograms/EnergyRt1090/EnergyRt1090_01;1",hEnergyRt1090);									// get histrogram
-		//}
-		//else
-		//{
-			//if(SecondRun==1)
-			//{
-				//Input->GetObject("/Histograms/Energyspectrum/EnergyCorr_01;1",hEnergyMA);									// get corrected histrogram
-				//Input->GetObject("/Histograms/EnergyRt1090/EnergyRt1090CorrectionRt_01;1",hEnergyRt1090);									// get corrected histrogram
-			//}
-			//else
-			//{
-				//if(SecondRun==2)
-				//{
-					//Input->GetObject("/Histograms/CorrCorr/EnergyCorrCorr_01;1",hEnergyMA);									// get corrected histrogram
-					//Input->GetObject("/Histograms/EnergyRt1090/EnergyRt1090CorrectionRt_01;1",hEnergyRt1090);									// get corrected histrogram
-				//}
-			//}
-		//}
+		if(UseT10DMCut.IsNull())
+		{
+			hEnergyMA= (TH1D*) gDirectory->Get(EnergyHistoString.Data());
+		}
+		else
+		{
+			hEnergyT10DM=(TH2D*) gDirectory->Get(EnergyT10DMHistoString.Data());
+			hEnergyMA= (TH1D*) hEnergyT10DM->ProjectionY("_py",35,-1);
+		}
 		cout << "histo" << hEnergyMA << endl;
+		cout << "histo2d" << hEnergyT10DM << endl;
+	
 		//till here
 		hEnergyMA->SetDirectory(0);
+		hEnergyT10DM->SetDirectory(0);
 		//hEnergyRt1090->SetDirectory(0);
 	Input->Close();
 	//TRint *App = new TRint("ROOT",0,0,0,0,kTRUE); //&argc,argv);
+	
+	cout <<hEnergyMA->GetEntries()<<endl;
+		
+	
 	THypGeSpectrumAnalyser *Ana;
 	cout << "histo" << hEnergyMA->GetEntries() << endl;
 	Ana= new THypGeSpectrumAnalyser(hEnergyMA,SpektrumModel.Data(), 35 );
@@ -153,6 +149,10 @@ int main(int argc, char* argv[] )
 		Ana->SetSearchRange(500,4000);
 		//Ana->SetOutputPath(Path);
 		Ana->SetTxtFileOutputName(OutPutFileTxt);
+		if(!UseT10DMCut.IsNull())
+		{
+			PathInRootFileCorr2+=UseT10DMCut;
+		}
 		Ana->SetRootFileOutputName(OutPutFileRoot,PathInRootFileCorr1,PathInRootFileCorr2);
 		if(UseFreeSkewedFitting==1)
 		{
@@ -161,6 +161,7 @@ int main(int argc, char* argv[] )
 		else{
 			Ana->SetGaussianFitting();
 		}
+		//Ana->SetSecondGausianFitting();
 		Ana->AnalyseSpectrum();
 		cout << "FWHM 1332 kEv:\t\t"<< Ana->GetFWHMCo() << endl;
 	//proper output would be nice
@@ -191,7 +192,7 @@ int main(int argc, char* argv[] )
 	
 	int iDataset=-1;
 		cout <<sscanf(OutputRootfileBasename.Data(),"%*s %i %*s.root",&iDataset) << endl;
-						//sTreeCOSYJune2014Dataset0_200,100,0,5339_SR0.root
+						
 	
 	cout << iDataset << endl;
 	cout << iDataset* RadiationPerStep<< endl;

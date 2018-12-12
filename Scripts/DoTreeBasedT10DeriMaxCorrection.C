@@ -99,34 +99,34 @@ TF1* GeneralCorrectionFunction(
 
 
 
-void DoTreeBasedT10DeriMaxCorrection(TString SpectrumFileInput = "Treetest.root",//"/lustre/miifs05/scratch/him-specf/hyp/steinen/COSYBeamtestAna/COSYnewMogon/June2014/COSYJune2014Dataset11_200,100,0,5339_SR1.root", 
+void DoTreeBasedT10DeriMaxCorrection(TString SpectrumFileInput = "/lustre/miifs05/scratch/him-specf/hyp/steinen/COSYBeamtestAna/COSYnewMogon/June2014/HistosTreeCOSYJune2014Dataset11_200,100,0,5339_SR0.root", 
 							  TString FitFileInput = "/lustre/miifs05/scratch/him-specf/hyp/steinen/COSYBeamtestAna/COSYnewMogon/Fit/FitCOSYJune2014Dataset11_200,100,0,5339_SR0.root")
 {
 	TH2D *hT10DeriMaxEnergy;
 	TH2D *hT1090Energy;
 	TH2D *hTDeriMax90Energy;
 
-	TH2D	*hT1090EnergyCorr1_T10DeriMaxEnergy_2;
-	TH2D	*hTDeriMax90EnergyCorr1_T10DeriMaxEnergy_2;
+	TH2D	*hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2;
+	TH2D	*hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2;
 
-	TH2D	*hTDeriMax90EnergyCorr1_T1090Energy_2;	
-	TH2D	*hT10DeriMaxEnergyCorr1_T1090Energy_2;	
+	TH2D	*hTDeriMax90EnergyCorr1_T1090EnergyNorm_2;	
+	TH2D	*hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2;	
  
 
-	TH2D	*hT1090EnergyCorr1_TDeriMax90Energy_2;
-	TH2D	*hT10DeriMaxEnergyCorr1_TDeriMax90Energy_2;
+	TH2D	*hT1090EnergyCorr1_TDeriMax90EnergyNorm_2;
+	TH2D	*hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2;
  
 
 	//directories
-	//			Corr1_T10DeriMaxEnergy_2;1
-	//				hT1090EnergyCorr1_T10DeriMaxEnergy_2;1
-	//				hT10DeriMaxEnergyCorr1_T10DeriMaxEnergy_2;1
-  	//			Corr1_T1090Energy_2;1	
-	//				hTDeriMax90EnergyCorr1_T1090Energy_2;1	
-	//				hT10DeriMaxEnergyCorr1_T1090Energy_2;1	
-  	//			Corr1_TDeriMax90Energy_2;1	
-  	//				hT1090EnergyCorr1_TDeriMax90Energy_2;1
-  	//				hT10DeriMaxEnergyCorr1_TDeriMax90Energy_2;1
+	//			Corr1_T10DeriMaxEnergyNorm_2;1
+	//				hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2;1
+	//				hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2;1
+  	//			Corr1_T1090EnergyNorm_2;1	
+	//				hTDeriMax90EnergyCorr1_T1090EnergyNorm_2;1	
+	//				hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2;1	
+  	//			Corr1_TDeriMax90EnergyNorm_2;1	
+  	//				hT1090EnergyCorr1_TDeriMax90EnergyNorm_2;1
+  	//				hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2;1
   	
 
 	
@@ -137,21 +137,29 @@ void DoTreeBasedT10DeriMaxCorrection(TString SpectrumFileInput = "Treetest.root"
 		hT1090Energy->SetDirectory(0);
 		hTDeriMax90Energy=(TH2D*) SpectrumInput->Get("hTDeriMax90Energy");
 		hTDeriMax90Energy->SetDirectory(0);
-		gDirectory->cd("Corr1_T10DeriMaxEnergy_2;1");
-			hT1090EnergyCorr1_T10DeriMaxEnergy_2=(TH2D*) gDirectory->Get("hT1090EnergyCorr1_T10DeriMaxEnergy_2;1");
-			hT1090EnergyCorr1_T10DeriMaxEnergy_2->SetDirectory(0);
-			hTDeriMax90EnergyCorr1_T10DeriMaxEnergy_2=(TH2D*) gDirectory->Get("hTDeriMax90EnergyCorr1_T10DeriMaxEnergy_2;1");
-			hTDeriMax90EnergyCorr1_T10DeriMaxEnergy_2->SetDirectory(0);
-		gDirectory->cd("../Corr1_T1090Energy_2;1");
-			hTDeriMax90EnergyCorr1_T1090Energy_2=(TH2D*) gDirectory->Get("hTDeriMax90EnergyCorr1_T1090Energy_2;1");
-			hTDeriMax90EnergyCorr1_T1090Energy_2->SetDirectory(0);
-			hT10DeriMaxEnergyCorr1_T1090Energy_2=(TH2D*) gDirectory->Get("hT10DeriMaxEnergyCorr1_T1090Energy_2;1");
-			hT10DeriMaxEnergyCorr1_T1090Energy_2->SetDirectory(0);
-		gDirectory->cd("../Corr1_TDeriMax90Energy_2;1");
-			hT1090EnergyCorr1_TDeriMax90Energy_2=(TH2D*) gDirectory->Get("hT1090EnergyCorr1_TDeriMax90Energy_2;1");
-			hT1090EnergyCorr1_TDeriMax90Energy_2->SetDirectory(0);
-			hT10DeriMaxEnergyCorr1_TDeriMax90Energy_2=(TH2D*) gDirectory->Get("hT10DeriMaxEnergyCorr1_TDeriMax90Energy_2;1");
-			hT10DeriMaxEnergyCorr1_TDeriMax90Energy_2->SetDirectory(0);
+		gDirectory->cd("Corr1_T10DeriMaxEnergyNorm_2;1");
+			hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2=(TH2D*) gDirectory->Get("hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2;1");
+			if (hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2)
+				hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2->SetDirectory(0);
+			//cout<<hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2<<endl;
+			//return 0;
+			hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2=(TH2D*) gDirectory->Get("hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2;1");
+			if(hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2)
+				hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2->SetDirectory(0);
+		gDirectory->cd("../Corr1_T1090EnergyNorm_2;1");
+			hTDeriMax90EnergyCorr1_T1090EnergyNorm_2=(TH2D*) gDirectory->Get("hTDeriMax90EnergyCorr1_T1090EnergyNorm_2;1");
+			if(hTDeriMax90EnergyCorr1_T1090EnergyNorm_2)
+				hTDeriMax90EnergyCorr1_T1090EnergyNorm_2->SetDirectory(0);
+			hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2=(TH2D*) gDirectory->Get("hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2;1");
+			if(hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2)
+				hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2->SetDirectory(0);
+		gDirectory->cd("../Corr1_TDeriMax90EnergyNorm_2;1");
+			hT1090EnergyCorr1_TDeriMax90EnergyNorm_2=(TH2D*) gDirectory->Get("hT1090EnergyCorr1_TDeriMax90EnergyNorm_2;1");
+			if(hT1090EnergyCorr1_TDeriMax90EnergyNorm_2)
+				hT1090EnergyCorr1_TDeriMax90EnergyNorm_2->SetDirectory(0);
+			hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2=(TH2D*) gDirectory->Get("hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2;1");
+			if(hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2)
+				hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2->SetDirectory(0);
 			
 	SpectrumInput->Close();
 	
@@ -189,8 +197,21 @@ void DoTreeBasedT10DeriMaxCorrection(TString SpectrumFileInput = "Treetest.root"
 				GeneralCorrectionFunction(ChannelRangeMin,ChannelRangeMax,ChannelPeakPos,hT1090Energy,ki,"T1090Energy","1",50,300,"pol2",80,250,10);
 			if(hTDeriMax90Energy)
 				GeneralCorrectionFunction(ChannelRangeMin,ChannelRangeMax,ChannelPeakPos,hTDeriMax90Energy,ki,"TDeriMax90Energy","1",-20,300,"pol2",0,250,15);
-							
-							
+			//second round of corrections
+			if (hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2)
+				GeneralCorrectionFunction(ChannelRangeMin,ChannelRangeMax,ChannelPeakPos,hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2,ki,"T1090EnergyNorm_2Corr1_T10DeriMaxEnergy","2",50,300,"pol2",80,250,10);
+			if(hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2)
+				GeneralCorrectionFunction(ChannelRangeMin,ChannelRangeMax,ChannelPeakPos,hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2,ki,"TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergy","2",-20,300,"pol2",0,250,15);
+		
+			if(hTDeriMax90EnergyCorr1_T1090EnergyNorm_2)
+				GeneralCorrectionFunction(ChannelRangeMin,ChannelRangeMax,ChannelPeakPos,hTDeriMax90EnergyCorr1_T1090EnergyNorm_2,ki,"TDeriMax90EnergyNorm_2Corr1_T1090Energy","2",-20,300,"pol2",0,250,15);
+			if(hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2)
+				GeneralCorrectionFunction(ChannelRangeMin,ChannelRangeMax,ChannelPeakPos,hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2,ki,"T10DeriMaxEnergyNorm_2Corr1_T1090Energy","2");
+				
+			if(hT1090EnergyCorr1_TDeriMax90EnergyNorm_2)
+				GeneralCorrectionFunction(ChannelRangeMin,ChannelRangeMax,ChannelPeakPos,hT1090EnergyCorr1_TDeriMax90EnergyNorm_2,ki,"T1090EnergyNorm_2Corr1_TDeriMax90Energy","2",50,300,"pol2",80,250,10);
+			if(hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2)
+				GeneralCorrectionFunction(ChannelRangeMin,ChannelRangeMax,ChannelPeakPos,hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2,ki,"T10DeriMaxEnergyNorm_2Corr1_TDeriMax90Energy","2");
 		}
 	}
 	
@@ -201,6 +222,19 @@ void DoTreeBasedT10DeriMaxCorrection(TString SpectrumFileInput = "Treetest.root"
 	hT1090Energy->Draw("colz");
 	hT1090Energy->Write(0,TObject::kOverwrite);
 	hTDeriMax90Energy->Write(0,TObject::kOverwrite);
+
+	hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2->Write(0,TObject::kOverwrite);
+	hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2->Write(0,TObject::kOverwrite);
+
+	hTDeriMax90EnergyCorr1_T1090EnergyNorm_2->Write(0,TObject::kOverwrite);
+	hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2->Write(0,TObject::kOverwrite);
+
+
+	hT1090EnergyCorr1_TDeriMax90EnergyNorm_2->Write(0,TObject::kOverwrite);
+	hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2->Write(0,TObject::kOverwrite);
+	
+	
+	
 	//funcCorr1T10DeriMax90Norm->SetParameters(funcCorr1T10DeriMax90Norm->GetParameter(0)*ChannelPeakPos1,funcCorr1T10DeriMax90Norm->GetParameter(1)*ChannelPeakPos1,funcCorr1T10DeriMax90Norm->GetParameter(2)*ChannelPeakPos1);
 	//funcCorr1T10DeriMax90Norm->Draw("same");
 	//gPad->SetLogz();
