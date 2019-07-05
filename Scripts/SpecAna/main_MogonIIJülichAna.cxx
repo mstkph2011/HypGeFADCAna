@@ -106,7 +106,6 @@ int main(int argc, char* argv[] )
 			gDirectory->cd(PathInRootFileCorr1.Data());
 			if(!PathInRootFileCorr2.IsNull())
 			{
-				cout << "test" << endl;
 				TDirectory *SubSubdir = gDirectory->GetDirectory(PathInRootFileCorr2.Data());
 				cout << "SSd" << SubSubdir<< endl;
 				gDirectory->cd(PathInRootFileCorr2.Data());
@@ -114,12 +113,12 @@ int main(int argc, char* argv[] )
 			
 		}
 		//cout << "directory?"<< endl;
-		//cout <<gDirectory->GetPath()<<endl;
+		cout <<gDirectory->GetPath()<<endl;
 
 		//gDirectory->ls();
 		//cout << "directory?"<< endl;
 
-		hEnergyMA= (TH1D*) gDirectory->Get(EnergyHistoString.Data());
+		//hEnergyMA= (TH1D*) gDirectory->Get(EnergyHistoString.Data());
 		if(UseT10DMCut.IsNull())
 		{
 			hEnergyMA= (TH1D*) gDirectory->Get(EnergyHistoString.Data());
@@ -134,13 +133,16 @@ int main(int argc, char* argv[] )
 	
 		//till here
 		hEnergyMA->SetDirectory(0);
-		hEnergyT10DM->SetDirectory(0);
+		if(!UseT10DMCut.IsNull())
+		{
+			hEnergyT10DM->SetDirectory(0);
+		}	
 		//hEnergyRt1090->SetDirectory(0);
 	Input->Close();
 	//TRint *App = new TRint("ROOT",0,0,0,0,kTRUE); //&argc,argv);
-	
+	cout << "test" << endl;
 	cout <<hEnergyMA->GetEntries()<<endl;
-		
+		cout << "test" << endl;
 	
 	THypGeSpectrumAnalyser *Ana;
 	cout << "histo" << hEnergyMA->GetEntries() << endl;
@@ -178,7 +180,7 @@ int main(int argc, char* argv[] )
 		if(OutPutFileRoot.Contains("July2014"))
 		{
 			TxtCollectionName+="/CollectionFileJuly2014";
-			RadiationPerStep=59/10.;
+			RadiationPerStep=56/9.;
 		}
 		TxtCollectionName+=PathInRootFileCorr1;
 		TxtCollectionName+=PathInRootFileCorr2;

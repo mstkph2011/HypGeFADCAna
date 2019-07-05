@@ -752,7 +752,7 @@ Int_t THypGeSpectrumAnalyser::CompareNuclei(TString NucleiName)
 		std::cout << "Found Na22 and K40"<< endl;
 		return Energies.size();
 	}
-	if(!NucleiName.CompareTo("jülich") )
+	if(!NucleiName.CompareTo("jülich") || !NucleiName.CompareTo("juelich"))
 		{
 			//npeaks = 5;
 			std::cout << "Found jülich beam time configuration"<< endl;
@@ -768,7 +768,7 @@ Int_t THypGeSpectrumAnalyser::CompareNuclei(TString NucleiName)
 			EnergyErrors.push_back(0.1);	//0,1keV random
 			return Energies.size();
 		}
-	if(!NucleiName.CompareTo("jülich2") )
+	if(!NucleiName.CompareTo("jülich2") || !NucleiName.CompareTo("juelich2"))
 			{
 				//npeaks = 5;
 				std::cout << "Found jülich beam time configuration"<< endl;
@@ -779,6 +779,22 @@ Int_t THypGeSpectrumAnalyser::CompareNuclei(TString NucleiName)
 				Energies.push_back(1332.51);
 				EnergyErrors.push_back(0.015);
 				Energies.push_back(1778.969);
+				EnergyErrors.push_back(0.012);
+				return Energies.size();
+			}
+	if(!NucleiName.CompareTo("jülich3") || !NucleiName.CompareTo("juelich3"))
+			{
+				//npeaks = 5;
+				std::cout << "Found jülich beam time configuration"<< endl;
+				Energies.push_back(510.998928);
+				EnergyErrors.push_back(0.000011);
+				Energies.push_back(846.76);			//Fe56 exited state
+				EnergyErrors.push_back(0.2);
+				Energies.push_back(1172.23);
+				EnergyErrors.push_back(0.030);
+				Energies.push_back(1332.51);
+				EnergyErrors.push_back(0.015);
+				Energies.push_back(1778.969);		//Al27+n->Al28 (b decay) to exited Si-28 state
 				EnergyErrors.push_back(0.012);
 				return Energies.size();
 			}

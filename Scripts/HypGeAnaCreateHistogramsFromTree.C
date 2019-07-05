@@ -1,6 +1,7 @@
-void HypGeAnaCreateHistogramsFromTree(TString TreeInputFilename ="/lustre/miifs05/scratch/him-specf/hyp/steinen/COSYBeamtestAna/COSYnewMogon/June2014/TreeCOSYJune2014Dataset11_200,100,0,5339_SR0.root", 
+void HypGeAnaCreateHistogramsFromTree(TString TreeInputFilename ="/lustre/miifs05/scratch/him-specf/hyp/steinen/COSYBeamtestAna/COSYnewMogon/June2014/TreeCOSYJune2014Dataset14_200,100,0,5339_SR0.root", 
 									  TString OutputFilename = "Treetest.root", 
-									  TString ParameterFilename = "/lustre/miifs05/scratch/him-specf/hyp/steinen/COSYBeamtestAna/COSYnewMogon/Fit/FitCOSYJune2014Dataset11_200,100,0,5339_SR0.root")
+									  TString ParameterFilename = "/lustre/miifs05/scratch/him-specf/hyp/steinen/COSYBeamtestAna/COSYnewMogon/Fit/FitCOSYJune2014Dataset14_200,100,0,5339_SR0.root"
+									  ,int PeakNumber=2)
 {
 
 TF1*funcCorr1_T10DeriMaxEnergyNorm_2;
@@ -13,27 +14,40 @@ TF1*funcCorr1_TDeriMax90EnergyNorm_2;
 	TF1*funcCorr1_TDeriMax90EnergyNorm_2Corr2_T10DeriMaxEnergyNorm_2;
 	TF1*funcCorr1_TDeriMax90EnergyNorm_2Corr2_T1090EnergyNorm_2;
 //get peak range(s) and correction functions from file
+
+char buf[200];
+
 if(ParameterFilename.Contains(".root"))
 {
 	TFile *ParameterFile= new TFile(ParameterFilename.Data());
-	funcCorr1_T10DeriMaxEnergyNorm_2=(TF1*) ParameterFile->Get("funcCorr1_T10DeriMaxEnergyNorm_2");
-		funcCorr1_T10DeriMaxEnergyNorm_2Corr2_T1090EnergyNorm_2=(TF1*) ParameterFile->Get("funcCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2");
-		funcCorr1_T10DeriMaxEnergyNorm_2Corr2_TDeriMax90EnergyNorm_2=(TF1*) ParameterFile->Get("funcCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2");
-	funcCorr1_T1090EnergyNorm_2=(TF1*) ParameterFile->Get("funcCorr1_T1090EnergyNorm_2");
-		funcCorr1_T1090EnergyNorm_2Corr2_T10DeriMaxEnergyNorm_2=(TF1*) ParameterFile->Get("funcCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2");
-		funcCorr1_T1090EnergyNorm_2Corr2_TDeriMax90EnergyNorm_2=(TF1*) ParameterFile->Get("funcCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2");
+	sprintf(buf,"funcCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber);
+	funcCorr1_T10DeriMaxEnergyNorm_2=(TF1*) ParameterFile->Get(buf);
+		sprintf(buf,"funcCorr2_T1090EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+		funcCorr1_T10DeriMaxEnergyNorm_2Corr2_T1090EnergyNorm_2=(TF1*) ParameterFile->Get(buf);
+		sprintf(buf,"funcCorr2_TDeriMax90EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+		funcCorr1_T10DeriMaxEnergyNorm_2Corr2_TDeriMax90EnergyNorm_2=(TF1*) ParameterFile->Get(buf);
+	
+	sprintf(buf,"funcCorr1_T1090EnergyNorm_%i",PeakNumber);
+	funcCorr1_T1090EnergyNorm_2=(TF1*) ParameterFile->Get(buf);
+		sprintf(buf,"funcCorr2_T10DeriMaxEnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+		funcCorr1_T1090EnergyNorm_2Corr2_T10DeriMaxEnergyNorm_2=(TF1*) ParameterFile->Get(buf);
+		sprintf(buf,"funcCorr2_TDeriMax90EnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+		funcCorr1_T1090EnergyNorm_2Corr2_TDeriMax90EnergyNorm_2=(TF1*) ParameterFile->Get(buf);
 
-	funcCorr1_TDeriMax90EnergyNorm_2=(TF1*) ParameterFile->Get("funcCorr1_TDeriMax90EnergyNorm_2");
-		funcCorr1_TDeriMax90EnergyNorm_2Corr2_T10DeriMaxEnergyNorm_2=(TF1*) ParameterFile->Get("funcCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2");
-		funcCorr1_TDeriMax90EnergyNorm_2Corr2_T1090EnergyNorm_2=(TF1*) ParameterFile->Get("funcCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2");
+	sprintf(buf,"funcCorr1_TDeriMax90EnergyNorm_%i",PeakNumber);
+	funcCorr1_TDeriMax90EnergyNorm_2=(TF1*) ParameterFile->Get(buf);
+		sprintf(buf,"funcCorr2_T10DeriMaxEnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+		funcCorr1_TDeriMax90EnergyNorm_2Corr2_T10DeriMaxEnergyNorm_2=(TF1*) ParameterFile->Get(buf);
+		sprintf(buf,"funcCorr2_T1090EnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+		funcCorr1_TDeriMax90EnergyNorm_2Corr2_T1090EnergyNorm_2=(TF1*) ParameterFile->Get(buf);
 	
 
 	ParameterFile->Close();
 }
 
-cout << funcCorr1_T10DeriMaxEnergyNorm_2->GetParameter(0) << endl;
-cout << funcCorr1_T1090EnergyNorm_2->GetParameter(0) << endl;
-cout << funcCorr1_TDeriMax90EnergyNorm_2->GetParameter(0) << endl;
+//cout << funcCorr1_T10DeriMaxEnergyNorm_2->GetParameter(0) << endl;
+//cout << funcCorr1_T1090EnergyNorm_2->GetParameter(0) << endl;
+//cout << funcCorr1_TDeriMax90EnergyNorm_2->GetParameter(0) << endl;
 
 //init histograms
 
@@ -46,80 +60,142 @@ TH2F * hTDeriMax90Energy ;
 TH2F * hTDeriMax90EnergyRel ;
 TH2F * hT10DeriMaxEnergy ;
 TH2F * hT10DeriMaxEnergyRel ;
+sprintf(buf,"hEnergyCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber);
+TH1D * hEnergyCorr1_T10DeriMaxEnergyNorm_2 = new TH1D(buf,";Energy [ADC value];Counts",32000,1,16000);
+sprintf(buf,"hT1090EnergyCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber);
+TH2D * hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+sprintf(buf,"hT3090EnergyCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber);
+TH2D * hT3090EnergyCorr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+sprintf(buf,"hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber);
+TH2D * hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+sprintf(buf,"hTDeriMax90EnergyRelCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber);
+TH2D * hTDeriMax90EnergyRelCorr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+sprintf(buf,"hT10DeriMaxEnergyCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber);
+TH2D * hT10DeriMaxEnergyCorr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+sprintf(buf,"hT10DeriMaxEnergyCorr1_T10DeriMaxEnergy_%i",PeakNumber);
+TH2D * hT10DeriMaxEnergyCorr1_T10DeriMaxEnergy_2 = new TH2D(buf,";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+sprintf(buf,"hT10DeriMaxEnergyRelCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber);
+TH2D * hT10DeriMaxEnergyRelCorr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
 
-TH1D * hEnergyCorr1_T10DeriMaxEnergyNorm_2 = new TH1D("hEnergyCorr1_T10DeriMaxEnergyNorm_2",";Energy [ADC value];Counts",32000,1,16000);
-TH2D * hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT1090EnergyCorr1_T10DeriMaxEnergyNorm_2",";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-TH2D * hT3090EnergyCorr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT3090EnergyCorr1_T10DeriMaxEnergyNorm_2",";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-TH2D * hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2 = new TH2D("hTDeriMax90EnergyCorr1_T10DeriMaxEnergyNorm_2",";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-TH2D * hTDeriMax90EnergyRelCorr1_T10DeriMaxEnergyNorm_2 = new TH2D("hTDeriMax90EnergyRelCorr1_T10DeriMaxEnergyNorm_2",";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
-TH2D * hT10DeriMaxEnergyCorr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT10DeriMaxEnergyCorr1_T10DeriMaxEnergyNorm_2",";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-TH2D * hT10DeriMaxEnergyRelCorr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT10DeriMaxEnergyRelCorr1_T10DeriMaxEnergyNorm_2",";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+	sprintf(buf,"hEnergyCorr2_T1090EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH1D * hEnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH1D(buf,";Energy [ADC value];Counts",32000,1,16000);
+	sprintf(buf,"hT1090EnergyCorr2_T1090EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT1090EnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hT3090EnergyCorr2_T1090EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT3090EnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyCorr2_T1090EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyRelCorr2_T1090EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyRelCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyCorr2_T1090EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyRelCorr2_T1090EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_2%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyRelCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
 
-	TH1D * hEnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH1D("hEnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";Energy [ADC value];Counts",32000,1,16000);
-	TH2D * hT1090EnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT1090EnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hT3090EnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT3090EnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hTDeriMax90EnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyRelCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hTDeriMax90EnergyRelCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT10DeriMaxEnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyRelCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT10DeriMaxEnergyRelCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+	sprintf(buf,"hEnergyCorr2_TDeriMax90EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH1D * hEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH1D(buf,";Energy [ADC value];Counts",32000,1,16000);
+	sprintf(buf,"hT1090EnergyCorr2_TDeriMax90EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT1090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hT3090EnergyCorr2_TDeriMax90EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT3090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyCorr2_TDeriMax90EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyRelCorr2_TDeriMax90EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyCorr2_TDeriMax90EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyRelCorr2_TDeriMax90EnergyNorm_%iCorr1_T10DeriMaxEnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D(buf,";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
 
-	TH1D * hEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH1D("hEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";Energy [ADC value];Counts",32000,1,16000);
-	TH2D * hT1090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT1090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hT3090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT3090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hTDeriMax90EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hTDeriMax90EnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT10DeriMaxEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 = new TH2D("hT10DeriMaxEnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2",";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+sprintf(buf,"hEnergyCorr1_T1090EnergyNorm_%i",PeakNumber);
+TH1D * hEnergyCorr1_T1090EnergyNorm_2 = new TH1D(buf,";Energy [ADC value];Counts",32000,1,16000);
+sprintf(buf,"hT1090EnergyCorr1_T1090EnergyNorm_%i",PeakNumber);
+TH2D * hT1090EnergyCorr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+sprintf(buf,"hT3090EnergyCorr1_T1090EnergyNorm_%i",PeakNumber);
+TH2D * hT3090EnergyCorr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+sprintf(buf,"hTDeriMax90EnergyCorr1_T1090EnergyNorm_%i",PeakNumber);
+TH2D * hTDeriMax90EnergyCorr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+sprintf(buf,"hTDeriMax90EnergyRelCorr1_T1090EnergyNorm_%i",PeakNumber);
+TH2D * hTDeriMax90EnergyRelCorr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+sprintf(buf,"hT10DeriMaxEnergyCorr1_T1090EnergyNorm_%i",PeakNumber);
+TH2D * hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+sprintf(buf,"hT10DeriMaxEnergyRelCorr1_T1090EnergyNorm_%i",PeakNumber);
+TH2D * hT10DeriMaxEnergyRelCorr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
 
+	sprintf(buf,"hEnergyCorr2_TDeriMax90EnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH1D * hEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH1D(buf,";Energy [ADC value];Counts",32000,1,16000);
+	sprintf(buf,"hT1090EnergyCorr2_TDeriMax90EnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT1090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hT3090EnergyCorr2_TDeriMax90EnergyNorm_%iCorr1_T1090EnergyNorm_2%i",PeakNumber,PeakNumber);
+	TH2D * hT3090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyCorr2_TDeriMax90EnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyRelCorr2_TDeriMax90EnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyCorr2_TDeriMax90EnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyRelCorr2_TDeriMax90EnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
 
-TH1D * hEnergyCorr1_T1090EnergyNorm_2 = new TH1D("hEnergyCorr1_T1090EnergyNorm_2",";Energy [ADC value];Counts",32000,1,16000);
-TH2D * hT1090EnergyCorr1_T1090EnergyNorm_2 = new TH2D("hT1090EnergyCorr1_T1090EnergyNorm_2",";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-TH2D * hT3090EnergyCorr1_T1090EnergyNorm_2 = new TH2D("hT3090EnergyCorr1_T1090EnergyNorm_2",";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-TH2D * hTDeriMax90EnergyCorr1_T1090EnergyNorm_2 = new TH2D("hTDeriMax90EnergyCorr1_T1090EnergyNorm_2",";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-TH2D * hTDeriMax90EnergyRelCorr1_T1090EnergyNorm_2 = new TH2D("hTDeriMax90EnergyRelCorr1_T1090EnergyNorm_2",";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
-TH2D * hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2",";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-TH2D * hT10DeriMaxEnergyRelCorr1_T1090EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyRelCorr1_T1090EnergyNorm_2",";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+	sprintf(buf,"hEnergyCorr2_T10DeriMaxEnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH1D * hEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH1D(buf,";Energy [ADC value];Counts",32000,1,16000);
+	sprintf(buf,"hT1090EnergyCorr2_T10DeriMaxEnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT1090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hT3090EnergyCorr2_T10DeriMaxEnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT3090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyCorr2_T10DeriMaxEnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyRelCorr2_T10DeriMaxEnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyCorr2_T10DeriMaxEnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyRelCorr2_T10DeriMaxEnergyNorm_%iCorr1_T1090EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D(buf,";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
 
-	TH1D * hEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH1D("hEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2",";Energy [ADC value];Counts",32000,1,16000);
-	TH2D * hT1090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hT1090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hT3090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hT3090EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hTDeriMax90EnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hTDeriMax90EnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+sprintf(buf,"hEnergyCorr1_TDeriMax90EnergyNorm_%i",PeakNumber);
+TH1D * hEnergyCorr1_TDeriMax90EnergyNorm_2 = new TH1D(buf,";Energy [ADC value];Counts",32000,1,16000);
+sprintf(buf,"hT1090EnergyCorr1_TDeriMax90EnergyNorm_%i",PeakNumber);
+TH2D * hT1090EnergyCorr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+sprintf(buf,"hT3090EnergyCorr1_TDeriMax90EnergyNorm_%i",PeakNumber);
+TH2D * hT3090EnergyCorr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+sprintf(buf,"hTDeriMax90EnergyCorr1_TDeriMax90EnergyNorm_%i",PeakNumber);
+TH2D * hTDeriMax90EnergyCorr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+sprintf(buf,"hTDeriMax90EnergyRelCorr1_TDeriMax90EnergyNorm_%i",PeakNumber);
+TH2D * hTDeriMax90EnergyRelCorr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+sprintf(buf,"hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_%i",PeakNumber);
+TH2D * hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+sprintf(buf,"hT10DeriMaxEnergyRelCorr1_TDeriMax90EnergyNorm_%i",PeakNumber);
+TH2D * hT10DeriMaxEnergyRelCorr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
 
-	TH1D * hEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH1D("hEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2",";Energy [ADC value];Counts",32000,1,16000);
-	TH2D * hT1090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hT1090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hT3090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hT3090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hTDeriMax90EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hTDeriMax90EnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2",";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+	sprintf(buf,"hEnergyCorr2_T1090EnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH1D * hEnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH1D(buf,";Energy [ADC value];Counts",32000,1,16000);
+	sprintf(buf,"hT1090EnergyCorr2_T1090EnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT1090EnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hT3090EnergyCorr2_T1090EnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT3090EnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyCorr2_T1090EnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyRelCorr2_T1090EnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyRelCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyCorr2_T1090EnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyRelCorr2_T1090EnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyRelCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
 
-
-TH1D * hEnergyCorr1_TDeriMax90EnergyNorm_2 = new TH1D("hEnergyCorr1_TDeriMax90EnergyNorm_2",";Energy [ADC value];Counts",32000,1,16000);
-TH2D * hT1090EnergyCorr1_TDeriMax90EnergyNorm_2 = new TH2D("hT1090EnergyCorr1_TDeriMax90EnergyNorm_2",";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-TH2D * hT3090EnergyCorr1_TDeriMax90EnergyNorm_2 = new TH2D("hT3090EnergyCorr1_TDeriMax90EnergyNorm_2",";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-TH2D * hTDeriMax90EnergyCorr1_TDeriMax90EnergyNorm_2 = new TH2D("hTDeriMax90EnergyCorr1_TDeriMax90EnergyNorm_2",";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-TH2D * hTDeriMax90EnergyRelCorr1_TDeriMax90EnergyNorm_2 = new TH2D("hTDeriMax90EnergyRelCorr1_TDeriMax90EnergyNorm_2",";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
-TH2D * hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2",";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-TH2D * hT10DeriMaxEnergyRelCorr1_TDeriMax90EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyRelCorr1_TDeriMax90EnergyNorm_2",";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
-
-	TH1D * hEnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH1D("hEnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";Energy [ADC value];Counts",32000,1,16000);
-	TH2D * hT1090EnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hT1090EnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hT3090EnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hT3090EnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hTDeriMax90EnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyRelCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hTDeriMax90EnergyRelCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyRelCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyRelCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
-
-	TH1D * hEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH1D("hEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";Energy [ADC value];Counts",32000,1,16000);
-	TH2D * hT1090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hT1090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hT3090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hT3090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hTDeriMax90EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hTDeriMax90EnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hTDeriMax90EnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
-	TH2D * hT10DeriMaxEnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D("hT10DeriMaxEnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2",";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+	sprintf(buf,"hEnergyCorr2_T10DeriMaxEnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH1D * hEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH1D(buf,";Energy [ADC value];Counts",32000,1,16000);
+	sprintf(buf,"hT1090EnergyCorr2_T10DeriMaxEnergyNorm_%iCorr1_TDeriMax90EnergyNorm_2%i",PeakNumber,PeakNumber);
+	TH2D * hT1090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{1090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hT3090EnergyCorr2_T10DeriMaxEnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT3090EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{3090} [ns];Energy [ADC value]",100,10,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyCorr2_T10DeriMaxEnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{Derimax90} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hTDeriMax90EnergyRelCorr2_T10DeriMaxEnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hTDeriMax90EnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{Derimax90,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyCorr2_T10DeriMaxEnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{10Derimax} [ns];Energy [ADC value]",130,-290,1000,4000,1,4000);
+	sprintf(buf,"hT10DeriMaxEnergyRelCorr2_T10DeriMaxEnergyNorm_%iCorr1_TDeriMax90EnergyNorm_%i",PeakNumber,PeakNumber);
+	TH2D * hT10DeriMaxEnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 = new TH2D(buf,";t_{10Derimax,Rel} [ns];Energy [ADC value]",130,-.290,1.000,4000,1,4000);
 
 
 
@@ -323,7 +399,7 @@ TreeInputFile->Close();
 //write histograms to file
 if(OutputFilename.Contains(".root"))
 {
-	TFile *OutputFile= new TFile(OutputFilename.Data(),"RECREATE");
+	TFile *OutputFile= new TFile(OutputFilename.Data(),"UPDATE");
 		hEnergy->Write(0,TObject::kOverwrite);
 		hT1090->Write(0,TObject::kOverwrite);
 		hT1090Energy->Write(0,TObject::kOverwrite);
@@ -333,7 +409,8 @@ if(OutputFilename.Contains(".root"))
 		hT10DeriMaxEnergy->Write(0,TObject::kOverwrite);
 		hT10DeriMaxEnergyRel->Write(0,TObject::kOverwrite);
 		
-		TDirectory *SubDir= OutputFile->mkdir("Corr1_T10DeriMaxEnergyNorm_2");
+		sprintf(buf,"Corr1_T10DeriMaxEnergyNorm_%i",PeakNumber);
+		TDirectory *SubDir= OutputFile->mkdir(buf);
 		SubDir->cd();
 		
 		hEnergyCorr1_T10DeriMaxEnergyNorm_2->Write(0,TObject::kOverwrite);
@@ -344,7 +421,8 @@ if(OutputFilename.Contains(".root"))
 		hT10DeriMaxEnergyCorr1_T10DeriMaxEnergyNorm_2->Write(0,TObject::kOverwrite);
 		hT10DeriMaxEnergyRelCorr1_T10DeriMaxEnergyNorm_2->Write(0,TObject::kOverwrite);
 		
-		SubSubDir= SubDir->mkdir("Corr2_T1090EnergyNorm_2");
+		sprintf(buf,"Corr2_T1090EnergyNorm_%i",PeakNumber);
+		SubSubDir= SubDir->mkdir(buf);
 		SubSubDir->cd();
 		
 			hEnergyCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 ->Write(0,TObject::kOverwrite);
@@ -356,7 +434,8 @@ if(OutputFilename.Contains(".root"))
 			hT10DeriMaxEnergyRelCorr2_T1090EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 ->Write(0,TObject::kOverwrite);
 		
 		SubDir->cd();
-		SubSubDir= SubDir->mkdir("Corr2_TDeriMax90EnergyNorm_2");
+		sprintf(buf,"Corr2_TDeriMax90EnergyNorm_%i",PeakNumber);
+		SubSubDir= SubDir->mkdir(buf);
 		SubSubDir->cd();
 		
 			hEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 ->Write(0,TObject::kOverwrite);
@@ -367,7 +446,8 @@ if(OutputFilename.Contains(".root"))
 			hT10DeriMaxEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 ->Write(0,TObject::kOverwrite);
 			hT10DeriMaxEnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T10DeriMaxEnergyNorm_2 ->Write(0,TObject::kOverwrite);
 		
-		SubDir= OutputFile->mkdir("Corr1_T1090EnergyNorm_2");
+		sprintf(buf,"Corr1_T1090EnergyNorm_%i",PeakNumber);
+		SubDir= OutputFile->mkdir(buf);
 		SubDir->cd();
 		hEnergyCorr1_T1090EnergyNorm_2 ->Write(0,TObject::kOverwrite);
 		hT1090EnergyCorr1_T1090EnergyNorm_2->Write(0,TObject::kOverwrite);
@@ -376,7 +456,9 @@ if(OutputFilename.Contains(".root"))
 		hTDeriMax90EnergyRelCorr1_T1090EnergyNorm_2->Write(0,TObject::kOverwrite);
 		hT10DeriMaxEnergyCorr1_T1090EnergyNorm_2->Write(0,TObject::kOverwrite);
 		hT10DeriMaxEnergyRelCorr1_T1090EnergyNorm_2->Write(0,TObject::kOverwrite);
-		SubSubDir= SubDir->mkdir("Corr2_T10DeriMaxEnergyNorm_2");		
+		
+		sprintf(buf,"Corr2_T10DeriMaxEnergyNorm_%i",PeakNumber);
+		SubSubDir= SubDir->mkdir(buf);		
 		SubSubDir->cd();
 		
 			 hEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 ->Write(0,TObject::kOverwrite);
@@ -388,7 +470,8 @@ if(OutputFilename.Contains(".root"))
 			hT10DeriMaxEnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_T1090EnergyNorm_2 ->Write(0,TObject::kOverwrite);
 		
 		SubDir->cd();
-		SubSubDir= SubDir->mkdir("Corr2_TDeriMax90EnergyNorm_2");
+		sprintf(buf,"Corr2_TDeriMax90EnergyNorm_%i",PeakNumber);
+		SubSubDir= SubDir->mkdir(buf);
 		SubSubDir->cd();
 		
 			hEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 ->Write(0,TObject::kOverwrite);
@@ -399,7 +482,8 @@ if(OutputFilename.Contains(".root"))
 			hT10DeriMaxEnergyCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2 ->Write(0,TObject::kOverwrite);
 			hT10DeriMaxEnergyRelCorr2_TDeriMax90EnergyNorm_2Corr1_T1090EnergyNorm_2->Write(0,TObject::kOverwrite);
 		
-		SubDir= OutputFile->mkdir("Corr1_TDeriMax90EnergyNorm_2");
+		sprintf(buf,"Corr1_TDeriMax90EnergyNorm_%i",PeakNumber);
+		SubDir= OutputFile->mkdir(buf);
 		SubDir->cd();
 		hEnergyCorr1_TDeriMax90EnergyNorm_2->Write(0,TObject::kOverwrite);
 		hT1090EnergyCorr1_TDeriMax90EnergyNorm_2->Write(0,TObject::kOverwrite);
@@ -408,7 +492,9 @@ if(OutputFilename.Contains(".root"))
 		hTDeriMax90EnergyRelCorr1_TDeriMax90EnergyNorm_2->Write(0,TObject::kOverwrite);
 		hT10DeriMaxEnergyCorr1_TDeriMax90EnergyNorm_2->Write(0,TObject::kOverwrite);
 		hT10DeriMaxEnergyRelCorr1_TDeriMax90EnergyNorm_2->Write(0,TObject::kOverwrite);
-		SubSubDir= SubDir->mkdir("Corr2_T10DeriMaxEnergyNorm_2");
+		
+		sprintf(buf,"Corr2_T10DeriMaxEnergyNorm_%i",PeakNumber);
+		SubSubDir= SubDir->mkdir(buf);
 		SubSubDir->cd();
 		
 			hEnergyCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 ->Write(0,TObject::kOverwrite);
@@ -420,7 +506,8 @@ if(OutputFilename.Contains(".root"))
 			hT10DeriMaxEnergyRelCorr2_T10DeriMaxEnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 ->Write(0,TObject::kOverwrite);
 		
 		SubDir->cd();
-		SubSubDir= SubDir->mkdir("Corr2_T1090EnergyNorm_2");
+		sprintf(buf,"Corr2_T1090EnergyNorm_%i",PeakNumber);
+		SubSubDir= SubDir->mkdir(buf);
 		SubSubDir->cd();
 		
 			hEnergyCorr2_T1090EnergyNorm_2Corr1_TDeriMax90EnergyNorm_2 ->Write(0,TObject::kOverwrite);

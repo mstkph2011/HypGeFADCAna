@@ -1,7 +1,7 @@
 #!/bin/bash
 
-SubSubSubDir=June2014
-#SubSubSubDir=July2014
+#SubSubSubDir=June2014
+SubSubSubDir=July2014
 SubSubDir=COSYnewMogon
 DataDir=${COSYTESTANADIR}/${SubSubDir}/${SubSubSubDir}
 SubDir=${DataDir}
